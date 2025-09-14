@@ -76,6 +76,17 @@ public class SeatHandler {
     }
 
     private void showSeats() {
-        // TODO: 전체 좌석 현황 확인(이용 중 및 주문 내역 확인 필요)
+        StringBuilder sb = new StringBuilder();
+        for (Seat seat : seats) {
+            sb.append("좌석 ")
+                    .append(seat.getSeatNumber())
+                    .append(" : ")
+                    .append(seat.isInUse() ? "사용 중" : "빈 좌석");
+
+            sb.append(" | 주문: ")
+                    .append(seat.getOrderSummary());
+            sb.append("\n");
+        }
+        System.out.println(sb);
     }
 }
