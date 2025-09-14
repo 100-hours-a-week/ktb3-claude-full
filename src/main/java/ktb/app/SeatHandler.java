@@ -53,7 +53,26 @@ public class SeatHandler {
     }
 
     private void stopSeat() {
-        // TODO:좌석 이용 중지
+        System.out.printf(StringConstant.ENTER_SEAT_NUMBER, seats.size());
+        int seatNumber = Integer.parseInt(scanner.nextLine()) - 1; // 좌석번호 1부터 시작
+
+        Seat seat = seats.get(seatNumber);
+        if (seat.isInUse()) {
+            int fee = seat.getUsageFee();
+            fee += seat.getOrderSummaryPee();
+
+            seat.stopUsage();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format(StringConstant.FEE_MESSAGE, seatNumber, fee))
+                    .append("\n");
+            sb.append(StringConstant.BILL_PRINTED)
+                    .append("\n");
+
+            System.out.println(sb);
+        } else {
+            System.out.println(StringConstant.SEAT_NOT_IN_USE);
+        }
     }
 
     private void showSeats() {
