@@ -49,7 +49,44 @@ public class SeatHandler {
     }
 
     private void addOrder() {
-        // TODO:주문 추가
+        System.out.printf(StringConstant.ENTER_SEAT_NUMBER, seats.size());
+        int seatNumber = Integer.parseInt(scanner.nextLine()) - 1; // 좌석번호 1부터 시작
+        Seat seat = seats.get(seatNumber);
+
+        if (!seat.isInUse()) {
+            System.out.println(StringConstant.SEAT_NOT_IN_USE);
+            System.out.println();
+            return;
+        }
+
+        if (!seat.canOrder()) {
+            System.out.println("주문이 불가능한 좌석입니다.");
+            System.out.println();
+            return;
+        }
+
+        System.out.printf(StringConstant.ORDER_MENU
+                , ConfigConstant.PRICE_DRINK
+                , ConfigConstant.PRICE_COFFEE
+                , ConfigConstant.PRICE_CUPRAMEN);
+        int menuChoice = Integer.parseInt(scanner.nextLine());
+
+        System.out.print(StringConstant.ENTER_QUANTITY);
+        int quantity = Integer.parseInt(scanner.nextLine());
+
+        Product product;
+        switch (menuChoice) {
+            case 1 -> product = new Product("음료", ConfigConstant.PRICE_DRINK, quantity);
+            case 2 -> product = new Product("커피", ConfigConstant.PRICE_COFFEE, quantity);
+            case 3 -> product = new Product("컵라면", ConfigConstant.PRICE_CUPRAMEN, quantity);
+            default -> {
+                System.out.println(StringConstant.INVALID_INPUT);
+                return;
+            }
+        }
+
+        seat.addProduct(product);
+        System.out.println(StringConstant.ORDER_ADDED);
     }
 
     private void stopSeat() {
