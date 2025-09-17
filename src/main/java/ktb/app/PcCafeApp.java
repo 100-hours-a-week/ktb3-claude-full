@@ -21,14 +21,9 @@ public class PcCafeApp {
 
         System.out.println(StringConstant.TITLE);
 
-        boolean running = true;
-        while (running) {
-            System.out.print(StringConstant.MENU);
-            String input = scanner.nextLine();
+        Thread seatThread = new Thread(seatHandler);
 
-            seatHandler.handleMenu(input);
-            running = !seatHandler.isExit(input);
-        }
+        seatThread.start();
 
         scanner.close();
     }

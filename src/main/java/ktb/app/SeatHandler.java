@@ -9,7 +9,7 @@ import java.util.Scanner;
 import ktb.domain.Product;
 import ktb.domain.Seat;
 
-public class SeatHandler {
+public class SeatHandler implements Runnable{
     private final Scanner scanner;
     private final List<Seat> seats;
 
@@ -18,6 +18,18 @@ public class SeatHandler {
         this.seats = seats;
     }
 
+    @Override
+    public void run() {
+        boolean running = true;
+
+        while (running) {
+            System.out.print(StringConstant.MENU);
+            String input = scanner.nextLine();
+
+            this.handleMenu(input);
+            running = !isExit(input);
+        }
+    }
     public void handleMenu(String input) {
         switch (input) {
             case "1" -> startSeat();
