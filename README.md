@@ -17,25 +17,30 @@
 ## 📌 프로젝트 구조
 ```
 src
-├── app
-│   └── PcCafeApp.java          # 메인 실행 클래스
+├── application
+│   └── PcCafeApp.java         # 메인 실행 클래스
+├── constants
+│   ├── ConfigConstant.java    # 설정 관련 상수
+│   └── StringConstant.java    # 문자열 상수
 ├── domain
-│   ├── seat
-│   │   ├── Seat.java           # 추상 좌석
-│   │   ├── CustomerSeat.java
-│   │   └── OrderSeat.java
+│   ├── menu
+│   │   └── MenuEnum.java      # 메뉴/설명 Enum
 │   ├── product
-│   │   ├── Product.java        # 실제 Product 객체
-│   │   └── ProductEnum.java # 메뉴/가격 Enum
-│   └── menu
-│       └── MenuEnum.java
+│   │   ├── Product.java       # 실제 Product 객체
+│   │   └── ProductEnum.java   # 메뉴/가격 Enum
+│   └── seat
+│       ├── Seat.java          # 추상 좌석 클래스
+│       ├── CustomerSeat.java  # 고객 좌석 클래스
+│       └── OrderSeat.java     # 주문 좌석 클래스
 ├── service
-│   └── SeatHandler.java        # 좌석 및 주문 처리 로직
-├── util
-│   └── ThreadPoolUtil.java
-└── constants
-    ├── StringConstant.java
-    └── ConfigConstant.java
+│   ├── SeatService.java       # 좌석 처리 로직
+│   └── OrderService.java      # 주문 처리 로직
+├── task
+│   ├── InputTask.java         # 입력 관련 Task
+│   ├── OrderTask.java         # 주문 처리 Task
+│   └── SeatTask.java          # 좌석 관련 Task
+└── util
+    └── ThreadPoolUtil.java    # ThreadPool 관리 유틸
 
 ```
 
