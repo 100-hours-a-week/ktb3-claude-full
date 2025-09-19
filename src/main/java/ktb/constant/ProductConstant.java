@@ -1,5 +1,8 @@
 package ktb.constant;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public enum ProductConstant {
     DRINK("음료", 2000, 1),
     COFFEE("커피", 4000, 2),
@@ -16,25 +19,18 @@ public enum ProductConstant {
     }
 
     public static ProductConstant from(int choiceNumber) {
-        for (ProductConstant product : values()) {
-            if (product.choiceNumber == choiceNumber) {
-                return product;
-            }
-        }
-        return null;
+        return Arrays.stream(values())
+                .filter(product -> product.choiceNumber == choiceNumber)
+                .findFirst()
+                .orElseThrow(NoSuchFieldError::new);
     }
 
     public static ProductConstant from(String name) {
-        for (ProductConstant product : values()) {
-            if (product.name.equals(name)) {
-                return product;
-            }
-        }
-        return null;
-    }
 
-    public String getName() {
-        return name;
+        return Arrays.stream(values())
+                .filter(origin -> origin.name.equals(name))
+                .findFirst()
+                .orElseThrow(NoSuchFieldError::new);
     }
 
     public int getTotalPrice(int amount) {
@@ -50,12 +46,8 @@ public enum ProductConstant {
     }
 
     public static String allMenuString() {
-        StringBuilder sb = new StringBuilder();
-        
-        for (ProductConstant item : values()) {
-            sb.append(item.toMenuString()).append("\n");
-        }
-        
-        return sb.toString();
+        return Arrays.stream(values())
+                .map(ProductConstant::toMenuString)
+                .collect(Collectors.joining("\n"));
     }
 }

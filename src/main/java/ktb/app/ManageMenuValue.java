@@ -1,5 +1,8 @@
 package ktb.app;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 public enum ManageMenuValue {
     START("1", "좌석 사용 시작"),
     ORDER("2", "주문 추가"),
@@ -18,26 +21,20 @@ public enum ManageMenuValue {
     }
 
     public static ManageMenuValue from(String input) {
-        for (ManageMenuValue menu : values()) {
-            if (menu.value.equals(input)) {
-                return menu;
-            }
-        }
-        return null;
+        return Arrays.stream(values())
+                .filter(menu -> menu.value.equals(input))
+                .findFirst()
+                .orElseThrow(NoSuchFieldError::new);
     }
 
     public static String menuString() {
-        StringBuilder sb = new StringBuilder();
+        public static String menuString() {
+            String menuItems = Arrays.stream(values())
+                    .map(menu -> menu.value + ": " + menu.description + "  ")
+                    .collect(Collectors.joining());
 
-        for (ManageMenuValue menu : values()) {
-            sb.append(menu.value)
-                    .append(": ")
-                    .append(menu.description)
-                    .append("  ");
+            return menuItems + "\n선택: ";
         }
-
-        sb.append("\n선택: ");
-        return sb.toString();
     }
 
     public static boolean isExit(String input) {
