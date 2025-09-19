@@ -4,8 +4,10 @@ public enum ManageMenuValue {
     START("1", "좌석 사용 시작"),
     ORDER("2", "주문 추가"),
     STOP("3", "좌석 사용 종료"),
-    SHOW_SEAT("4", "좌석 현황 보기"),
-    EXIT("5", "종료");
+    PAUSE("4", "좌석 일시 중지"),
+    RESTART("5", "재시작"),
+    SHOW_SEAT("6", "좌석 현황 보기"),
+    EXIT("7", "종료");
 
     private final String value;
     private final String description;

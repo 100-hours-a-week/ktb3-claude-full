@@ -1,6 +1,5 @@
 package ktb.app;
 
-import ktb.constant.ConfigConstant;
 import ktb.constant.ProductConstant;
 import ktb.constant.StringConstant;
 
@@ -44,6 +43,8 @@ public class SeatHandler implements Runnable{
             case START -> startSeat();
             case ORDER -> addOrder();
             case STOP -> stopSeat();
+            case PAUSE -> pauseSeat();
+            case RESTART -> restartSeat();
             case SHOW_SEAT -> showSeats();
             case EXIT -> System.out.println(StringConstant.EXIT_MESSAGE);
             default -> System.out.println(StringConstant.INVALID_INPUT);
@@ -115,6 +116,36 @@ public class SeatHandler implements Runnable{
             System.out.println(sb);
         } else {
             System.out.println(StringConstant.SEAT_NOT_IN_USE);
+        }
+    }
+
+    private void pauseSeat() {
+        System.out.printf(StringConstant.ENTER_SEAT_NUMBER, seats.size());
+        int seatNumber = Integer.parseInt(scanner.nextLine()) - 1; // 좌석번호 1부터 시작
+
+        Seat seat = seats.get(seatNumber);
+
+        if (seat.isInUse()) {
+            seat.pauseTemporary();
+
+            System.out.println(StringConstant.SEAT_PAUSED);
+        } else {
+            System.out.println(StringConstant.SEAT_NOT_IN_USE);
+        }
+    }
+
+    private void restartSeat() {
+        System.out.printf(StringConstant.ENTER_SEAT_NUMBER, seats.size());
+        int seatNumber = Integer.parseInt(scanner.nextLine()) - 1; // 좌석번호 1부터 시작
+
+        Seat seat = seats.get(seatNumber);
+
+        if (!seat.isInUse()) {
+            seat.restart();
+
+            System.out.println(StringConstant.SEAT_RESTARTED);
+        } else {
+            System.out.println(StringConstant.SEAT_IN_USE);
         }
     }
 

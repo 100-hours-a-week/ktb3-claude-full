@@ -29,6 +29,9 @@ public abstract class Seat {
     public void stopUsage() {
         this.isSeat = false;
     }
+
+    public abstract void restart();
+    public abstract void pauseTemporary();
     public abstract boolean canOrder();
     public abstract void addProduct(Product product);
     public abstract String getOrderSummary();

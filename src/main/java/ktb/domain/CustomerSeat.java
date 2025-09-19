@@ -4,6 +4,8 @@ import ktb.constant.ConfigConstant;
 
 public class CustomerSeat extends Seat {
     private long startTime;
+    private long usageTime;
+    private long restartTime;
 
     public CustomerSeat(int seatNumber) {
         super(seatNumber);
@@ -13,12 +15,45 @@ public class CustomerSeat extends Seat {
     public void startUsage() {
         super.startUsage();
         this.startTime = System.currentTimeMillis();
+        this.usageTime = 0;
+        this.restartTime = 0;
     }
 
     @Override
     public int getUsageFee() {
-        long minutes = (System.currentTimeMillis() - startTime) / 1000 / 60;
-        return (int) minutes * ConfigConstant.FEE_PER_MINUTE;
+        setUsageTime();
+
+        long currentUsageTime = this.usageTime / 1_000 / 60;
+
+        return (int)currentUsageTime * ConfigConstant.FEE_PER_MINUTE;
+    }
+
+    private void setUsageTime() {
+        if (restartTime == 0) {
+            usageTime = System.currentTimeMillis() - startTime;
+        }
+
+        usageTime += (System.currentTimeMillis() - restartTime);
+    }
+
+    @Override
+    public void stopUsage() {
+        super.stopUsage();
+
+        startTime = 0;
+        usageTime = 0;
+        this.restartTime = 0;
+    }
+
+    @Override
+    public void restart() {
+        restartTime = System.currentTimeMillis();
+    }
+
+    @Override
+    public void pauseTemporary() {
+        setUsageTime();
+        restartTime = 0;
     }
 
     @Override
