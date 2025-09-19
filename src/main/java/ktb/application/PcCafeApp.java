@@ -24,7 +24,5 @@ public class PcCafeApp {
         Thread seatThread = new Thread(seatHandler);
 
         seatThread.start();
-
-        scanner.close();
     }
 }

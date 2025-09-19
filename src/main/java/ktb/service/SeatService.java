@@ -28,6 +28,8 @@ public class SeatHandler implements Runnable{
             this.handleMenu(input);
             running = !ManageMenuValue.isExit(input);
         }
+
+        scanner.close();
     }
 
     public void handleMenu(String input) {
