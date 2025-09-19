@@ -1,17 +1,15 @@
-package ktb.domain;
-
-import ktb.constant.ProductConstant;
+package ktb.domain.product;
 
 public class Product {
-    private final ProductConstant product;
+    private final ProductEnum product;
     private final int amount;
 
     public Product(String name, int amount) {
-        this.product = ProductConstant.from(name);
+        this.product = ProductEnum.from(name);
         this.amount = amount;
     }
 
-    public Product(ProductConstant product, int amount) {
+    public Product(ProductEnum product, int amount) {
         this.product = product;
         this.amount = amount;
     }

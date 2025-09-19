@@ -1,9 +1,9 @@
-package ktb.constant;
+package ktb.domain.product;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public enum ProductConstant {
+public enum ProductEnum {
     DRINK("음료", 2000, 1),
     COFFEE("커피", 4000, 2),
     RAMEN("라면", 5000, 3);
@@ -12,20 +12,20 @@ public enum ProductConstant {
     private final int price;
     private final int choiceNumber;
 
-    ProductConstant(String name, int price, int choiceNumber) {
+    ProductEnum(String name, int price, int choiceNumber) {
         this.name = name;
         this.price = price;
         this.choiceNumber = choiceNumber;
     }
 
-    public static ProductConstant from(int choiceNumber) {
+    public static ProductEnum from(int choiceNumber) {
         return Arrays.stream(values())
                 .filter(product -> product.choiceNumber == choiceNumber)
                 .findFirst()
                 .orElseThrow(NoSuchFieldError::new);
     }
 
-    public static ProductConstant from(String name) {
+    public static ProductEnum from(String name) {
 
         return Arrays.stream(values())
                 .filter(origin -> origin.name.equals(name))
@@ -47,7 +47,7 @@ public enum ProductConstant {
 
     public static String allMenuString() {
         return Arrays.stream(values())
-                .map(ProductConstant::toMenuString)
+                .map(ProductEnum::toMenuString)
                 .collect(Collectors.joining("\n"));
     }
 }

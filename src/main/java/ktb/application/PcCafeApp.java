@@ -1,12 +1,14 @@
-package ktb.app;
+package ktb.application;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+
 import ktb.constant.ConfigConstant;
 import ktb.constant.StringConstant;
-import ktb.domain.OrderSeat;
-import ktb.domain.Seat;
+import ktb.domain.seat.OrderSeat;
+import ktb.domain.seat.Seat;
+import ktb.service.SeatService;
 
 public class PcCafeApp {
     public static void main(String[] args) {
@@ -17,11 +19,11 @@ public class PcCafeApp {
         }
 
         Scanner scanner = new Scanner(System.in);
-        SeatHandler seatHandler = new SeatHandler(seats, scanner);
+        SeatService seatService = new SeatService(seats, scanner);
 
         System.out.println(StringConstant.TITLE);
 
-        Thread seatThread = new Thread(seatHandler);
+        Thread seatThread = new Thread(seatService);
 
         seatThread.start();
     }

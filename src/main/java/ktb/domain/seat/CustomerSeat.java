@@ -1,6 +1,7 @@
-package ktb.domain;
+package ktb.domain.seat;
 
 import ktb.constant.ConfigConstant;
+import ktb.domain.product.Product;
 
 public class CustomerSeat extends Seat {
     private long startTime;

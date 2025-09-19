@@ -18,16 +18,25 @@
 ```
 src
 ├── app
-│ ├── PcCafeApp.java # 메인 실행 클래스
-│ ├── SeatHandler.java # 좌석 및 주문 관리 로직
-├── constants
-│ ├── StringConstant.java
-│ └── ConfigConstant.java
+│   └── PcCafeApp.java          # 메인 실행 클래스
 ├── domain
-│ ├── Seat.java # 추상 클래스 (좌석 공통 기능)
-│ ├── CustomerSeat.java  
-│ ├── OrderSeat.java
-│ └── Product.java
+│   ├── seat
+│   │   ├── Seat.java           # 추상 좌석
+│   │   ├── CustomerSeat.java
+│   │   └── OrderSeat.java
+│   ├── product
+│   │   ├── Product.java        # 실제 Product 객체
+│   │   └── ProductEnum.java # 메뉴/가격 Enum
+│   └── menu
+│       └── MenuEnum.java
+├── service
+│   └── SeatHandler.java        # 좌석 및 주문 처리 로직
+├── util
+│   └── ThreadPoolUtil.java
+└── constants
+    ├── StringConstant.java
+    └── ConfigConstant.java
+
 ```
 
 --------

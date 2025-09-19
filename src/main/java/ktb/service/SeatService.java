@@ -1,18 +1,19 @@
-package ktb.app;
+package ktb.service;
 
-import ktb.constant.ProductConstant;
+import ktb.domain.menu.MenuEnum;
+import ktb.domain.product.ProductEnum;
 import ktb.constant.StringConstant;
 
 import java.util.List;
 import java.util.Scanner;
-import ktb.domain.Product;
-import ktb.domain.Seat;
+import ktb.domain.product.Product;
+import ktb.domain.seat.Seat;
 
-public class SeatHandler implements Runnable{
+public class SeatService implements Runnable{
     private final Scanner scanner;
     private final List<Seat> seats;
 
-    public SeatHandler(List<Seat> seats, Scanner scanner) {
+    public SeatService(List<Seat> seats, Scanner scanner) {
         this.scanner = scanner;
         this.seats = seats;
     }
@@ -22,18 +23,18 @@ public class SeatHandler implements Runnable{
         boolean running = true;
 
         while (running) {
-            System.out.print(ManageMenuValue.menuString());
+            System.out.print(MenuEnum.menuString());
             String input = scanner.nextLine();
 
             this.handleMenu(input);
-            running = !ManageMenuValue.isExit(input);
+            running = !MenuEnum.isExit(input);
         }
 
         scanner.close();
     }
 
     public void handleMenu(String input) {
-        ManageMenuValue menuValue = ManageMenuValue.from(input);
+        MenuEnum menuValue = MenuEnum.from(input);
 
         if (menuValue == null) {
             System.out.println(StringConstant.INVALID_INPUT);
@@ -85,13 +86,13 @@ public class SeatHandler implements Runnable{
             return;
         }
 
-        System.out.printf(StringConstant.ORDER_MENU, ProductConstant.allMenuString());
+        System.out.printf(StringConstant.ORDER_MENU, ProductEnum.allMenuString());
         int menuChoice = Integer.parseInt(scanner.nextLine());
 
         System.out.print(StringConstant.ENTER_QUANTITY);
         int quantity = Integer.parseInt(scanner.nextLine());
 
-        Product product = new Product(ProductConstant.from(menuChoice), quantity);
+        Product product = new Product(ProductEnum.from(menuChoice), quantity);
 
         seat.addProduct(product);
 

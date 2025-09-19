@@ -1,7 +1,8 @@
-package ktb.domain;
+package ktb.domain.seat;
 
 import java.util.ArrayList;
 import java.util.List;
+import ktb.domain.product.Product;
 
 public class OrderSeat extends CustomerSeat {
     private final List<Product> products = new ArrayList<>();

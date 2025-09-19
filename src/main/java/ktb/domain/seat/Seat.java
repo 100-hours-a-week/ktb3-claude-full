@@ -1,5 +1,7 @@
-package ktb.domain;
+package ktb.domain.seat;
 
+
+import ktb.domain.product.Product;
 
 public abstract class Seat {
     private final int seatNumber;
