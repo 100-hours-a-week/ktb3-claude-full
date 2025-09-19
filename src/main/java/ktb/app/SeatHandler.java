@@ -2,7 +2,6 @@ package ktb.app;
 
 import ktb.constant.ConfigConstant;
 import ktb.constant.StringConstant;
-import ktb.domain.OrderSeat;
 
 import java.util.List;
 import java.util.Scanner;
@@ -23,26 +22,31 @@ public class SeatHandler implements Runnable{
         boolean running = true;
 
         while (running) {
-            System.out.print(StringConstant.MENU);
+            System.out.print(ManageMenuValue.menuString());
             String input = scanner.nextLine();
 
             this.handleMenu(input);
-            running = !isExit(input);
-        }
-    }
-    public void handleMenu(String input) {
-        switch (input) {
-            case "1" -> startSeat();
-            case "2" -> addOrder();
-            case "3" -> stopSeat();
-            case "4" -> showSeats();
-            case "5" -> System.out.println(StringConstant.EXIT_MESSAGE);
-            default -> System.out.println(StringConstant.INVALID_INPUT);
+            running = !ManageMenuValue.isExit(input);
         }
     }
 
-    public boolean isExit(String input) {
-        return "5".equals(input);
+    public void handleMenu(String input) {
+        ManageMenuValue menuValue = ManageMenuValue.from(input);
+
+        if (menuValue == null) {
+            System.out.println(StringConstant.INVALID_INPUT);
+
+            return;
+        }
+
+        switch (menuValue) {
+            case START -> startSeat();
+            case ORDER -> addOrder();
+            case STOP -> stopSeat();
+            case SHOW_SEAT -> showSeats();
+            case EXIT -> System.out.println(StringConstant.EXIT_MESSAGE);
+            default -> System.out.println(StringConstant.INVALID_INPUT);
+        }
     }
 
     private void startSeat() {
