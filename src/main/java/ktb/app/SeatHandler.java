@@ -1,6 +1,7 @@
 package ktb.app;
 
 import ktb.constant.ConfigConstant;
+import ktb.constant.ProductConstant;
 import ktb.constant.StringConstant;
 
 import java.util.List;
@@ -81,27 +82,16 @@ public class SeatHandler implements Runnable{
             return;
         }
 
-        System.out.printf(StringConstant.ORDER_MENU
-                , ConfigConstant.PRICE_DRINK
-                , ConfigConstant.PRICE_COFFEE
-                , ConfigConstant.PRICE_CUPRAMEN);
+        System.out.printf(StringConstant.ORDER_MENU, ProductConstant.allMenuString());
         int menuChoice = Integer.parseInt(scanner.nextLine());
 
         System.out.print(StringConstant.ENTER_QUANTITY);
         int quantity = Integer.parseInt(scanner.nextLine());
 
-        Product product;
-        switch (menuChoice) {
-            case 1 -> product = new Product("음료", ConfigConstant.PRICE_DRINK, quantity);
-            case 2 -> product = new Product("커피", ConfigConstant.PRICE_COFFEE, quantity);
-            case 3 -> product = new Product("컵라면", ConfigConstant.PRICE_CUPRAMEN, quantity);
-            default -> {
-                System.out.println(StringConstant.INVALID_INPUT);
-                return;
-            }
-        }
+        Product product = new Product(ProductConstant.from(menuChoice), quantity);
 
         seat.addProduct(product);
+
         System.out.println(StringConstant.ORDER_ADDED);
     }
 

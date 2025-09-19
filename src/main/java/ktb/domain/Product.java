@@ -1,26 +1,26 @@
 package ktb.domain;
 
+import ktb.constant.ProductConstant;
+
 public class Product {
-    private final String name;
-    private final int price;
+    private final ProductConstant product;
     private final int amount;
 
-    public Product(String name, int price, int amount) {
-        this.name = name;
-        this.price = price;
+    public Product(String name, int amount) {
+        this.product = ProductConstant.from(name);
         this.amount = amount;
     }
 
-    public String getName() {
-        return name;
+    public Product(ProductConstant product, int amount) {
+        this.product = product;
+        this.amount = amount;
     }
 
     public int getTotalPrice() {
-        return price * amount;
+        return product.getTotalPrice(this.amount);
     }
 
-    @Override
-    public String toString() {
-        return name + " x" + amount + " (" + getTotalPrice() + "원)";
+    public String toReceipt() {
+        return product.toReceipt(this.amount);
     }
 }
