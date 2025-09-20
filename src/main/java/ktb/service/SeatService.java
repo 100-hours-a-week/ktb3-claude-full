@@ -59,7 +59,7 @@ public class SeatService implements Runnable{
         int seatNumber = Integer.parseInt(scanner.nextLine()) - 1; // 좌석번호 1부터 시작
 
         Seat seat = seats.get(seatNumber);
-        if (seat.isInUse()) {
+        if (seat.isUse()) {
             System.out.println(StringConstant.SEAT_ALREADY_IN_USE);
             System.out.println();
         } else {
@@ -74,7 +74,7 @@ public class SeatService implements Runnable{
         int seatNumber = Integer.parseInt(scanner.nextLine()) - 1; // 좌석번호 1부터 시작
         Seat seat = seats.get(seatNumber);
 
-        if (!seat.isInUse()) {
+        if (!seat.isUse()) {
             System.out.println(StringConstant.SEAT_NOT_IN_USE);
             System.out.println();
             return;
@@ -104,7 +104,7 @@ public class SeatService implements Runnable{
         int seatNumber = Integer.parseInt(scanner.nextLine()) - 1; // 좌석번호 1부터 시작
 
         Seat seat = seats.get(seatNumber);
-        if (seat.isInUse()) {
+        if (seat.isUse()) {
             int fee = seat.getUsageFee();
             fee += seat.getOrderSummaryPee();
 
@@ -158,7 +158,7 @@ public class SeatService implements Runnable{
             sb.append("좌석 ")
                     .append(seat.getSeatNumber())
                     .append(" : ")
-                    .append(seat.isInUse() ? "사용 중" : "빈 좌석");
+                    .append(seat.isUse() ? "사용 중" : "빈 좌석");
 
             sb.append(" | 주문: ")
                     .append(seat.getOrderSummary());

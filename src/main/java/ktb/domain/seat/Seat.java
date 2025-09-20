@@ -5,15 +5,15 @@ import ktb.domain.product.Product;
 
 public abstract class Seat {
     private final int seatNumber;
-    private boolean isSeat;
+    private boolean isInUse;
 
     public Seat(int seatNumber) {
         this.seatNumber = seatNumber;
-        this.isSeat = false;
+        this.isInUse = false;
     }
 
-    public boolean isInUse() {
-        return this.isSeat;
+    public boolean isUse() {
+        return this.isInUse;
     }
 
     public int getSeatNumber() {
@@ -21,7 +21,7 @@ public abstract class Seat {
     }
 
     public void startUsage() {
-        this.isSeat = true;
+        this.isInUse = true;
     }
 
     public int getUsageFee() {
@@ -29,7 +29,7 @@ public abstract class Seat {
     }
 
     public void stopUsage() {
-        this.isSeat = false;
+        this.isInUse = false;
     }
 
     public abstract void restart();
