@@ -6,7 +6,7 @@ import java.util.Scanner;
 
 import ktb.constant.ConfigConstant;
 import ktb.constant.StringConstant;
-import ktb.domain.seat.OrderSeat;
+import ktb.domain.seat.BasicSeat;
 import ktb.domain.seat.Seat;
 import ktb.service.SeatService;
 
@@ -15,7 +15,7 @@ public class PcCafeApp {
         List<Seat> seats = new ArrayList<>(ConfigConstant.MAX_SEATS);
 
         for (int i = 1; i < ConfigConstant.MAX_SEATS + 1; i++) {
-            seats.add(new OrderSeat(i));
+            seats.add(new BasicSeat(i));
         }
 
         Scanner scanner = new Scanner(System.in);

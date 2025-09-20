@@ -30,8 +30,7 @@ src
 │   │   └── ProductEnum.java   # 메뉴/가격 Enum
 │   └── seat
 │       ├── Seat.java          # 추상 좌석 클래스
-│       ├── CustomerSeat.java  # 고객 좌석 클래스
-│       └── OrderSeat.java     # 주문 좌석 클래스
+│       └── BasicSeat.java     # 고객 좌석 클래스
 ├── service
 │   ├── SeatService.java       # 좌석 처리 로직
 │   └── OrderService.java      # 주문 처리 로직
