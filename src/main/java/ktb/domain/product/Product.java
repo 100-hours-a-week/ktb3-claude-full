@@ -14,6 +14,8 @@ public class Product {
         this.amount = amount;
     }
 
+    public int getAmount() { return this.amount; }
+
     public int getTotalPrice() {
         return product.getTotalPrice(this.amount);
     }

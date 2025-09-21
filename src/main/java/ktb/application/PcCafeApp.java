@@ -8,12 +8,27 @@ import ktb.constant.ConfigConstant;
 import ktb.constant.StringConstant;
 import ktb.domain.seat.BasicSeat;
 import ktb.domain.seat.Seat;
+import ktb.service.ExecutorService;
 import ktb.service.SeatService;
 
 public class PcCafeApp {
     public static void main(String[] args) {
         List<Seat> seats = new ArrayList<>(ConfigConstant.MAX_SEATS);
 
+        multiThreadStart(seats);
+    }
+
+    public static void multiThreadStart(List<Seat> seats) {
+        for (int i = 1; i < ConfigConstant.MAX_SEATS + 1; i++) {
+            seats.add(new BasicSeat(i));
+        }
+
+        Scanner scanner = new Scanner(System.in);
+        ExecutorService executor = new ExecutorService();
+        executor.start(seats, scanner);
+    }
+
+    public static void singleThreadStart(List<Seat> seats) {
         for (int i = 1; i < ConfigConstant.MAX_SEATS + 1; i++) {
             seats.add(new BasicSeat(i));
         }
