@@ -28,7 +28,7 @@ public class BasicSeat extends Seat {
             super.startUsage();
             this.startTime = System.currentTimeMillis();
             this.usageTime = 0;
-            this.restartTime = 0;
+            this.restartTime = startTime;
         } finally {
             lock.writeLock().unlock();
         }
@@ -36,26 +36,19 @@ public class BasicSeat extends Seat {
 
     @Override
     public int getUsageFee() {
-        setUsageTime();
-
         lock.readLock().lock();
         try {
-            long currentUsageTime = this.usageTime / 1_000 / 60;
-
-            return (int) currentUsageTime * ConfigConstant.FEE_PER_MINUTE;
+            long totalUsage = usageTime;
+            
+            if (!isPaused()) {
+                totalUsage += (System.currentTimeMillis() - restartTime);
+            }
+            
+            long minutes = totalUsage / 1000 / 60;
+            return (int) minutes * ConfigConstant.FEE_PER_MINUTE;
         } finally {
             lock.readLock().unlock();
         }
-    }
-
-    private void setUsageTime() {
-        if (restartTime == 0) {
-            usageTime = System.currentTimeMillis() - startTime;
-
-            return;
-        }
-
-        usageTime += (System.currentTimeMillis() - restartTime);
     }
 
     @Override
@@ -63,10 +56,10 @@ public class BasicSeat extends Seat {
         lock.writeLock().lock();
         try {
             super.stopUsage();
-
-            startTime = 0;
-            usageTime = 0;
+            this.startTime = 0;
+            this.usageTime = 0;
             this.restartTime = 0;
+            this.products.clear();
         } finally {
             lock.writeLock().unlock();
         }
@@ -76,6 +69,7 @@ public class BasicSeat extends Seat {
     public void restart() {
         lock.writeLock().lock();
         try {
+            super.restartUsage();
             restartTime = System.currentTimeMillis();
         } finally {
             lock.writeLock().unlock();
@@ -86,16 +80,17 @@ public class BasicSeat extends Seat {
     public void pauseTemporary() {
         lock.writeLock().lock();
         try {
-            setUsageTime();
-            restartTime = 0;
+            super.pauseUsage();
+            usageTime += (System.currentTimeMillis() - restartTime);
         } finally {
             lock.writeLock().unlock();
         }
     }
+
     @Override
     public boolean canOrder() {
         return true;
-    };
+    }
 
     @Override
     public void addProduct(Product product) {
