@@ -48,6 +48,6 @@ public enum ProductEnum {
     public static String allMenuString() {
         return Arrays.stream(values())
                 .map(ProductEnum::toMenuString)
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.joining());
     }
 }
