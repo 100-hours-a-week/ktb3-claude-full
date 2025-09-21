@@ -74,10 +74,10 @@ src
 
 ## 📌 UML 다이어그램
 
-### 📂 Domain 구조
+### 📂 Class 구조
 ![Domain UML](docs/domain.png)
 
-### 📂 Application 구조
+### 📂 RunTime 플로우
 ![App UML](docs/app.png)
 
 ---
