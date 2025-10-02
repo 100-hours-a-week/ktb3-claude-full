@@ -8,6 +8,7 @@ public class StringConstant {
     public static final String SEAT_RESTARTED = "좌석 사용을 재시작했습니다.";
     public static final String SEAT_PAUSED = "좌석 사용을 일시 중지하였습니다.";
     public static final String SEAT_IN_USE = "해당 좌석은 이미 사용 중입니다.";
+    public static final String SEAT_IN_PAUSE = "해당 좌석은 이미 일시 중지 중입니다.";
     public static final String SEAT_NOT_IN_USE = "해당 좌석은 사용 중이 아닙니다.";
     public static final String BILL_PRINTED = "요금 정산이 완료되었습니다.";
     public static final String INVALID_INPUT = "잘못된 입력입니다.";
