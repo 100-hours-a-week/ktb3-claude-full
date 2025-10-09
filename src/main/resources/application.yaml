@@ -1,0 +1,19 @@
+session:
+  store: in-memory          # or redis
+  ttl-seconds: 1800         # 30분 (TTL)
+  cleanup-interval-minutes: 5
+
+cookie:
+  access-token-name: ACCESS_TOKEN
+  refresh-token-name: REFRESH_TOKEN
+  session-id-name: SESSION_ID
+  path: /
+  domain: localhost
+  secure: false
+  http-only: true
+  same-site: Strict
+
+jwt:
+  secret: {Secret_Key}
+  access-expire-minutes: 60     # 1시간
+  refresh-expire-days: 7        # 7일
