@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 
 public record CommentRequest(
         @NotNull
-        Long userId,
+        Long userAccountId,
 
         @NotNull
         String content

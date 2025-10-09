@@ -7,7 +7,7 @@ public record CommentDeleteRequest(
         Long articleId,
 
         @NotNull
-        Long userId,
+        Long userAccountId,
 
         @NotNull
         Long commentId
