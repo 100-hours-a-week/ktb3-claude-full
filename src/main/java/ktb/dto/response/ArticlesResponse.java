@@ -13,4 +13,7 @@ public record ArticlesResponse<T>(
         @NotNull
         PageInfoDto pageInfo
 ) {
+        public static <T> ArticlesResponse<T> of(String message, Collection<T> data, PageInfoDto pageInfo) {
+                return new ArticlesResponse<>(message, data, pageInfo);
+        }
 }

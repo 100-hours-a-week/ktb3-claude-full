@@ -7,11 +7,22 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ArticleComment {
-    private final Long commentSeq;
-    private final Long articleSeq;
-    private final String content;
+    private final Long id;
+    private final Long articleId;
+    private String content;
 
-    private final Long createBy;
+    private final UserAccount createBy;
     private final LocalDateTime createAt;
-    private final LocalDateTime updateAt;
+    private LocalDateTime updateAt;
+
+    public static ArticleComment init(Long articleId, Long commentId, String content, UserAccount user) {
+        return new ArticleComment(
+                commentId, articleId, content, user, LocalDateTime.now(), null
+        );
+    }
+
+    public void update(String newContent) {
+        this.content = newContent;
+        this.updateAt = LocalDateTime.now();
+    }
 }

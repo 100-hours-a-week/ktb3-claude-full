@@ -1,0 +1,76 @@
+package ktb.repository;
+
+import java.util.List;
+import java.util.Optional;
+import ktb.db.article.ArticleData;
+import ktb.domain.Article;
+import ktb.domain.ArticleComment;
+import ktb.domain.UserAccount;
+import ktb.dto.ArticleDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Primary;
+
+@Primary
+@RequiredArgsConstructor
+public class ArticleRepositoryImpl implements ArticleRepository{
+
+    @Override
+    public Optional<Article> findById(Long id) {
+        return ArticleData.findById(id);
+    }
+
+    @Override
+    public Optional<Article> findByTitle(String title) {
+        return ArticleData.findByTitle(title);
+    }
+
+    @Override
+    public List<Article> findSlice(Long cursorId, int size) {
+        return ArticleData.findSlice(cursorId, size);
+    }
+
+    @Override
+    public Optional<Long> getNextCursor(Long lastId) {
+        return ArticleData.getNextCursor(lastId);
+    }
+
+    @Override
+    public void like(Long id) {
+        ArticleData.like(id);
+    }
+
+    @Override
+    public void save(ArticleDto dto) {
+        ArticleData.save(dto);
+    }
+
+    @Override
+    public void update(Article originArticle, Article updateArticle) {
+        ArticleData.update(originArticle, updateArticle);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        ArticleData.deleteById(id);
+    }
+
+    @Override
+    public void updateContent(Long id, String newTitle, String newContent) {
+        ArticleData.updateContent(id, newTitle, newContent);
+    }
+
+    @Override
+    public ArticleComment addComment(Long articleId, String content, UserAccount user) {
+        return ArticleData.addComment(articleId, content, user);
+    }
+
+    @Override
+    public void updateComment(Long articleId, Long commentId, String newContent) {
+        ArticleData.updateComment(articleId, commentId, newContent);
+    }
+
+    @Override
+    public void deleteComment(Long articleId, Long commentId) {
+        ArticleData.deleteComment(articleId, commentId);
+    }
+}
