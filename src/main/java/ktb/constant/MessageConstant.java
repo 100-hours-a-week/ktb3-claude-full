@@ -5,6 +5,7 @@ public final class MessageConstant {
         public static final String LOGIN = "login_success";
         public static final String SIGNUP = "user_register_success";
         public static final String RETRIEVAL_USER = "user_retrieval_success";
+        public static final String RETRIEVAL_POST = "post_retrieval_success";
     }
 
     public static final class Password {
@@ -37,5 +38,15 @@ public final class MessageConstant {
     public static final class User {
         public static final String LOGIN_FAILED = "아이디 또는 비밀번호를 확인해주세요.";
         public static final String NON_EXIST = "이미 삭제된 유저 입니다.";
+    }
+
+    public static final class ArticleMessage {
+        public static final String NON_EXIST = "게시글이 존재하지 않습니다.";
+        public static final String DUPLICATE = "이미 존재하는 게시글입니다.";
+    }
+
+    public static final class CommentMessage {
+        public static final String NON_EXIST = "존재하지 않는 댓글입니다.";
+        public static final String EMPTY_CONTENT = "댓글 내용을 입력해주세요.";
     }
 }
