@@ -6,9 +6,13 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UserAccount {
-    private final Long userAccountSeq;
+    private Long id;
     private final String email;
     private final String nickName;
     private final String password;
     private final String profileImagePath;
+
+    public void initId(Long id) {
+        this.id = id;
+    }
 }

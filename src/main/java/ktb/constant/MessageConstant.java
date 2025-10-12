@@ -1,6 +1,11 @@
 package ktb.constant;
 
 public final class MessageConstant {
+    public static final class Success {
+        public static final String LOGIN = "login_success";
+        public static final String SIGNUP = "user_register_success";
+        public static final String RETRIEVAL_USER = "user_retrieval_success";
+    }
 
     public static final class Password {
         public static final String REQUIRED = "비밀번호를 입력해주세요.";
@@ -12,11 +17,13 @@ public final class MessageConstant {
     public static final class Email {
         public static final String REQUIRED = "이메일을 입력하세요.";
         public static final String PATTERN = "올바른 이메일 주소 형식을 입력해주세요. (예: example@example.com)";
+        public static final String DUPLICATE = "중복된 이메일 입니다.";
     }
 
     public static final class Nickname {
         public static final String REQUIRED = "닉네임을 입력해주세요.";
         public static final String LENGTH_EXCEEDED = "닉네임은 최대 10자까지 작성 가능합니다.";
+        public static final String DUPLICATE = "중복된 닉네임 입니다.";
     }
 
     public static final class UserImage {
@@ -26,5 +33,9 @@ public final class MessageConstant {
     public static final class Common {
         public static final String NO_WHITESPACE_ALLOWED = "띄어쓰기를 제거해주세요.";
     }
-}
 
+    public static final class User {
+        public static final String LOGIN_FAILED = "아이디 또는 비밀번호를 확인해주세요.";
+        public static final String NON_EXIST = "이미 삭제된 유저 입니다.";
+    }
+}
