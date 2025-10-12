@@ -12,6 +12,7 @@ import ktb.constant.MessageConstant.Nickname;
 import ktb.constant.MessageConstant.Password;
 import ktb.constant.MessageConstant.UserImage;
 import ktb.constant.RegexpConstant;
+import ktb.dto.SignUpUserDto;
 
 public record SignupRequest (
         @NotNull(message = MessageConstant.Email.REQUIRED)
@@ -31,4 +32,7 @@ public record SignupRequest (
         @NotNull(message = UserImage.REQUIRED)
         String profileImagePath
 ) {
+        public SignUpUserDto from() {
+                return new SignUpUserDto(email, password, nickname, profileImagePath);
+        }
 }
