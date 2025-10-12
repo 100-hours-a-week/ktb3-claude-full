@@ -66,11 +66,15 @@ public final class UserData {
     public static void save(UserAccount user) {
         writeLock.lock();
         try {
+            //유효성 검사
+            validateDuplicate(user);
+
             // ID 자동 생성
             Long newId = idGenerator.incrementAndGet();
             user.initId(newId);
 
             // 저장 및 인덱스 생성
+            store.put(newId, user);
             saveIndex(user);
 
         } finally {
@@ -93,6 +97,9 @@ public final class UserData {
 
         writeLock.lock();
         try {
+            // 유효성 검사
+            validateDuplicate(updateUser);
+
             // 인덱스 정리 (기존 값 제거)
             removeIndex(originUser);
 
@@ -121,7 +128,7 @@ public final class UserData {
         }
     }
 
-    public static void validateDuplicate(UserAccount user) throws IllegalArgumentException{
+    private static void validateDuplicate(UserAccount user) throws IllegalArgumentException{
         // 이미 등록된 이메일 방지
         if (emailIndex.containsKey(user.getEmail())) {
             throw new IllegalArgumentException(Email.DUPLICATE);

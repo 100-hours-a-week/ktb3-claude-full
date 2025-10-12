@@ -21,14 +21,12 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public UserAccount save(UserAccount user) {
-        UserData.validateDuplicate(user);
         UserData.save(user);
         return user;
     }
 
     @Override
     public void update(UserAccount originUser, UserAccount updateUser) {
-        UserData.validateDuplicate(updateUser);
         UserData.update(originUser, updateUser);
     }
 
