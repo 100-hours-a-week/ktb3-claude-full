@@ -8,10 +8,8 @@ import ktb.domain.UserAccount;
 import ktb.dto.ArticleDto;
 import ktb.dto.PageInfoDto;
 import ktb.dto.SaveArticleDto;
-import ktb.exception.AuthenticateException;
 import ktb.exception.AuthorizationException;
 import ktb.repository.ArticleRepository;
-import ktb.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +18,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ArticleService {
     private final ArticleRepository articleRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     public Slice<ArticleDto> findAll(PageInfoDto pageInfo) {
         Long cursorId = articleRepository.getNextCursor(pageInfo.getEndCursor()).orElseThrow(NoSuchElementException::new);
@@ -32,12 +30,9 @@ public class ArticleService {
     }
 
     public void save(SaveArticleDto updated) {
-        UserAccount user =
-                userRepository
-                        .findById(updated.userId())
-                        .orElseThrow(AuthenticateException::new);
+        UserAccount user = userService.getUserInfo(updated.userId()).toEntity();
 
-        Article origin = articleRepository.findById(updated.userId()).orElse(null);
+        Article origin = articleRepository.findById(updated.id()).orElse(null);
         // Article 변경
         if (origin != null) {
             if (!origin.equalUserId(updated.userId())) {
