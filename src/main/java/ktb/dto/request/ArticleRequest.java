@@ -13,6 +13,9 @@ public record ArticleRequest(
         String content,
 
         @Nullable
-        String articleImagePath
+        String articleImagePath,
+
+        @NotNull
+        Long userId // Session 도입 시 제거 예정
 ) {
 }

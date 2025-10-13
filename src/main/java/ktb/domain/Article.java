@@ -22,14 +22,30 @@ public class Article {
     private final ArticleMeta meta;
     private final AtomicLong commentSeq;
     private final ConcurrentLinkedDeque<ArticleComment> comments;
+    private final String imagePath;
 
-    public static Article create(Long id, String title, String content, UserAccount user) {
+    public static Article create(Long id, String title, String content, UserAccount user, String imagePath) {
         return new Article(
                 id, title, content, user,
                 ArticleMeta.init(id),
                 new AtomicLong(0),
-                new ConcurrentLinkedDeque<>()
+                new ConcurrentLinkedDeque<>(),
+                imagePath
         );
+    }
+
+    public static Article create(Long id,Article article) {
+        return new Article(
+                id, article.title, article.content, article.createBy,
+                ArticleMeta.init(id),
+                new AtomicLong(0),
+                new ConcurrentLinkedDeque<>(),
+                article.imagePath
+        );
+    }
+
+    public boolean equalUserId(Long id) {
+        return this.createBy.getId().equals(id);
     }
 
     // 댓글 추가
@@ -85,5 +101,9 @@ public class Article {
 
     public void updateTimestamp() {
         this.meta.updateTimestamp();
+    }
+
+    public Article deepCopy() {
+        return new Article(this.getId(), this.getTitle(), this.getContent(), this.createBy, this.meta, this.commentSeq, this.comments, this.imagePath);
     }
 }

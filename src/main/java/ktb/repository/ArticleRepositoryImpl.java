@@ -1,7 +1,7 @@
 package ktb.repository;
 
-import java.util.List;
 import java.util.Optional;
+import ktb.common.pagination.Slice;
 import ktb.db.article.ArticleData;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
@@ -9,8 +9,10 @@ import ktb.domain.UserAccount;
 import ktb.dto.ArticleDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
 
 @Primary
+@Repository
 @RequiredArgsConstructor
 public class ArticleRepositoryImpl implements ArticleRepository{
 
@@ -25,8 +27,8 @@ public class ArticleRepositoryImpl implements ArticleRepository{
     }
 
     @Override
-    public List<Article> findSlice(Long cursorId, int size) {
-        return ArticleData.findSlice(cursorId, size);
+    public Slice<Article> findAll(Long cursorId, int size) {
+        return ArticleData.findAll(cursorId, size);
     }
 
     @Override
@@ -42,6 +44,11 @@ public class ArticleRepositoryImpl implements ArticleRepository{
     @Override
     public void save(ArticleDto dto) {
         ArticleData.save(dto);
+    }
+
+    @Override
+    public void save(Article article) {
+        ArticleData.save(article);
     }
 
     @Override
