@@ -3,7 +3,6 @@ package ktb.dto;
 import ktb.domain.UserAccount;
 import lombok.Getter;
 
-@Getter
 public record UserAccountDto(
         Long id,
         String email,

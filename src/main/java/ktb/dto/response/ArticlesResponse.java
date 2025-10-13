@@ -2,7 +2,7 @@ package ktb.dto.response;
 
 import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
-import ktb.dto.PageInfoDto;
+import ktb.common.pagination.PageInfo;
 
 public record ArticlesResponse<T>(
         @NotNull
@@ -11,9 +11,9 @@ public record ArticlesResponse<T>(
         Collection<T> data,
 
         @NotNull
-        PageInfoDto pageInfo
+        PageInfo pageInfo
 ) {
-        public static <T> ArticlesResponse<T> of(String message, Collection<T> data, PageInfoDto pageInfo) {
+        public static <T> ArticlesResponse<T> of(String message, Collection<T> data, PageInfo pageInfo) {
                 return new ArticlesResponse<>(message, data, pageInfo);
         }
 }
