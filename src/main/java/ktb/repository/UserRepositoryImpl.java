@@ -5,8 +5,10 @@ import ktb.db.user.UserData;
 import ktb.domain.UserAccount;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Repository;
 
 @Primary
+@Repository
 @RequiredArgsConstructor
 public class UserRepositoryImpl implements UserRepository {
     @Override
