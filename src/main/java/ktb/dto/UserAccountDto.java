@@ -1,7 +1,6 @@
 package ktb.dto;
 
 import ktb.domain.UserAccount;
-import lombok.Getter;
 
 public record UserAccountDto(
         Long id,
@@ -12,5 +11,8 @@ public record UserAccountDto(
     public static UserAccountDto from(UserAccount userAccount) {
         return new UserAccountDto(userAccount.getId(), userAccount.getEmail(), userAccount.getNickName(),
                 userAccount.getProfileImagePath());
+    }
+    public UserAccount toEntity() {
+        return new UserAccount(id, email, nickName, null, profileImagePath);
     }
 }
