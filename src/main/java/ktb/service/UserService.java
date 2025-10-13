@@ -4,6 +4,7 @@ import java.util.NoSuchElementException;
 import ktb.domain.UserAccount;
 import ktb.dto.SignUpUserDto;
 import ktb.dto.UserAccountDto;
+import ktb.exception.AuthenticateException;
 import ktb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,5 +51,15 @@ public class UserService {
                 .orElseThrow(NoSuchElementException::new);
 
         userRepository.delete(id);
+    }
+
+    public void authentication(Long id) {
+        UserAccount user = userRepository
+                                .findById(id)
+                                .orElseThrow(AuthenticateException::new);
+    }
+
+    public UserAccountDto getUserInfo(Long id) {
+        return UserAccountDto.from(userRepository.findById(id).orElseThrow(AuthenticateException::new));
     }
 }
