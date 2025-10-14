@@ -17,7 +17,6 @@ import ktb.constant.MessageConstant.ArticleMessage;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
 import ktb.domain.UserAccount;
-import ktb.dto.ArticleDto;
 import ktb.exception.ConflictDuplicationException;
 
 public final class ArticleData {
@@ -40,7 +39,7 @@ public final class ArticleData {
             Article article = store.get(id);
             if (article == null) return Optional.empty();
 
-            article.incrementView(); // ✅ 조회수 증가
+            article.incrementView(); // ✅ 조회수 증가 //TODO: SRP 위배
             return Optional.of(article);
         } finally {
             readLock.unlock();
@@ -112,24 +111,6 @@ public final class ArticleData {
     // ==============================
     // ✅ 저장 계열 (WriteLock)
     // ==============================
-    public static void save(ArticleDto dto) {
-        writeLock.lock();
-        try {
-            // ID 자동 생성
-            Long newId = articleSeq.incrementAndGet();
-            Article article = dto.toEntity(newId);
-
-            //유효성 검사
-            validateDuplicate(article);
-
-            // 저장 및 인덱스 생성
-            store.put(newId, article);
-            saveIndex(article);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
     public static void save(Article article) {
         writeLock.lock();
         try {
@@ -157,37 +138,6 @@ public final class ArticleData {
     }
 
     // ==============================
-    // ✅ 수정 계열 (WriteLock)
-    // ==============================
-    public static void update(Article originArticle, Article updateArticle) {
-        readLock.lock();
-        try {
-            if (originArticle.getId() == null || !store.containsKey(originArticle.getId())) {
-                throw new NoSuchElementException(ArticleMessage.NON_EXIST);
-            }
-        } finally {
-            readLock.unlock();
-        }
-
-        writeLock.lock();
-        try {
-            // 유효성 검사
-            validateDuplicate(updateArticle);
-
-            // 인덱스 정리 (기존 값 제거)
-            removeIndex(originArticle);
-
-            // store 갱신
-            store.put(updateArticle.getId(), updateArticle);
-
-            // 새 인덱스 등록
-            saveIndex(updateArticle);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
-    // ==============================
     // ✅ 삭제 계열 (WriteLock)
     // ==============================
     public static void deleteById(Long id) {
@@ -199,21 +149,6 @@ public final class ArticleData {
             }
         } finally {
             writeLock.unlock();
-        }
-    }
-
-    // 제목/내용 수정
-    public static void updateContent(Long id, String newTitle, String newContent) {
-        readLock.lock();
-        try {
-            Article a = store.get(id);
-            if (a == null) {
-                throw new NoSuchElementException(ArticleMessage.NON_EXIST);
-            }
-            a.update(newTitle, newContent);
-            a.updateTimestamp();
-        } finally {
-            readLock.unlock();
         }
     }
 

@@ -6,7 +6,6 @@ import ktb.db.article.ArticleData;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
 import ktb.domain.UserAccount;
-import ktb.dto.ArticleDto;
 import ktb.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
@@ -42,10 +41,6 @@ public class ArticleRepositoryImpl implements ArticleRepository {
         ArticleData.like(id);
     }
 
-    @Override
-    public void save(ArticleDto dto) {
-        ArticleData.save(dto);
-    }
 
     @Override
     public void save(Article article) {
@@ -53,18 +48,8 @@ public class ArticleRepositoryImpl implements ArticleRepository {
     }
 
     @Override
-    public void update(Article originArticle, Article updateArticle) {
-        ArticleData.update(originArticle, updateArticle);
-    }
-
-    @Override
     public void deleteById(Long id) {
         ArticleData.deleteById(id);
-    }
-
-    @Override
-    public void updateContent(Long id, String newTitle, String newContent) {
-        ArticleData.updateContent(id, newTitle, newContent);
     }
 
     @Override
