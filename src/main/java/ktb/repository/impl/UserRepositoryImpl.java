@@ -1,8 +1,9 @@
-package ktb.repository;
+package ktb.repository.impl;
 
 import java.util.Optional;
 import ktb.db.user.UserData;
 import ktb.domain.UserAccount;
+import ktb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
