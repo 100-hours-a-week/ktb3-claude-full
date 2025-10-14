@@ -1,5 +1,7 @@
 package ktb.dto;
 
+import ktb.domain.Article;
+import ktb.domain.UserAccount;
 import ktb.dto.request.ArticlePatchRequest;
 import ktb.dto.request.ArticleRequest;
 
@@ -19,5 +21,9 @@ public record SaveArticleDto(
 
     public static SaveArticleDto of(Long id, ArticlePatchRequest request) {
         return new SaveArticleDto(id, request.title(), request.content(), request.articleImagePath(), request.userId());
+    }
+
+    public Article toEntity(UserAccount user) {
+        return Article.create(this.id, this.title, this.content, user, this.articleImagePath);
     }
 }

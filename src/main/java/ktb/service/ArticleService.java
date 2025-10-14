@@ -45,23 +45,24 @@ public class ArticleService {
     public void save(SaveArticleDto updated) {
         UserAccount user = userService.getUserInfo(updated.userId()).toEntity();
 
-        Article origin = articleRepository.findById(updated.id()).orElse(null);
-        // Article 변경
-        if (origin != null) {
-            if (!origin.equalUserId(updated.userId())) {
-                throw new AuthorizationException(); // 403Error
+        // Article 내용 변경
+        if (updated.id() != null) {
+            Article origin = articleRepository.findById(updated.id()).orElse(null);
+
+            if (origin != null) {
+                if (!origin.equalUserId(updated.userId())) {
+                    throw new AuthorizationException(); // 403 Error
+                }
+
+                origin.update(updated.title(), updated.content());
+                articleRepository.save(origin);
+
+                return;
             }
-
-            origin.update(updated.title(), updated.content());
-            articleRepository.save(origin);
-
-            return;
         }
 
         // Article 신규 생성
-        Article article =
-                ArticleDto.of(updated.title(), updated.content(), user, updated.articleImagePath())
-                        .toEntity();
+        Article article = updated.toEntity(user);
 
         articleRepository.save(article);
     }
