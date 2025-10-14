@@ -14,6 +14,7 @@ import ktb.constant.MessageConstant.Nickname;
 import ktb.constant.MessageConstant.User;
 import ktb.domain.UserAccount;
 
+import ktb.exception.ConflictDuplicationException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
@@ -128,15 +129,15 @@ public final class UserData {
         }
     }
 
-    private static void validateDuplicate(UserAccount user) throws IllegalArgumentException{
+    private static void validateDuplicate(UserAccount user) throws ConflictDuplicationException{
         // 이미 등록된 이메일 방지
         if (emailIndex.containsKey(user.getEmail())) {
-            throw new IllegalArgumentException(Email.DUPLICATE);
+            throw new ConflictDuplicationException(Email.DUPLICATE);
         }
 
         // 이미 등록된 닉네임 방지
         if(nickNameIndex.containsKey(user.getNickName())) {
-            throw new IllegalArgumentException(Nickname.DUPLICATE);
+            throw new ConflictDuplicationException(Nickname.DUPLICATE);
         }
     }
 

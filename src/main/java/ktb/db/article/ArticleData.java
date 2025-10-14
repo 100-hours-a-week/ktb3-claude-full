@@ -18,6 +18,7 @@ import ktb.domain.Article;
 import ktb.domain.ArticleComment;
 import ktb.domain.UserAccount;
 import ktb.dto.ArticleDto;
+import ktb.exception.ConflictDuplicationException;
 
 public final class ArticleData {
     private static final NavigableMap<Long, Article> store = new ConcurrentSkipListMap<>();
@@ -269,9 +270,9 @@ public final class ArticleData {
         }
     }
 
-    private static void validateDuplicate(Article article) throws IllegalArgumentException{
+    private static void validateDuplicate(Article article) throws ConflictDuplicationException {
         if (store.containsKey(article.getId())) {
-            throw new IllegalArgumentException(ArticleMessage.DUPLICATE);
+            throw new ConflictDuplicationException(ArticleMessage.DUPLICATE);
         }
     }
 

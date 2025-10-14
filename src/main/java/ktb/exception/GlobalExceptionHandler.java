@@ -51,6 +51,14 @@ public class GlobalExceptionHandler {
                 .body(CommonResponse.of(ae.getMessage()));
     }
 
+    @ExceptionHandler(ConflictDuplicationException.class)
+    public ResponseEntity<CommonResponse<Void>> handlerConflictException(ConflictDuplicationException ce) {
+        log.warn("[{}] Duplicate : {}", HttpStatus.CONFLICT, ce.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(CommonResponse.of(ce.getMessage()));
+    }
+
     private String getClientIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
