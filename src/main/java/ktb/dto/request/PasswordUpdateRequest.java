@@ -1,6 +1,5 @@
 package ktb.dto.request;
 
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
@@ -16,8 +15,4 @@ public record PasswordUpdateRequest(
         @NotBlank(message = Password.CONFIRMATION_REQUIRED)
         String confirmPassword
 ) {
-    @AssertTrue(message = Password.CONFIRMATION_MISMATCH)
-    public boolean isPasswordMatched() {
-        return password.equals(confirmPassword);
-    }
 }
