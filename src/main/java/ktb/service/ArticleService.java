@@ -12,6 +12,7 @@ import ktb.dto.SaveArticleDto;
 import ktb.dto.response.ArticleDetailDto;
 import ktb.dto.response.ArticleSimpleDto;
 import ktb.exception.AuthorizationException;
+import ktb.exception.article.NoExistArticleException;
 import ktb.repository.ArticleRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -34,11 +35,11 @@ public class ArticleService {
     }
 
     public ArticleDto findById(Long articleId) {
-        return ArticleDto.from(articleRepository.findById(articleId).orElseThrow(NoSuchElementException::new));
+        return ArticleDto.from(articleRepository.findById(articleId).orElseThrow(NoExistArticleException::new));
     }
 
     public ArticleDetailDto findByIdDetail(Long articleId) {
-        Article article = articleRepository.findById(articleId).orElseThrow(NoSuchElementException::new);
+        Article article = articleRepository.findById(articleId).orElseThrow(NoExistArticleException::new);
         return ArticleDetailDto.from(article);
     }
 
