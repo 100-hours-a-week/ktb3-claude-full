@@ -3,7 +3,9 @@ package ktb.service;
 import ktb.domain.UserAccount;
 import ktb.dto.SignUpUserDto;
 import ktb.dto.UserAccountDto;
+import ktb.dto.request.PasswordUpdateRequest;
 import ktb.exception.AuthenticateException;
+import ktb.exception.user.MisMatchPasswordException;
 import ktb.exception.user.NonExistUserException;
 import ktb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,12 +38,15 @@ public class UserService {
         userRepository.save(existUser);
     }
 
-    public void updatePassword(Long id, String password) {
+    public void updatePassword(Long id, PasswordUpdateRequest request) {
+        if (!request.password().equals(request.confirmPassword())) {
+            throw new MisMatchPasswordException();
+        }
         UserAccount existUser =
                 userRepository.findById(id)
                         .orElseThrow(NonExistUserException::new);
 
-        existUser.changePassword(password);
+        existUser.changePassword(request.password());
 
         userRepository.save(existUser);
     }

@@ -66,7 +66,7 @@ public class UserController {
             @PathVariable Long id,
             @Valid @RequestBody PasswordUpdateRequest request
     ) {
-        userService.updatePassword(id, request.password());
+        userService.updatePassword(id, request);
 
         return ResponseEntity.noContent().build();
     }
