@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 
 import ktb.common.pagination.Slice;
 import ktb.constant.MessageConstant.ArticleMessage;
@@ -33,10 +34,10 @@ public final class ArticleData {
     // ==============================
     // ✅ 조회 계열 (ReadLock)
     // ==============================
-    public static Optional<Article> findById(Long id) {
+    private static Optional<Article> findArticleBy(Supplier<Article> supplier) {
         readLock.lock();
         try {
-            Article article = store.get(id);
+            Article article = supplier.get();
             if (article == null) return Optional.empty();
 
             article.incrementView(); // ✅ 조회수 증가 //TODO: SRP 위배
@@ -46,13 +47,12 @@ public final class ArticleData {
         }
     }
 
+    public static Optional<Article> findById(Long id) {
+        return findArticleBy(() -> store.get(id));
+    }
+
     public static Optional<Article> findByTitle(String title) {
-        readLock.lock();
-        try {
-            return Optional.ofNullable(titleIndex.get(title));
-        } finally {
-            readLock.unlock();
-        }
+        return findArticleBy(() -> titleIndex.get(title));
     }
 
     // ==============================
