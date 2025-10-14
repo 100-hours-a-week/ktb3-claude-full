@@ -35,7 +35,7 @@ public class ArticleController {
 
     @GetMapping("/articles")
     public ResponseEntity<ArticlesResponse<ArticleSimpleDto>> getAll(@Valid @RequestBody AllArticleRetrieveRequest request) {
-        PageInfoDto pageInfo = PageInfoDto.of(request.after(), 10);
+        PageInfoDto pageInfo = PageInfoDto.of(request.after(), request.limit());
 
         Slice<ArticleSimpleDto> page = articleService.findAll(pageInfo);
 
