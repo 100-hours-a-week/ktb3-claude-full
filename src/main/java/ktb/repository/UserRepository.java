@@ -9,6 +9,5 @@ public interface UserRepository {
     Optional<UserAccount> findById(Long id);
     Optional<UserAccount> findByEmail(String email);
     UserAccount save(UserAccount user);
-    void update(UserAccount originUser, UserAccount updateUser);
     void delete(Long id);
 }

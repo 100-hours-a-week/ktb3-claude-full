@@ -9,21 +9,21 @@ import lombok.Getter;
 public class UserAccount {
     private Long id;
     private final String email;
-    private final String nickName;
-    private final String password;
-    private final String profileImagePath;
+    private String nickName;
+    private String password;
+    private String profileImagePath;
 
     public void initId(Long id) {
         this.id = id;
     }
 
 
-    public UserAccount changeNickName(String nickName) {
-        return new UserAccount(this.id, this.email, nickName, this.password, this.profileImagePath);
+    public void changeNickName(String nickName) {
+        this.nickName = nickName;
     }
 
-    public UserAccount changePassword(String password) {
-        return new UserAccount(this.id, this.email, this.nickName, password, this.profileImagePath);
+    public void changePassword(String password) {
+        this.password = password;
     }
 
     public boolean equals(Object o) {
