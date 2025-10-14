@@ -7,19 +7,14 @@ import ktb.domain.Article;
 import ktb.domain.ArticleComment;
 import ktb.domain.UserAccount;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ArticleDto {
-    private final Long id;
-    private final String title;
-    private final String content;
-    private final UserAccount user;
-    private final List<ArticleComment> comments;
-    private final String imagePath;
+public record ArticleDto(
+         Long id,
+         String title,
+         String content,
+         UserAccount user,
+         List<ArticleComment> comments,
+         String imagePath
+) {
     public Article toEntity() { return Article.create(null, this.title, this.content, this.user, this.imagePath); }
 
     public Article toEntity(Long id) {

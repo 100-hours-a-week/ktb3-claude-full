@@ -21,8 +21,8 @@ public class ArticleService {
     private final UserService userService;
 
     public Slice<ArticleDto> findAll(PageInfoDto pageInfo) {
-        Long cursorId = articleRepository.getNextCursor(pageInfo.getEndCursor()).orElseThrow(NoSuchElementException::new);
-        return ArticleDto.from(articleRepository.findAll(cursorId, pageInfo.getSize()));
+        Long cursorId = articleRepository.getNextCursor(pageInfo.endCursor()).orElseThrow(NoSuchElementException::new);
+        return ArticleDto.from(articleRepository.findAll(cursorId, pageInfo.size()));
     }
 
     public ArticleDto findById(Long articleId) {
