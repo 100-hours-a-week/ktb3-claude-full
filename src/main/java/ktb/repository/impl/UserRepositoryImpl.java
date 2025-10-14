@@ -29,11 +29,6 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public void update(UserAccount originUser, UserAccount updateUser) {
-        UserData.update(originUser, updateUser);
-    }
-
-    @Override
     public void delete(Long id) {
         UserData.deleteById(id);
     }

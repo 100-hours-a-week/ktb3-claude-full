@@ -25,7 +25,7 @@ public final class UserData {
     private static final Map<String, UserAccount> nickNameIndex = new ConcurrentHashMap<>();
 
     // ✅ ID 자동 증가
-    private static final AtomicLong idGenerator = new AtomicLong(0);
+    private static final AtomicLong userSeq = new AtomicLong(0);
 
     private static final ReadWriteLock lock = new ReentrantReadWriteLock();
     private static final Lock readLock = lock.readLock();
@@ -70,14 +70,25 @@ public final class UserData {
             //유효성 검사
             validateDuplicate(user);
 
-            // ID 자동 생성
-            Long newId = idGenerator.incrementAndGet();
+            // 변경(UPDATE)
+            if (user.getId() != null) {
+                Long id = user.getId();
+                UserAccount origin = store.get(id);
+                removeIndex(origin);
+
+                store.put(id, user);
+                saveIndex(user);
+
+                return;
+            }
+
+            // 신규 생성(INSERT)
+            Long newId = userSeq.incrementAndGet();
             user.initId(newId);
 
-            // 저장 및 인덱스 생성
+
             store.put(newId, user);
             saveIndex(user);
-
         } finally {
             writeLock.unlock();
         }

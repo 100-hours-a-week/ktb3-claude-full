@@ -31,9 +31,9 @@ public class UserService {
                 userRepository.findById(id)
                         .orElseThrow(NoSuchElementException::new);
 
-        UserAccount updateUser = existUser.changeNickName(nickName);
+        existUser.changeNickName(nickName);
 
-        userRepository.update(existUser, updateUser);
+        userRepository.save(existUser);
     }
 
     public void updatePassword(Long id, String password) {
@@ -41,9 +41,9 @@ public class UserService {
                 userRepository.findById(id)
                         .orElseThrow(NoSuchElementException::new);
 
-        UserAccount updateUser = existUser.changePassword(password);
+        existUser.changePassword(password);
 
-        userRepository.update(existUser, updateUser);
+        userRepository.save(existUser);
     }
 
     public void delete(Long id) {
