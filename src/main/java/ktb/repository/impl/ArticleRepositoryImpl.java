@@ -1,4 +1,4 @@
-package ktb.repository;
+package ktb.repository.impl;
 
 import java.util.Optional;
 import ktb.common.pagination.Slice;
@@ -7,6 +7,7 @@ import ktb.domain.Article;
 import ktb.domain.ArticleComment;
 import ktb.domain.UserAccount;
 import ktb.dto.ArticleDto;
+import ktb.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Repository;
 @Primary
 @Repository
 @RequiredArgsConstructor
-public class ArticleRepositoryImpl implements ArticleRepository{
+public class ArticleRepositoryImpl implements ArticleRepository {
 
     @Override
     public Optional<Article> findById(Long id) {
