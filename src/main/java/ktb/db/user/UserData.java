@@ -101,7 +101,7 @@ public final class UserData {
         readLock.lock();
         try {
             if (originUser.getId() == null || !store.containsKey(originUser.getId())) {
-                throw new NoSuchElementException(User.NON_EXIST);
+                throw new NoSuchElementException(User.DELETED);
             }
         } finally {
             readLock.unlock();
@@ -161,5 +161,9 @@ public final class UserData {
     private static void removeIndex(UserAccount user) {
         emailIndex.remove(user.getEmail());
         nickNameIndex.remove(user.getNickName());
+    }
+
+    public static boolean isExistUser(Long id) {
+        return store.containsKey(id);
     }
 }
