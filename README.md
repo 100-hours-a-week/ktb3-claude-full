@@ -148,18 +148,18 @@ private static final ReadWriteLock lock = new ReentrantReadWriteLock();
 | Method | Endpoint                                   | Description |
 |--------|--------------------------------------------|-------------|
 | POST   | `/article/{articleId}/comment`             | 댓글 작성       |
-| PATCH  | `/article/{articleId}/comment/{commentId}` | 댓글 수정       |
+| PUT    | `/article/{articleId}/comment/{commentId}` | 댓글 수정       |
 | DELETE | `/article/{articleId}/comment/{commentId}` | 댓글 삭제       |
 
 ### 인증 및 사용자
 
-| Method | Endpoint          | Description  |
-|--------|-------------------|--------------|
-| POST   | `/login`          | 로그인 (JWT 발급) |
-| POST   | `/users/signup`   | 회원가입         |
-| PATCH  | `/users/nickname` | 닉네임 변경       |
-| PATCH  | `/users/password` | 비밀번호 변경      |
-| DELETE | `/users/password` | 유저 삭제        |
+| Method | Endpoint          | Description |
+|--------|-------------------|-------------|
+| POST   | `/login`          | 로그인         |
+| POST   | `/users/signup`   | 회원가입        |
+| PATCH  | `/users/nickname` | 닉네임 변경      |
+| PATCH  | `/users/password` | 비밀번호 변경     |
+| DELETE | `/users/password` | 유저 삭제       |
 
 ---
 
