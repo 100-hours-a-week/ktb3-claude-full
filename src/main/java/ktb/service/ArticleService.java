@@ -1,5 +1,6 @@
 package ktb.service;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import ktb.common.pagination.Slice;
@@ -8,6 +9,8 @@ import ktb.domain.UserAccount;
 import ktb.dto.ArticleDto;
 import ktb.dto.PageInfoDto;
 import ktb.dto.SaveArticleDto;
+import ktb.dto.response.ArticleDetailDto;
+import ktb.dto.response.ArticleSimpleDto;
 import ktb.exception.AuthorizationException;
 import ktb.repository.ArticleRepository;
 
@@ -20,13 +23,23 @@ public class ArticleService {
     private final ArticleRepository articleRepository;
     private final UserService userService;
 
-    public Slice<ArticleDto> findAll(PageInfoDto pageInfo) {
-        Long cursorId = articleRepository.getNextCursor(pageInfo.endCursor()).orElseThrow(NoSuchElementException::new);
-        return ArticleDto.from(articleRepository.findAll(cursorId, pageInfo.size()));
+    public Slice<ArticleSimpleDto> findAll(PageInfoDto pageInfo) {
+        Slice<Article> articleSlice = articleRepository.findAll(pageInfo.endCursor(), pageInfo.size());
+
+        List<ArticleSimpleDto> simpleDtoList = articleSlice.content().stream()
+                .map(ArticleSimpleDto::from)
+                .toList();
+
+        return Slice.of(simpleDtoList, articleSlice.hasNext(), articleSlice.nextCursor());
     }
 
     public ArticleDto findById(Long articleId) {
         return ArticleDto.from(articleRepository.findById(articleId).orElseThrow(NoSuchElementException::new));
+    }
+
+    public ArticleDetailDto findByIdDetail(Long articleId) {
+        Article article = articleRepository.findById(articleId).orElseThrow(NoSuchElementException::new);
+        return ArticleDetailDto.from(article);
     }
 
     public void save(SaveArticleDto updated) {

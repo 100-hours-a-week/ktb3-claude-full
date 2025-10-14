@@ -5,7 +5,8 @@ public final class MessageConstant {
         public static final String LOGIN = "login_success";
         public static final String SIGNUP = "user_register_success";
         public static final String RETRIEVAL_USER = "user_retrieval_success";
-        public static final String RETRIEVAL_POST = "post_retrieval_success";
+        public static final String RETRIEVAL_ALL = "post_retrieval_success";
+        public static final String RETRIEVAL_POST = "post_detail_retrieval_success";
     }
 
     public static final class Password {

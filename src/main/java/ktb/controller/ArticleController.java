@@ -3,12 +3,16 @@ package ktb.controller;
 import jakarta.validation.Valid;
 
 import ktb.common.pagination.Slice;
+import ktb.constant.MessageConstant.Success;
+import ktb.domain.Article;
 import ktb.dto.ArticleDto;
 import ktb.dto.PageInfoDto;
 import ktb.dto.SaveArticleDto;
 import ktb.dto.request.AllArticleRetrieveRequest;
 import ktb.dto.request.ArticlePatchRequest;
 import ktb.dto.request.ArticleRequest;
+import ktb.dto.response.ArticleDetailDto;
+import ktb.dto.response.ArticleSimpleDto;
 import ktb.dto.response.ArticlesResponse;
 import ktb.dto.response.CommonResponse;
 import ktb.service.ArticleService;
@@ -30,12 +34,12 @@ public class ArticleController {
     private final ArticleService articleService;
 
     @GetMapping("/articles")
-    public ResponseEntity<ArticlesResponse<ArticleDto>> getAll(@Valid @RequestBody AllArticleRetrieveRequest request) {
+    public ResponseEntity<ArticlesResponse<ArticleSimpleDto>> getAll(@Valid @RequestBody AllArticleRetrieveRequest request) {
         PageInfoDto pageInfo = PageInfoDto.of(request.after(), 10);
 
-        Slice<ArticleDto> page = articleService.findAll(pageInfo);
+        Slice<ArticleSimpleDto> page = articleService.findAll(pageInfo);
 
-        return ResponseEntity.ok(ArticlesResponse.of("", page.getData(), page.getPageInfo()));
+        return ResponseEntity.ok(ArticlesResponse.of(Success.RETRIEVAL_ALL, page.getData(), page.getPageInfo()));
     }
 
     @PostMapping("/article")
@@ -46,10 +50,10 @@ public class ArticleController {
     }
 
     @GetMapping("/article/{id}")
-    public ResponseEntity<CommonResponse<ArticleDto>> getOne(@PathVariable Long id) {
-        ArticleDto response = articleService.findById(id);
+    public ResponseEntity<CommonResponse<ArticleDetailDto>> getOne(@PathVariable Long id) {
+        ArticleDetailDto response = articleService.findByIdDetail(id);
 
-        return ResponseEntity.ok(CommonResponse.of("", response));
+        return ResponseEntity.ok(CommonResponse.of(Success.RETRIEVAL_POST, response));
     }
 
     @PatchMapping("/article/{id}")
