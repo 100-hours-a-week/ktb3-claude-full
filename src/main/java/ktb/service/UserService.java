@@ -54,12 +54,12 @@ public class UserService {
     }
 
     public void authentication(Long id) {
-        UserAccount user = userRepository
-                                .findById(id)
-                                .orElseThrow(AuthenticateException::new);
+        if(!userRepository.isExistUser(id)) {
+            throw new AuthenticateException();
+        }
     }
 
     public UserAccountDto getUserInfo(Long id) {
-        return UserAccountDto.from(userRepository.findById(id).orElseThrow(AuthenticateException::new));
+        return UserAccountDto.from(userRepository.findById(id).orElseThrow(NoSuchElementException::new));
     }
 }

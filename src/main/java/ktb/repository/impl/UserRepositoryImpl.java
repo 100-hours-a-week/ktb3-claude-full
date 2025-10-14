@@ -32,4 +32,9 @@ public class UserRepositoryImpl implements UserRepository {
     public void delete(Long id) {
         UserData.deleteById(id);
     }
+
+    @Override
+    public boolean isExistUser(Long id) {
+        return UserData.isExistUser(id);
+    }
 }
