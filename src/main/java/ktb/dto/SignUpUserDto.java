@@ -9,6 +9,6 @@ public record SignUpUserDto(
         String profileImagePath
 ) {
     public UserAccount toEntity() {
-        return new UserAccount(null, email, password, nickName, profileImagePath);
+        return new UserAccount(null, email, nickName, password, profileImagePath);
     }
 }
