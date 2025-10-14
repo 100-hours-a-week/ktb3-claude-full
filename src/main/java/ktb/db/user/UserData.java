@@ -134,6 +134,7 @@ public final class UserData {
             UserAccount removed = store.remove(id);
             if (removed != null) {
                 removeIndex(removed);
+                userSeq.decrementAndGet();
             }
         } finally {
             writeLock.unlock();
