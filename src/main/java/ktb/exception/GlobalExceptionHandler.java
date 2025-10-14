@@ -2,6 +2,7 @@ package ktb.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import ktb.dto.response.CommonResponse;
+import ktb.exception.user.NonExistUserException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,6 +58,13 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(CommonResponse.of(ce.getMessage()));
+    }
+
+    @ExceptionHandler(NonExistUserException.class)
+    public ResponseEntity<CommonResponse<Void>> handlerNonExistUserException(NonExistUserException nue) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(CommonResponse.of(nue.getMessage()));
     }
 
     private String getClientIp(HttpServletRequest request) {
