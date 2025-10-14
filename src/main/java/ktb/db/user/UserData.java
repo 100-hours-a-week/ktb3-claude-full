@@ -67,14 +67,22 @@ public final class UserData {
     public static void save(UserAccount user) {
         writeLock.lock();
         try {
-            //유효성 검사
-            validateDuplicate(user);
-
             // 변경(UPDATE)
             if (user.getId() != null) {
                 Long id = user.getId();
                 UserAccount origin = store.get(id);
+
+                // 기존 인덱스 제거 먼저 수행
                 removeIndex(origin);
+
+                // 변경된 필드만 선택적으로 검증
+                if (!origin.getEmail().equals(user.getEmail())) {
+                    validateDuplicationEmail(user);
+                }
+
+                if (!origin.getNickName().equals(user.getNickName())) {
+                    validateDuplicateNickname(user);
+                }
 
                 store.put(id, user);
                 saveIndex(user);
@@ -82,10 +90,11 @@ public final class UserData {
                 return;
             }
 
-            // 신규 생성(INSERT)
+            // 신규 생성(INSERT) - 모든 필드 검증 필요
+            validateDuplicate(user);
+
             Long newId = userSeq.incrementAndGet();
             user.initId(newId);
-
 
             store.put(newId, user);
             saveIndex(user);
@@ -109,11 +118,16 @@ public final class UserData {
 
         writeLock.lock();
         try {
-            // 유효성 검사
-            validateDuplicate(updateUser);
-
-            // 인덱스 정리 (기존 값 제거)
+            // 인덱스 정리 (기존 값 제거) 먼저 수행
             removeIndex(originUser);
+
+            // 변경된 필드만 선택적으로 검증
+            if (!originUser.getEmail().equals(updateUser.getEmail())) {
+                validateDuplicationEmail(updateUser);
+            }
+            if (!originUser.getNickName().equals(updateUser.getNickName())) {
+                validateDuplicateNickname(updateUser);
+            }
 
             // store 갱신
             store.put(updateUser.getId(), updateUser);
@@ -141,12 +155,19 @@ public final class UserData {
         }
     }
 
-    private static void validateDuplicate(UserAccount user) throws ConflictDuplicationException{
+    public static void validateDuplicate(UserAccount user) throws ConflictDuplicationException {
+        validateDuplicationEmail(user);
+        validateDuplicateNickname(user);
+    }
+
+    public static void validateDuplicationEmail(UserAccount user) throws ConflictDuplicationException {
         // 이미 등록된 이메일 방지
         if (emailIndex.containsKey(user.getEmail())) {
             throw new ConflictDuplicationException(Email.DUPLICATE);
         }
+    }
 
+    public static void validateDuplicateNickname(UserAccount user) throws ConflictDuplicationException {
         // 이미 등록된 닉네임 방지
         if(nickNameIndex.containsKey(user.getNickName())) {
             throw new ConflictDuplicationException(Nickname.DUPLICATE);
