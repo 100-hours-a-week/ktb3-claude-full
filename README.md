@@ -88,6 +88,348 @@ ktb
 
 ---
 
+## Class Diagrams
+
+### Article Flow Diagram
+
+```mermaid
+classDiagram
+    %% Controller
+    class ArticleController {
+        -ArticleService articleService
+        +getAll(request) ArticlesResponse
+        +insertArticle(request) ResponseEntity
+        +getOne(id) CommonResponse
+        +patchArticle(id, request) ResponseEntity
+        +deleteArticle(id) ResponseEntity
+    }
+
+    %% Service
+    class ArticleService {
+        -ArticleRepository articleRepository
+        -UserService userService
+        +findAll(pageInfo) Slice~ArticleSimpleDto~
+        +findById(articleId) ArticleDto
+        +findByIdDetail(articleId) ArticleDetailDto
+        +save(updated) void
+        +delete(id) void
+    }
+
+    %% Repository
+    class ArticleRepository {
+        <<interface>>
+        +findById(id) Optional~Article~
+        +findByTitle(title) Optional~Article~
+        +findAll(cursorId, size) Slice~Article~
+        +getNextCursor(lastId) Optional~Long~
+        +like(id) void
+        +save(article) void
+        +deleteById(id) void
+        +addComment(articleId, content, user) ArticleComment
+        +updateComment(articleId, commentId, content) void
+        +deleteComment(articleId, commentId) void
+    }
+
+    class ArticleRepositoryImpl {
+        +findById(id) Optional~Article~
+        +findByTitle(title) Optional~Article~
+        +findAll(cursorId, size) Slice~Article~
+        +save(article) void
+        +deleteById(id) void
+        +addComment(articleId, content, user) ArticleComment
+    }
+
+    %% Data Store
+    class ArticleData {
+        -NavigableMap~Long, Article~ store$
+        -Map~String, Article~ titleIndex$
+        -AtomicLong articleSeq$
+        -ReadWriteLock lock$
+        +findById(id)$ Optional~Article~
+        +findByTitle(title)$ Optional~Article~
+        +findAll(cursorId, size)$ Slice~Article~
+        +save(article)$ void
+        +deleteById(id)$ void
+        +addComment(articleId, content, user)$ ArticleComment
+        +updateComment(articleId, commentId, content)$ void
+        +deleteComment(articleId, commentId)$ void
+    }
+
+    %% Domain
+    class Article {
+        -Long id
+        -String title
+        -String content
+        -UserAccount createBy
+        -ArticleMeta meta
+        -AtomicLong commentSeq
+        -ConcurrentLinkedDeque~ArticleComment~ comments
+        -String imagePath
+        +create(id, title, content, user, imagePath)$ Article
+        +addComment(content, user) ArticleComment
+        +updateComment(contentId, content) void
+        +deleteComment(commentId) void
+        +incrementLike() void
+        +incrementView() void
+        +update(title, content) void
+        +getAllComments() List~ArticleComment~
+    }
+
+    class ArticleMeta {
+        -Long articleId
+        -AtomicInteger likeCnt
+        -AtomicInteger viewCnt
+        -AtomicInteger commentCnt
+        -LocalDateTime createAt
+        -LocalDateTime updateAt
+        +init(articleId)$ ArticleMeta
+        +incrementViewCnt() void
+        +incrementLikeCnt() void
+        +incrementCommentCnt() void
+        +decrementCommentCnt() void
+        +updateTimestamp() void
+    }
+
+    class UserAccount {
+        -Long id
+        -String email
+        -String nickName
+        -String password
+        -String profileImagePath
+    }
+
+    %% Common
+    class Slice~T~ {
+        -List~T~ content
+        -boolean hasNext
+        -Long nextCursor
+        +of(content, hasNext, nextCursor)$ Slice~T~
+        +getData() List~T~
+        +getPageInfo() PageInfo
+    }
+
+    class PageInfo {
+        -Long cursor
+        -boolean hasNext
+        +of(cursor, hasNext)$ PageInfo
+    }
+
+    %% Exception Handler
+    class GlobalExceptionHandler {
+        +handleMethodArgumentNotValid(ex) ResponseEntity
+        +handleAuthenticateException(ex, request) ResponseEntity
+        +handleAuthorizationException(ex, request) ResponseEntity
+        +handleConflictDuplicationException(ex) ResponseEntity
+        +handleNonExistUserException(ex) ResponseEntity
+    }
+
+    %% Relationships
+    ArticleController --> ArticleService
+    ArticleService --> ArticleRepository
+    ArticleRepository <|.. ArticleRepositoryImpl : implements
+    ArticleRepositoryImpl --> ArticleData : delegates to
+    ArticleData ..> Article : manages
+    Article *-- ArticleMeta : contains
+    Article o-- UserAccount : created by
+    ArticleService ..> Slice : returns
+    ArticleRepository ..> Slice : returns
+```
+
+### Comment Flow Diagram
+
+```mermaid
+classDiagram
+    %% Controller
+    class CommentController {
+        -CommentService commentService
+        +addComment(articleId, request) ResponseEntity
+        +updateComment(articleId, commentId, request) ResponseEntity
+        +deleteComment(articleId, commentId, request) ResponseEntity
+    }
+
+    %% Service
+    class CommentService {
+        -ArticleRepository articleRepository
+        -UserService userService
+        +addComment(articleId, dto) void
+        +updateComment(articleId, commentId, dto) void
+        +deleteComment(articleId, commentId, dto) void
+    }
+
+    %% Repository (Article Repository handles comments)
+    class ArticleRepository {
+        <<interface>>
+        +findById(id) Optional~Article~
+        +addComment(articleId, content, user) ArticleComment
+        +updateComment(articleId, commentId, content) void
+        +deleteComment(articleId, commentId) void
+    }
+
+    class ArticleRepositoryImpl {
+        +findById(id) Optional~Article~
+        +addComment(articleId, content, user) ArticleComment
+        +updateComment(articleId, commentId, content) void
+        +deleteComment(articleId, commentId) void
+    }
+
+    %% Data Store
+    class ArticleData {
+        -NavigableMap~Long, Article~ store$
+        -ReadWriteLock lock$
+        +findById(id)$ Optional~Article~
+        +addComment(articleId, content, user)$ ArticleComment
+        +updateComment(articleId, commentId, content)$ void
+        +deleteComment(articleId, commentId)$ void
+    }
+
+    %% Domain
+    class Article {
+        -Long id
+        -AtomicLong commentSeq
+        -ConcurrentLinkedDeque~ArticleComment~ comments
+        -ArticleMeta meta
+        +addComment(content, user) ArticleComment
+        +updateComment(contentId, content) void
+        +deleteComment(commentId) void
+        +getAllComments() List~ArticleComment~
+    }
+
+    class ArticleComment {
+        -Long id
+        -Long articleId
+        -String content
+        -UserAccount createBy
+        -LocalDateTime createAt
+        -LocalDateTime updateAt
+        +init(articleId, commentId, content, user)$ ArticleComment
+        +update(newContent) void
+    }
+
+    class ArticleMeta {
+        -AtomicInteger commentCnt
+        +incrementCommentCnt() void
+        +decrementCommentCnt() void
+    }
+
+    class UserAccount {
+        -Long id
+        -String email
+        -String nickName
+    }
+
+    %% Exception Handler
+    class GlobalExceptionHandler {
+        +handleMethodArgumentNotValid(ex) ResponseEntity
+        +handleAuthenticateException(ex, request) ResponseEntity
+        +handleAuthorizationException(ex, request) ResponseEntity
+    }
+
+    %% Relationships
+    CommentController --> CommentService
+    CommentService --> ArticleRepository
+    ArticleRepository <|.. ArticleRepositoryImpl : implements
+    ArticleRepositoryImpl --> ArticleData : delegates to
+    ArticleData ..> Article : manages
+    Article *-- ArticleComment : contains many
+    Article *-- ArticleMeta : contains
+    ArticleComment o-- UserAccount : created by
+```
+
+### User Flow Diagram
+
+```mermaid
+classDiagram
+    %% Controllers
+    class UserController {
+        -UserService userService
+        +updateNickname(request) ResponseEntity
+        +updatePassword(request) ResponseEntity
+        +deleteUser(request) ResponseEntity
+    }
+
+    class AuthController {
+        -AuthService authService
+        +login(request) ResponseEntity
+        +signup(request) ResponseEntity
+    }
+
+    %% Services
+    class UserService {
+        -UserRepository userRepository
+        +getUserInfo(userId) UserAccountDto
+        +save(user) void
+        +delete(userId) void
+        +updateNickname(userId, nickname) void
+        +updatePassword(userId, password) void
+    }
+
+    class AuthService {
+        -UserRepository userRepository
+        +authenticate(email, password) UserAccountDto
+        +register(signupDto) void
+    }
+
+    %% Repository
+    class UserRepository {
+        <<interface>>
+        +findById(id) Optional~UserAccount~
+        +findByEmail(email) Optional~UserAccount~
+        +save(user) void
+        +deleteById(id) void
+    }
+
+    class UserRepositoryImpl {
+        +findById(id) Optional~UserAccount~
+        +findByEmail(email) Optional~UserAccount~
+        +save(user) void
+        +deleteById(id) void
+    }
+
+    %% Data Store
+    class UserData {
+        -Map~Long, UserAccount~ store$
+        -Map~String, UserAccount~ emailIndex$
+        -AtomicLong userSeq$
+        -ReadWriteLock lock$
+        +findById(id)$ Optional~UserAccount~
+        +findByEmail(email)$ Optional~UserAccount~
+        +save(user)$ void
+        +deleteById(id)$ void
+    }
+
+    %% Domain
+    class UserAccount {
+        -Long id
+        -String email
+        -String nickName
+        -String password
+        -String profileImagePath
+        +initId(id) void
+        +changeNickName(nickName) void
+        +changePassword(password) void
+    }
+
+    %% Exception Handler
+    class GlobalExceptionHandler {
+        +handleMethodArgumentNotValid(ex) ResponseEntity
+        +handleAuthenticateException(ex, request) ResponseEntity
+        +handleAuthorizationException(ex, request) ResponseEntity
+        +handleConflictDuplicationException(ex) ResponseEntity
+        +handleNonExistUserException(ex) ResponseEntity
+    }
+
+    %% Relationships
+    UserController --> UserService
+    AuthController --> AuthService
+    UserService --> UserRepository
+    AuthService --> UserRepository
+    UserRepository <|.. UserRepositoryImpl : implements
+    UserRepositoryImpl --> UserData : delegates to
+    UserData ..> UserAccount : manages
+```
+
+---
+
 ## 핵심 설계 특징
 
 ### 1. In-Memory 동시성 데이터 저장소
