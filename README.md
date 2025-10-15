@@ -1,7 +1,8 @@
 # Spring Boot Article Management REST API
 
 ### 주요 기능
-- 사용자 인증 및 회원가입 
+- 사용자 인증 및 회원가입
+- 사용자 정보 수정
 - 게시글 CRUD (생성, 조회, 수정, 삭제)
 - 댓글 CRUD
 - 커서 기반 페이지네이션
