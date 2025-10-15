@@ -17,3 +17,12 @@ jwt:
   secret: {Secret_Key}
   access-expire-minutes: 60     # 1시간
   refresh-expire-days: 7        # 7일
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
