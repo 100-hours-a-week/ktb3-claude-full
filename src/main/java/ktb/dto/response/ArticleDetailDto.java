@@ -25,11 +25,11 @@ public record ArticleDetailDto(
         String viewCnt,
 
         @JsonProperty("comment")
-        List<CommentDto> comment
+        List<CommentDetailDto> comment
 ) {
     public static ArticleDetailDto from(Article article) {
-        List<CommentDto> commentDtoList = article.getAllComments().stream()
-                .map(CommentDto::from)
+        List<CommentDetailDto> commentDtoList = article.getAllComments().stream()
+                .map(CommentDetailDto::from)
                 .toList();
 
         return new ArticleDetailDto(

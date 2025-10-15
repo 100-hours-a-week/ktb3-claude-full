@@ -9,7 +9,7 @@ public record CommentDto(
         Long createBy
 ) {
     public static CommentDto from(ArticleComment comment) {
-        return new CommentDto(comment.getArticleId(), comment.getId(), comment.getContent(), comment.getCreateBy().getId());
+        return new CommentDto(comment.getId(), comment.getArticleId(), comment.getContent(), comment.getCreateBy().getId());
     }
 
     public static CommentDto of(Long articleId, String content, Long createBy) {

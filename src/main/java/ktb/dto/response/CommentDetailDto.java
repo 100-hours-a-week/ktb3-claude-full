@@ -6,10 +6,7 @@ import ktb.domain.ArticleComment;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * 댓글 정보 DTO
- */
-public record CommentDto(
+public record CommentDetailDto(
         @JsonProperty("comment_id")
         String commentId,
 
@@ -24,12 +21,12 @@ public record CommentDto(
 ) {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public static CommentDto from(ArticleComment comment) {
+    public static CommentDetailDto from(ArticleComment comment) {
         LocalDateTime lastModified = comment.getUpdateAt() != null
                 ? comment.getUpdateAt()
                 : comment.getCreateAt();
 
-        return new CommentDto(
+        return new CommentDetailDto(
                 String.valueOf(comment.getId()),
                 comment.getCreateBy().getNickName(),
                 comment.getContent(),
