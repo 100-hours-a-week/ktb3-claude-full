@@ -1,5 +1,10 @@
 package ktb.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import ktb.constant.MessageConstant.Success;
@@ -17,11 +22,20 @@ import ktb.dto.UserAccountDto;
 import ktb.dto.request.LoginRequest;
 import ktb.dto.response.CommonResponse;
 
+@Tag(name = "Authentication", description = "인증 관련 API")
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthService authService;
 
+    @Operation(
+            summary = "Login",
+            description = "로그인 시도 (ID(Email)/PW)",
+            tags = { "Authentication" },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = LoginRequest.class))),
+            }
+    )
     @PostMapping("/login")
     public ResponseEntity<CommonResponse<Void>> login(@Valid @RequestBody LoginRequest request) {
         // session, jwt 사용 시 필요하여 User 정보 반환 받음
