@@ -6,6 +6,9 @@ import ktb.domain.ArticleComment;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * 댓글 정보 DTO
+ */
 public record CommentDetailDto(
         @JsonProperty("comment_id")
         String commentId,

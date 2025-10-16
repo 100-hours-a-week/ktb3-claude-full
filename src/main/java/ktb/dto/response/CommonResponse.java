@@ -1,12 +1,16 @@
 package ktb.dto.response;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
 
+@Schema(description = "공통 응답 구조")
 public record CommonResponse<T>(
+        @Schema(description = "실행 결과 message")
         @NotNull
         String message,
+        @Schema(description = "응답 데이터")
         T data
 ) {
         public static CommonResponse<Void> of(String message) {
