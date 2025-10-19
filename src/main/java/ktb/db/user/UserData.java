@@ -72,9 +72,6 @@ public final class UserData {
                 Long id = user.getId();
                 UserAccount origin = store.get(id);
 
-                // 기존 인덱스 제거 먼저 수행
-                removeIndex(origin);
-
                 // 변경된 필드만 선택적으로 검증
                 if (!origin.getEmail().equals(user.getEmail())) {
                     validateDuplicationEmail(user);
@@ -83,6 +80,9 @@ public final class UserData {
                 if (!origin.getNickName().equals(user.getNickName())) {
                     validateDuplicateNickname(user);
                 }
+
+                // 기존 인덱스 제거 먼저 수행
+                removeIndex(origin);
 
                 store.put(id, user);
                 saveIndex(user);
