@@ -216,4 +216,7 @@ gradle-app.setting
 # Java heap dump
 *.hprof
 
+### RSA Key
+src/main/resources/keys
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,java,intellij,git
