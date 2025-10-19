@@ -14,11 +14,6 @@ public record ArticlePatchRequest(
         @NotNull String content,
 
         @Schema(description = "게시글에 첨부할 이미지 경로", example = "https://image.com/image.png")
-        String articleImagePath,
-
-        @Schema(description = "수정 시도한 유저 ID(Sequential ID)", example = "1")
-        @NotNull
-        @JsonProperty("user_id")
-        Long userId //Session 도입 시 삭제
+        String articleImagePath
 ) {
 }

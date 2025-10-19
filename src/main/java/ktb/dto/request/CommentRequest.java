@@ -8,11 +8,6 @@ import ktb.constant.MessageConstant.CommentMessage;
 
 @Schema(description = "댓글 등록 요청 구조")
 public record CommentRequest(
-        @Schema(description = "등록 시도한 유저 ID(Sequential ID)", example = "1")
-        @NotNull
-        @JsonProperty("user_id")
-        Long userAccountId,
-
         @Schema(description = "댓글 내용", example = "댓글 내용")
         @NotBlank(message = CommentMessage.EMPTY_CONTENT)
         @JsonProperty("comment_content")

@@ -6,8 +6,10 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
+import ktb.annotation.Authorized;
 import ktb.dto.CommentDto;
 import ktb.dto.request.CommentDeleteRequest;
 import ktb.dto.request.CommentRequest;
@@ -15,6 +17,7 @@ import ktb.dto.request.CommentUpdateRequest;
 import ktb.dto.response.CommonResponse;
 import ktb.service.CommentService;
 
+import ktb.util.JwtKeyProvider;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -32,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class CommentController {
     private final CommentService commentService;
+    private final JwtKeyProvider jwtProvider;
 
     @Operation(
             summary = "Comment insert",
@@ -41,12 +45,15 @@ public class CommentController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = CommentRequest.class))),
             }
     )
+    @Authorized
     @PostMapping("/{id}/comments")
     public ResponseEntity<CommonResponse<CommentDto>> addComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
-            @Valid @RequestBody CommentRequest request
+            @Valid @RequestBody CommentRequest request,
+            HttpServletRequest httpRequest
     ) {
-        CommentDto comment = CommentDto.of(id, request.content(), request.userAccountId());
+        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
+        CommentDto comment = CommentDto.of(id, request.content(), userId);
         CommentDto added = commentService.addComment(comment);
 
         return ResponseEntity.ok(CommonResponse.of("", added));
@@ -60,12 +67,15 @@ public class CommentController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = CommentUpdateRequest.class))),
             }
     )
+    @Authorized
     @PutMapping("/{id}/comments")
     public ResponseEntity<Void> updateComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
-            @Valid @RequestBody CommentUpdateRequest request
+            @Valid @RequestBody CommentUpdateRequest request,
+            HttpServletRequest httpRequest
     ) {
-        CommentDto comment = new CommentDto(request.commentId(), id, request.content(), request.userAccountId());
+        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
+        CommentDto comment = CommentDto.ofUpdate(request.commentId(), id, request.content(), userId);
 
         commentService.update(comment);
 
@@ -80,12 +90,15 @@ public class CommentController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = CommentDeleteRequest.class))),
             }
     )
+    @Authorized
     @DeleteMapping("/{id}/comments")
     public ResponseEntity<Void> deleteComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
-            @Valid @RequestBody CommentDeleteRequest request
+            @Valid @RequestBody CommentDeleteRequest request,
+            HttpServletRequest httpRequest
     ) {
-        CommentDto comment = new CommentDto(request.commentId(), id, null, request.userAccountId());
+        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
+        CommentDto comment = new CommentDto(request.commentId(), id, null, userId);
 
         commentService.delete(comment);
 

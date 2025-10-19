@@ -7,6 +7,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 
+import ktb.annotation.Authorized;
+import ktb.annotation.Authorized.ResourceType;
 import ktb.constant.MessageConstant.Success;
 import ktb.dto.UserAccountDto;
 import ktb.dto.request.NickNameUpdateRequest;
@@ -83,6 +85,7 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = NickNameUpdateRequest.class))),
             }
     )
+    @Authorized(resourceType = ResourceType.USER)
     @PatchMapping("/{id}/nickName")
     public ResponseEntity<Void> patch(
             @Parameter(name = "id", description = "User ID(Sequential ID)", required = true)
@@ -102,6 +105,7 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = PasswordUpdateRequest.class))),
             }
     )
+    @Authorized(resourceType = ResourceType.USER)
     @PatchMapping("/{id}/password")
     public ResponseEntity<Void> patch(
             @Parameter(name = "id", description = "User ID(Sequential ID)", required = true)
@@ -121,6 +125,7 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "성공"),
             }
     )
+    @Authorized(resourceType = ResourceType.USER)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(
             @Parameter(name = "id", description = "User ID(Sequential ID)", required = true)

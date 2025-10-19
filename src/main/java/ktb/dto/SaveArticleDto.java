@@ -13,14 +13,14 @@ public record SaveArticleDto(
 
         String articleImagePath,
 
-        Long userId // Session 도입 시 제거 예정
+        Long userId
 ) {
-    public static SaveArticleDto of(ArticleRequest request) {
-        return new SaveArticleDto(null, request.title(), request.content(), request.articleImagePath(), request.userId());
+    public static SaveArticleDto of(ArticleRequest request, Long userId) {
+        return new SaveArticleDto(null, request.title(), request.content(), request.articleImagePath(), userId);
     }
 
-    public static SaveArticleDto of(Long id, ArticlePatchRequest request) {
-        return new SaveArticleDto(id, request.title(), request.content(), request.articleImagePath(), request.userId());
+    public static SaveArticleDto of(Long id, ArticlePatchRequest request, Long userId) {
+        return new SaveArticleDto(id, request.title(), request.content(), request.articleImagePath(), userId);
     }
 
     public Article toEntity(UserAccount user) {

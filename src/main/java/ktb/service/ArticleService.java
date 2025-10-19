@@ -1,7 +1,6 @@
 package ktb.service;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import ktb.common.pagination.Slice;
 import ktb.domain.Article;
@@ -11,7 +10,6 @@ import ktb.dto.PageInfoDto;
 import ktb.dto.SaveArticleDto;
 import ktb.dto.response.ArticleDetailDto;
 import ktb.dto.response.ArticleSimpleDto;
-import ktb.exception.AuthorizationException;
 import ktb.exception.article.NoExistArticleException;
 import ktb.repository.ArticleRepository;
 
@@ -51,10 +49,7 @@ public class ArticleService {
             Article origin = articleRepository.findById(updated.id()).orElse(null);
 
             if (origin != null) {
-                if (!origin.equalUserId(updated.userId())) {
-                    throw new AuthorizationException(); // 403 Error
-                }
-
+                // 인가는 @Authorized AOP 에서 확인
                 origin.update(updated.title(), updated.content());
                 articleRepository.save(origin);
 

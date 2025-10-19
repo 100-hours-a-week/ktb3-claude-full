@@ -8,11 +8,6 @@ import ktb.constant.MessageConstant.CommentMessage;
 
 @Schema(description = "댓글 변경 요청 구조")
 public record CommentUpdateRequest(
-        @Schema(description = "변경 시도한 유저 ID(Sequential ID)", example = "1")
-        @NotNull
-        @JsonProperty("user_id")
-        Long userAccountId,
-
         @Schema(description = "변경할 댓글 ID(Sequential ID)", example = "1")
         @NotNull
         @JsonProperty("comment_id")

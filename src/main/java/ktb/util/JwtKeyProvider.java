@@ -1,8 +1,11 @@
 package ktb.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
@@ -10,6 +13,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
 import ktb.config.JwtConfig;
@@ -38,7 +42,7 @@ public class JwtKeyProvider {
     }
 
     private PrivateKey readPrivate(String location) throws Exception {
-        String pem = readPem(location, "-----BEGIN RSA PRIVATE KEY-----", "-----END RSA PRIVATE KEY-----");
+        String pem = readPem(location, "-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----");
         byte[] der = Base64.getDecoder().decode(pem);
         return KeyFactory.getInstance("RSA").generatePrivate(new PKCS8EncodedKeySpec(der));
     }
@@ -80,5 +84,30 @@ public class JwtKeyProvider {
                 .parseSignedClaims(token)
                 .getPayload();
         return Long.valueOf(claims.getSubject());
+    }
+
+    // ✅ HTTP Request JWT 문자열 추출
+    private String extractToken(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+
+        return Arrays.stream(request.getCookies())
+                .filter(c -> "jwt".equals(c.getName()))
+                .map(Cookie::getValue)
+                .findFirst()
+                .orElse(null);
+    }
+
+    // ✅ userId 추출
+    public Long getUserIdFromRequest(HttpServletRequest request) {
+        String token = extractToken(request);
+        if (token == null) {
+            return null;
+        }
+
+        try {
+            return validateAndGetUserId(token);
+        } catch (JwtException e) {
+            return null; // 만료 or 위조된 토큰
+        }
     }
 }

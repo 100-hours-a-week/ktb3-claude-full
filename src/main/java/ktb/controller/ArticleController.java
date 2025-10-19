@@ -6,12 +6,12 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
+import ktb.annotation.Authorized;
 import ktb.common.pagination.Slice;
 import ktb.constant.MessageConstant.Success;
-import ktb.domain.Article;
-import ktb.dto.ArticleDto;
 import ktb.dto.PageInfoDto;
 import ktb.dto.SaveArticleDto;
 import ktb.dto.request.AllArticleRetrieveRequest;
@@ -23,6 +23,7 @@ import ktb.dto.response.ArticlesResponse;
 import ktb.dto.response.CommonResponse;
 import ktb.service.ArticleService;
 
+import ktb.util.JwtKeyProvider;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -39,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class ArticleController {
     private final ArticleService articleService;
+    private final JwtKeyProvider jwtProvider;
 
     @Operation(
             summary = "Article search(page)",
@@ -65,9 +67,14 @@ public class ArticleController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = ArticleRequest.class))),
             }
     )
+    @Authorized
     @PostMapping("/article")
-    public ResponseEntity<Void> insertArticle(@Valid @RequestBody ArticleRequest request) {
-        articleService.save(SaveArticleDto.of(request));
+    public ResponseEntity<Void> insertArticle(
+            @Valid @RequestBody ArticleRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
+        articleService.save(SaveArticleDto.of(request, userId));
 
         return ResponseEntity.noContent().build();
     }
@@ -89,6 +96,7 @@ public class ArticleController {
         return ResponseEntity.ok(CommonResponse.of(Success.RETRIEVAL_POST, response));
     }
 
+    @Authorized
     @Operation(
             summary = "Article update",
             description = "게시글 수정합니다.",
@@ -100,13 +108,16 @@ public class ArticleController {
     @PatchMapping("/article/{id}")
     public ResponseEntity<Void> patchArticle(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
-            @Valid @RequestBody ArticlePatchRequest request
+            @Valid @RequestBody ArticlePatchRequest request,
+            HttpServletRequest httpRequest
     ) {
-        articleService.save(SaveArticleDto.of(id, request));
+        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
+        articleService.save(SaveArticleDto.of(id, request, userId));
 
         return ResponseEntity.noContent().build();
     }
 
+    @Authorized
     @Operation(
             summary = "Article Delete",
             description = "게시글 삭제합니다.",

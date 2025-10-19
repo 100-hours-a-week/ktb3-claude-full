@@ -19,14 +19,12 @@ public class CommentService {
     }
 
     public void update(CommentDto request) {
-        userService.authentication(request.createBy());
-
+        // 인가는 @Authorized AOP 에서 확인
         articleRepository.updateComment(request.articleId(), request.id(), request.content());
     }
 
     public void delete(CommentDto request) {
-        userService.authentication(request.createBy());
-
+        // 인가는 @Authorized AOP 에서 확인
         articleRepository.deleteComment(request.articleId(), request.id());
     }
 }

@@ -12,7 +12,11 @@ public record CommentDto(
         return new CommentDto(comment.getId(), comment.getArticleId(), comment.getContent(), comment.getCreateBy().getId());
     }
 
-    public static CommentDto of(Long articleId, String content, Long createBy) {
-        return new CommentDto(null, articleId, content, createBy);
+    public static CommentDto of(Long articleId, String content, Long userId) {
+        return new CommentDto(null, articleId, content, userId);
+    }
+
+    public static CommentDto ofUpdate(Long commentId, Long articleId, String content, Long userId) {
+        return new CommentDto(commentId, articleId, content, userId);
     }
 }
