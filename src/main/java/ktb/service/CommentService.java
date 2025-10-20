@@ -1,7 +1,6 @@
 package ktb.service;
 
 import ktb.dto.CommentDto;
-import ktb.dto.UserAccountDto;
 import ktb.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -9,13 +8,10 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class CommentService {
-    private final UserService userService;
     private final ArticleRepository articleRepository;
 
-    public CommentDto addComment(CommentDto request) {
-        UserAccountDto user = userService.getUserInfo(request.createBy());
-        
-        return CommentDto.from(articleRepository.addComment(request.articleId(), request.content(), user.toEntity()));
+    public CommentDto addComment(CommentDto request, String nickname) {
+        return CommentDto.from(articleRepository.addComment(request.articleId(), request.content(), request.createBy(), nickname));
     }
 
     public void update(CommentDto request) {

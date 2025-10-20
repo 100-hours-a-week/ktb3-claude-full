@@ -5,20 +5,19 @@ import java.util.List;
 import ktb.common.pagination.Slice;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
-import ktb.domain.UserAccount;
 
 public record ArticleDto(
          Long id,
          String title,
          String content,
-         UserAccount user,
+         Long userId,
          List<ArticleComment> comments,
          String imagePath
 ) {
-    public Article toEntity() { return Article.create(null, this.title, this.content, this.user, this.imagePath); }
+    public Article toEntity() { return Article.create(null, this.title, this.content, this.userId, this.imagePath); }
 
     public Article toEntity(Long id) {
-        return Article.create(id, this.title, this.content, this.user, this.imagePath);
+        return Article.create(id, this.title, this.content, this.userId, this.imagePath);
     }
 
     public static ArticleDto of(Long id,String title, String content, String imagePath) {
@@ -29,8 +28,8 @@ public record ArticleDto(
         return new ArticleDto(null, title, content, null, null, imagePath);
     }
 
-    public static ArticleDto of(String title, String content, UserAccount user, String imagePath) {
-        return new ArticleDto(null, title, content, user, null, imagePath);
+    public static ArticleDto of(String title, String content, Long userId, String imagePath) {
+        return new ArticleDto(null, title, content, userId, null, imagePath);
     }
 
     public static ArticleDto from(Article article) {

@@ -155,7 +155,7 @@ public final class ArticleData {
     // ==============================
     // ✅ 댓글 추가
     // ==============================
-    public static ArticleComment addComment(Long articleId, String content, UserAccount user) {
+    public static ArticleComment addComment(Long articleId, String content, Long userId, String nickname) {
         readLock.lock();
         try {
             Article article = store.get(articleId);
@@ -163,7 +163,7 @@ public final class ArticleData {
                 throw new NoSuchElementException(ArticleMessage.NON_EXIST);
             }
 
-            return article.addComment(content, user);
+            return article.addComment(content, userId, nickname);
         } finally {
             readLock.unlock();
         }

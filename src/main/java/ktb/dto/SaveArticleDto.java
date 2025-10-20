@@ -23,7 +23,7 @@ public record SaveArticleDto(
         return new SaveArticleDto(id, request.title(), request.content(), request.articleImagePath(), userId);
     }
 
-    public Article toEntity(UserAccount user) {
-        return Article.create(this.id, this.title, this.content, user, this.articleImagePath);
+    public Article toEntity() {
+        return Article.create(this.id, this.title, this.content, this.userId, this.articleImagePath);
     }
 }

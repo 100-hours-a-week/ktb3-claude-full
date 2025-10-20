@@ -11,13 +11,14 @@ public class ArticleComment {
     private final Long articleId;
     private String content;
 
-    private final UserAccount createBy;
+    private final Long createBy;
+    private final String createByNickname;
     private final LocalDateTime createAt;
     private LocalDateTime updateAt;
 
-    public static ArticleComment init(Long articleId, Long commentId, String content, UserAccount user) {
+    public static ArticleComment init(Long articleId, Long commentId, String content, Long userId, String nickname) {
         return new ArticleComment(
-                commentId, articleId, content, user, LocalDateTime.now(), null
+                commentId, articleId, content, userId, nickname, LocalDateTime.now(), null
         );
     }
 

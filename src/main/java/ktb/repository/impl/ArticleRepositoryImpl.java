@@ -53,8 +53,8 @@ public class ArticleRepositoryImpl implements ArticleRepository {
     }
 
     @Override
-    public ArticleComment addComment(Long articleId, String content, UserAccount user) {
-        return ArticleData.addComment(articleId, content, user);
+    public ArticleComment addComment(Long articleId, String content, Long userId, String nickname) {
+        return ArticleData.addComment(articleId, content, userId, nickname);
     }
 
     @Override

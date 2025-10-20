@@ -18,15 +18,15 @@ public class Article {
     private final Long id;
     private String title;
     private String content;
-    private final UserAccount createBy;
+    private final Long createBy;
     private final ArticleMeta meta;
     private final AtomicLong commentSeq;
     private final ConcurrentLinkedDeque<ArticleComment> comments;
     private final String imagePath;
 
-    public static Article create(Long id, String title, String content, UserAccount user, String imagePath) {
+    public static Article create(Long id, String title, String content, Long userId, String imagePath) {
         return new Article(
-                id, title, content, user,
+                id, title, content, userId,
                 ArticleMeta.init(id),
                 new AtomicLong(0),
                 new ConcurrentLinkedDeque<>(),
@@ -44,18 +44,14 @@ public class Article {
         );
     }
 
-    public boolean equalUserId(Long id) {
-        return this.createBy.getId().equals(id);
-    }
-
     // 댓글 추가
-    public ArticleComment addComment(String content, UserAccount user) {
+    public ArticleComment addComment(String content, Long userId, String nickname) {
         long newCommentId = commentSeq.incrementAndGet();
-        ArticleComment comment = ArticleComment.init(id, newCommentId, content, user);
-        
+        ArticleComment comment = ArticleComment.init(id, newCommentId, content, userId, nickname);
+
         comments.addLast(comment);
         meta.incrementCommentCnt();
-        
+
         return comment;
     }
 
@@ -97,13 +93,5 @@ public class Article {
         Optional.ofNullable(content)
                 .filter(c -> !c.isEmpty())
                 .ifPresent(c -> this.content = c);
-    }
-
-    public void updateTimestamp() {
-        this.meta.updateTimestamp();
-    }
-
-    public Article deepCopy() {
-        return new Article(this.getId(), this.getTitle(), this.getContent(), this.createBy, this.meta, this.commentSeq, this.comments, this.imagePath);
     }
 }

@@ -31,7 +31,7 @@ public record CommentDetailDto(
 
         return new CommentDetailDto(
                 String.valueOf(comment.getId()),
-                comment.getCreateBy().getNickName(),
+                comment.getCreateByNickname(),
                 comment.getContent(),
                 lastModified.format(FORMATTER)
         );

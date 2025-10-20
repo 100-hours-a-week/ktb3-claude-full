@@ -23,7 +23,7 @@ public interface ArticleRepository {
     void deleteById(Long id);
 
     // ✅ 댓글
-    ArticleComment addComment(Long articleId, String content, UserAccount user);
+    ArticleComment addComment(Long articleId, String content, Long userId, String nickname);
 
     void updateComment(Long articleId, Long commentId, String newContent);
 

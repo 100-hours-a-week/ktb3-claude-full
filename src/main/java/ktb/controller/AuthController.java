@@ -48,9 +48,10 @@ public class AuthController {
         // session, jwt 사용 시 필요하여 User 정보 반환 받음
         UserAccountDto user = authService.authenticate(request.email(), request.password());
 
-        // ✅ 2. JWT 발급
+        // ✅ 2. JWT 발급 (userId + nickName)
         Long userId = user.id();
-        String token = jwt.generateToken(userId);
+        String nickName = user.nickName();
+        String token = jwt.generateToken(userId, nickName);
 
         // ✅ 3. 쿠키 설정
         Cookie cookie = new Cookie("jwt", token);

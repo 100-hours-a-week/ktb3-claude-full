@@ -36,11 +36,7 @@ public record ArticleDetailDto(
         @JsonProperty("comment")
         List<CommentDetailDto> comment
 ) {
-    public static ArticleDetailDto from(Article article) {
-        List<CommentDetailDto> commentDetailDtoList = article.getAllComments().stream()
-                .map(CommentDetailDto::from)
-                .toList();
-
+    public static ArticleDetailDto from(Article article, List<CommentDetailDto> commentDetailDtoList) {
         return new ArticleDetailDto(
                 String.valueOf(article.getId()),
                 article.getTitle(),

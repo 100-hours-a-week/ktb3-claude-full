@@ -63,13 +63,14 @@ public class JwtKeyProvider {
     }
 
 
-    // ✅ JWT 생성 (userId 기반)
-    public String generateToken(Long userId) {
+    // ✅ JWT 생성 (userId, nickName 기반)
+    public String generateToken(Long userId, String nickName) {
         Date now = new Date(System.currentTimeMillis());
         Date expireDate = new Date(now.getTime() + cfg.getAccessExpireMillis());
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
+                .claim("nickName", nickName)
                 .issuedAt(now)
                 .expiration(expireDate)
                 .signWith(privateKey, Jwts.SIG.RS256)
@@ -97,17 +98,39 @@ public class JwtKeyProvider {
                 .orElse(null);
     }
 
-    // ✅ userId 추출
-    public Long getUserIdFromRequest(HttpServletRequest request) {
+    // ✅ Claims 추출
+    private Claims extractClaims(HttpServletRequest request) {
         String token = extractToken(request);
         if (token == null) {
             return null;
         }
 
         try {
-            return validateAndGetUserId(token);
+            return Jwts.parser()
+                    .verifyWith(publicKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
         } catch (JwtException e) {
             return null; // 만료 or 위조된 토큰
         }
+    }
+
+    // ✅ userId 추출
+    public Long getUserIdFromRequest(HttpServletRequest request) {
+        Claims claims = extractClaims(request);
+        if (claims == null) {
+            return null;
+        }
+        return Long.valueOf(claims.getSubject());
+    }
+
+    // ✅ nickName 추출
+    public String getNickNameFromRequest(HttpServletRequest request) {
+        Claims claims = extractClaims(request);
+        if (claims == null) {
+            return null;
+        }
+        return claims.get("nickName", String.class);
     }
 }
