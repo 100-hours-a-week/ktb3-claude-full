@@ -49,7 +49,7 @@ public class ArticleService {
     public void save(SaveArticleDto updated) {
         // Article 내용 변경
         if (updated.id() != null) {
-            Article origin = articleRepository.findById(updated.id()).orElse(null);
+            Article origin = articleRepository.findById(updated.id()).orElseThrow(NoExistArticleException::new);
 
             if (origin != null) {
                 // 인가는 @Authorized AOP 에서 확인
