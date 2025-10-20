@@ -38,7 +38,6 @@ public final class MessageConstant {
 
     public static final class User {
         public static final String LOGIN_FAILED = "아이디 또는 비밀번호를 확인해주세요.";
-        public static final String AUTHENTICATION_FAILED = "로그인 인증에 실패했습니다.";
         public static final String ACCESS_DENIED = "해당 요청에 대한 접근 권한이 없습니다.";
         public static final String NON_EXIST = "유저 정보를 찾을 수 없습니다.";
         public static final String DELETED = "이미 삭제된 유저 입니다.";
