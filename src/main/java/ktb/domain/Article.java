@@ -93,5 +93,9 @@ public class Article {
         Optional.ofNullable(content)
                 .filter(c -> !c.isEmpty())
                 .ifPresent(c -> this.content = c);
+
+        if (title != null || content != null) {
+            meta.updateTimestamp();
+        }
     }
 }
