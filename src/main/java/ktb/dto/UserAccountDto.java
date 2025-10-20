@@ -12,7 +12,4 @@ public record UserAccountDto(
         return new UserAccountDto(userAccount.getId(), userAccount.getEmail(), userAccount.getNickName(),
                 userAccount.getProfileImagePath());
     }
-    public UserAccount toEntity() {
-        return new UserAccount(id, email, nickName, null, profileImagePath);
-    }
 }

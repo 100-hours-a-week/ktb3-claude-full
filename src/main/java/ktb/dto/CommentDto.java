@@ -1,7 +1,9 @@
 package ktb.dto;
 
 import ktb.domain.ArticleComment;
+import lombok.Builder;
 
+@Builder
 public record CommentDto(
         Long id,
         Long articleId,
@@ -10,10 +12,6 @@ public record CommentDto(
 ) {
     public static CommentDto from(ArticleComment comment) {
         return new CommentDto(comment.getId(), comment.getArticleId(), comment.getContent(), comment.getCreateBy());
-    }
-
-    public static CommentDto of(Long articleId, String content, Long userId) {
-        return new CommentDto(null, articleId, content, userId);
     }
 
     public static CommentDto ofUpdate(Long commentId, Long articleId, String content, Long userId) {

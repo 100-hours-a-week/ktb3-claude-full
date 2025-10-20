@@ -74,7 +74,15 @@ public class ArticleController {
             HttpServletRequest httpRequest
     ) {
         Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
-        articleService.save(SaveArticleDto.of(request, userId));
+
+        articleService.save(
+                SaveArticleDto.builder()
+                        .title(request.title())
+                        .content(request.content())
+                        .articleImagePath(request.articleImagePath())
+                        .userId(userId)
+                        .build()
+        );
 
         return ResponseEntity.noContent().build();
     }

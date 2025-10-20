@@ -54,7 +54,13 @@ public class CommentController {
     ) {
         Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
         String nickName = jwtProvider.getNickNameFromRequest(httpRequest);
-        CommentDto comment = CommentDto.of(id, request.content(), userId);
+
+        CommentDto comment = CommentDto.builder()
+                .articleId(id)
+                .content(request.content())
+                .createBy(userId)
+                .build();
+
         CommentDto added = commentService.addComment(comment, nickName);
 
         return ResponseEntity.ok(CommonResponse.of("", added));
