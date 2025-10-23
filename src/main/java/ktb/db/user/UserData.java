@@ -179,8 +179,4 @@ public final class UserData {
         emailIndex.remove(user.getEmail());
         nickNameIndex.remove(user.getNickName());
     }
-
-    public static boolean isExistUser(Long id) {
-        return store.containsKey(id);
-    }
 }

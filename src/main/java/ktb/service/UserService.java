@@ -61,14 +61,4 @@ public class UserService {
         // Handler 체인을 통한 소프트 삭제 처리 (User -> Article -> Comment 순서)
         userDeleteHandlerChain.handle(context);
     }
-
-    public void authentication(Long id) {
-        if(!userRepository.isExistUser(id)) {
-            throw new AuthenticateException();
-        }
-    }
-
-    public UserAccountDto getUserInfo(Long id) {
-        return UserAccountDto.from(userRepository.findById(id).orElseThrow(NonExistUserException::new));
-    }
 }
