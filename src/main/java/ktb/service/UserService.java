@@ -7,14 +7,18 @@ import ktb.dto.request.PasswordUpdateRequest;
 import ktb.exception.AuthenticateException;
 import ktb.exception.user.MisMatchPasswordException;
 import ktb.exception.user.NonExistUserException;
+import ktb.handler.AbstractHandler;
+import ktb.handler.context.SoftDeleteContext;
 import ktb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final AbstractHandler<SoftDeleteContext> userDeleteHandlerChain;
 
     public Long signUp(SignUpUserDto user) {
         UserAccount saveUser = userRepository.save(user.toEntity());
@@ -52,10 +56,10 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        UserAccount exist = userRepository.findById(id)
-                .orElseThrow(NonExistUserException::new);
+        SoftDeleteContext context = new SoftDeleteContext(id, null);
 
-        userRepository.delete(id);
+        // Handler 체인을 통한 소프트 삭제 처리 (User -> Article -> Comment 순서)
+        userDeleteHandlerChain.handle(context);
     }
 
     public void authentication(Long id) {

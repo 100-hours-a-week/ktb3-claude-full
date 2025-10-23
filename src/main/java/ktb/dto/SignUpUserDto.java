@@ -9,6 +9,11 @@ public record SignUpUserDto(
         String profileImagePath
 ) {
     public UserAccount toEntity() {
-        return new UserAccount(null, email, nickName, password, profileImagePath);
+        return UserAccount.builder()
+                .email(email)
+                .nickName(nickName)
+                .password(password)
+                .profileImagePath(profileImagePath)
+                .build();
     }
 }

@@ -9,6 +9,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import java.util.function.Supplier;
 import ktb.constant.MessageConstant.Email;
 import ktb.constant.MessageConstant.Nickname;
 import ktb.constant.MessageConstant.User;
@@ -34,31 +35,27 @@ public final class UserData {
     // ==============================
     // ✅ 조회 계열 (ReadLock)
     // ==============================
-    public static Optional<UserAccount> findById(Long id) {
+    private static Optional<UserAccount> findUserBy(Supplier<UserAccount> supplier) {
         readLock.lock();
         try {
-            return Optional.ofNullable(store.get(id));
+            UserAccount user = supplier.get();
+            if (user == null) return Optional.empty();
+
+            return Optional.of(user);
         } finally {
             readLock.unlock();
         }
+    }
+    public static Optional<UserAccount> findById(Long id) {
+        return findUserBy(() -> store.get(id));
     }
 
     public static Optional<UserAccount> findByEmail(String email) {
-        readLock.lock();
-        try {
-            return Optional.ofNullable(emailIndex.get(email));
-        } finally {
-            readLock.unlock();
-        }
+        return findUserBy(() -> emailIndex.get(email));
     }
 
     public static Optional<UserAccount> findByNickName(String nickName) {
-        readLock.lock();
-        try {
-            return Optional.ofNullable(nickNameIndex.get(nickName));
-        } finally {
-            readLock.unlock();
-        }
+        return findUserBy(() -> nickNameIndex.get(nickName));
     }
 
     // ==============================
@@ -148,7 +145,6 @@ public final class UserData {
             UserAccount removed = store.remove(id);
             if (removed != null) {
                 removeIndex(removed);
-                userSeq.decrementAndGet();
             }
         } finally {
             writeLock.unlock();

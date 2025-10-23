@@ -11,6 +11,9 @@ import ktb.dto.response.ArticleDetailDto;
 import ktb.dto.response.ArticleSimpleDto;
 import ktb.dto.response.CommentDetailDto;
 import ktb.exception.article.NoExistArticleException;
+import ktb.handler.AbstractHandler;
+import ktb.handler.context.SoftDeleteContext;
+import ktb.handler.context.payload.SoftDeletePayload;
 import ktb.repository.ArticleRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ArticleService {
     private final ArticleRepository articleRepository;
+    private final AbstractHandler<SoftDeleteContext> articleDeleteHandlerChain;
 
     public Slice<ArticleSimpleDto> findAll(PageInfoDto pageInfo) {
         Slice<Article> articleSlice = articleRepository.findAll(pageInfo.endCursor(), pageInfo.size());
@@ -67,6 +71,9 @@ public class ArticleService {
     }
 
     public void delete(Long id) {
-        articleRepository.deleteById(id);
+        SoftDeleteContext context = new SoftDeleteContext(null, new SoftDeletePayload(null, id));
+
+        // Handler 체인을 통한 소프트 삭제 처리 (Article -> Comment 순서)
+        articleDeleteHandlerChain.handle(context);
     }
 }

@@ -107,7 +107,7 @@ public class CommentController {
         Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
         CommentDto comment = new CommentDto(request.commentId(), id, null, userId);
 
-        commentService.delete(comment);
+        commentService.delete(userId, comment);
 
         return ResponseEntity.noContent().build();
     }

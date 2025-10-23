@@ -1,5 +1,6 @@
 package ktb.repository.impl;
 
+import java.util.Collection;
 import java.util.Optional;
 import ktb.common.pagination.Slice;
 import ktb.db.article.ArticleData;
@@ -19,6 +20,11 @@ public class ArticleRepositoryImpl implements ArticleRepository {
     @Override
     public Optional<Article> findById(Long id) {
         return ArticleData.findById(id);
+    }
+
+    @Override
+    public Collection<Article> findByCreateBy(Long createBy) {
+        return ArticleData.findByCreateBy(createBy);
     }
 
     @Override

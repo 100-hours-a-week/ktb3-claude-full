@@ -1,5 +1,6 @@
 package ktb.repository;
 
+import java.util.Collection;
 import java.util.Optional;
 import ktb.common.pagination.Slice;
 import ktb.domain.Article;
@@ -8,6 +9,8 @@ import ktb.domain.UserAccount;
 
 public interface ArticleRepository {
     Optional<Article> findById(Long id);
+
+    Collection<Article> findByCreateBy(Long createBy);
 
     Optional<Article> findByTitle(String title);
 

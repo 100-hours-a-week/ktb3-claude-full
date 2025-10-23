@@ -46,10 +46,12 @@ public final class MessageConstant {
     public static final class ArticleMessage {
         public static final String NON_EXIST = "게시글이 존재하지 않습니다.";
         public static final String DUPLICATE = "이미 존재하는 게시글입니다.";
+        public static final String DELETED = "이미 삭제된 게시글입니다.";
     }
 
     public static final class CommentMessage {
         public static final String NON_EXIST = "존재하지 않는 댓글입니다.";
         public static final String EMPTY_CONTENT = "댓글 내용을 입력해주세요.";
+        public static final String DELETED = "이미 삭제된 댓글입니다.";
     }
 }

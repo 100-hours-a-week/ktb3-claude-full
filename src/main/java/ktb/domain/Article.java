@@ -1,5 +1,6 @@
 package ktb.domain;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 import ktb.constant.MessageConstant.CommentMessage;
+import ktb.exception.article.AlreadyDeletedArticle;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +25,8 @@ public class Article {
     private final AtomicLong commentSeq;
     private final ConcurrentLinkedDeque<ArticleComment> comments;
     private final String imagePath;
+    private boolean isDeleted;
+    private LocalDateTime deleteAt;
 
     public static Article create(Long id, String title, String content, Long userId, String imagePath) {
         return new Article(
@@ -30,7 +34,9 @@ public class Article {
                 ArticleMeta.init(id),
                 new AtomicLong(0),
                 new ConcurrentLinkedDeque<>(),
-                imagePath
+                imagePath,
+                Boolean.FALSE,
+                null
         );
     }
 
@@ -40,8 +46,49 @@ public class Article {
                 ArticleMeta.init(id),
                 new AtomicLong(0),
                 new ConcurrentLinkedDeque<>(),
-                article.imagePath
+                article.imagePath,
+                Boolean.FALSE,
+                null
         );
+    }
+
+    public void softDelete() {
+        if(!this.isDeleted) {
+            isDeleted = Boolean.TRUE;
+            deleteAt = LocalDateTime.now();
+
+            return;
+        }
+
+        throw new AlreadyDeletedArticle();
+    }
+
+    public void softDeleteAllComment() {
+        comments.stream()
+                .filter(ArticleComment::isDelete)
+                .forEach(ArticleComment::softDelete);
+    }
+
+    public void softDeleteComment(Long commentId) {
+        comments.stream()
+                .filter(comment -> comment.getId().equals(commentId))
+                .findAny()
+                .ifPresent(ArticleComment::softDelete);
+    }
+
+    public void softRestore() {
+        if (isDeleted) {
+            this.isDeleted = Boolean.FALSE;
+            this.deleteAt = null;
+
+            comments.stream()
+                    .filter(ArticleComment::isDelete)
+                    .forEach(ArticleComment::softRestore);
+        }
+    }
+
+    public boolean isDelete() {
+        return (isDeleted == Boolean.TRUE) && (deleteAt != null);
     }
 
     // 댓글 추가

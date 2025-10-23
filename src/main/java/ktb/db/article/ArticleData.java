@@ -1,5 +1,8 @@
 package ktb.db.article;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -17,12 +20,12 @@ import ktb.common.pagination.Slice;
 import ktb.constant.MessageConstant.ArticleMessage;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
-import ktb.domain.UserAccount;
 import ktb.exception.ConflictDuplicationException;
 
 public final class ArticleData {
     private static final NavigableMap<Long, Article> store = new ConcurrentSkipListMap<>();
     private static final Map<String, Article> titleIndex = new ConcurrentHashMap<>();
+    private static final Map<Long, List<Article>> createByIndex = new ConcurrentHashMap<>();
 
     // ✅ ID 자동 증가
     private static final AtomicLong articleSeq = new AtomicLong(0);
@@ -47,12 +50,27 @@ public final class ArticleData {
         }
     }
 
+    private static Collection<Article> findArticleAllBy(Supplier<Collection<Article>> supplier) {
+        readLock.lock();
+        try {
+            Collection<Article> articles = supplier.get();
+            if (articles == null || articles.isEmpty()) return Collections.emptyList();
+
+            return articles;
+        } finally {
+            readLock.unlock();
+        }
+    }
+
     public static Optional<Article> findById(Long id) {
         return findArticleBy(() -> store.get(id));
     }
 
     public static Optional<Article> findByTitle(String title) {
         return findArticleBy(() -> titleIndex.get(title));
+    }
+    public static Collection<Article> findByCreateBy(Long userId) {
+        return findArticleAllBy(() -> createByIndex.get(userId));
     }
 
     // ==============================
@@ -213,9 +231,12 @@ public final class ArticleData {
 
     private static void saveIndex(Article article) {
         titleIndex.put(article.getTitle(), article);
+        createByIndex.computeIfAbsent(article.getCreateBy(), k -> Collections.synchronizedList(new ArrayList<>()))
+                .add(article);
     }
 
     private static void removeIndex(Article article) {
         titleIndex.remove(article.getTitle());
+        createByIndex.remove(article.getCreateBy());
     }
 }
