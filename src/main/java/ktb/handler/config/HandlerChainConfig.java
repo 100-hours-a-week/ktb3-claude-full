@@ -1,65 +1,84 @@
 package ktb.handler.config;
 
 import ktb.handler.AbstractHandler;
-import ktb.handler.context.CommentDeleteContext;
-import ktb.handler.context.SoftDeleteContext;
-import ktb.handler.delete.ArticleScopeCommentsSoftDeleteHandler;
-import ktb.handler.delete.SingleCommentSoftDeleteHandler;
-import ktb.handler.delete.UserScopeArticlesSoftDeleteHandler;
-import ktb.handler.delete.UserScopeCommentsSoftDeleteHandler;
-import ktb.handler.delete.SingleArticleSoftDeleteHandler;
-import ktb.handler.delete.UserSoftDeleteHandler;
-import ktb.repository.ArticleRepository;
-import ktb.repository.UserRepository;
+import ktb.handler.chain.AuditHandler;
+import ktb.handler.chain.AuthorizationHandler;
+import ktb.handler.chain.ExecutionHandler;
+import ktb.handler.chain.ValidationHandler;
+import ktb.handler.context.ContextData;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Handler Chain 설정
+ *
+ * CoR + 전략 패턴 하이브리드 구조:
+ * - CoR: 단계별 책임 분리 (Authorization → Validation → Execution → Audit)
+ * - 전략: 각 단계 내에서 도메인별 알고리즘 자동 선택
+ *
+ * 모든 삭제 작업(User, Article, Comment)이 동일한 파이프라인을 사용하며,
+ * Execution 단계에서 컨텍스트 타입에 따라 적절한 전략들이 자동으로 선택되어 실행됩니다.
+ */
 @Configuration
 @RequiredArgsConstructor
 public class HandlerChainConfig {
-    private final UserRepository userRepository;
-    private final ArticleRepository articleRepository;
+    private final AuthorizationHandler authorizationHandler;
+    private final ValidationHandler validationHandler;
+    private final ExecutionHandler executionHandler;
+    private final AuditHandler auditHandler;
 
     /**
-     * User 삭제 시 사용되는 Handler 체인
-     * User -> Article -> Comment 순서로 소프트 삭제 처리
+     * 통합 삭제 Handler 체인
      *
-     * @return User 삭제용 Handler 체인
+     * User, Article, Comment 등 모든 도메인에서 사용하는 단일 파이프라인:
+     * 1. Authorization: 권한 확인
+     * 2. Validation: 비즈니스 검증 (전략 선택)
+     * 3. Execution: 실제 삭제 실행 (전략 선택 및 순서 보장)
+     * 4. Audit: 감사 로그 기록 (전략 선택)
+     *
+     * @return 통합 삭제 Handler 체인
      */
+    @Bean(name = "universalDeleteHandlerChain")
+    public AbstractHandler<ContextData<?>> universalDeleteHandlerChain() {
+        return AbstractHandler.chainOf(
+                authorizationHandler,     // 1단계: 권한 확인
+                validationHandler,        // 2단계: 비즈니스 검증
+                executionHandler,         // 3단계: 실제 삭제 (전략 자동 선택)
+                auditHandler              // 4단계: 감사 로그
+        );
+    }
+
+    /**
+     * 하위 호환성을 위한 User 삭제 체인 (Deprecated)
+     *
+     * @deprecated universalDeleteHandlerChain 사용 권장
+     */
+    @Deprecated
     @Bean(name = "userDeleteHandlerChain")
-    public AbstractHandler<SoftDeleteContext> userDeleteHandlerChain() {
-        return AbstractHandler.chainOf(
-                new UserSoftDeleteHandler(userRepository),
-                new UserScopeArticlesSoftDeleteHandler(articleRepository),
-                new UserScopeCommentsSoftDeleteHandler(articleRepository)
-        );
+    public AbstractHandler<ContextData<?>> userDeleteHandlerChain() {
+        return universalDeleteHandlerChain();
     }
 
     /**
-     * Article 삭제 시 사용되는 Handler 체인
-     * Article -> Comment 순서로 소프트 삭제 처리
+     * 하위 호환성을 위한 Article 삭제 체인 (Deprecated)
      *
-     * @return Article 삭제용 Handler 체인
+     * @deprecated universalDeleteHandlerChain 사용 권장
      */
+    @Deprecated
     @Bean(name = "articleDeleteHandlerChain")
-    public AbstractHandler<SoftDeleteContext> articleDeleteHandlerChain() {
-        return AbstractHandler.chainOf(
-                new SingleArticleSoftDeleteHandler(articleRepository),
-                new ArticleScopeCommentsSoftDeleteHandler(articleRepository)
-        );
+    public AbstractHandler<ContextData<?>> articleDeleteHandlerChain() {
+        return universalDeleteHandlerChain();
     }
 
     /**
-     * Comment 삭제 시 사용되는 Handler 체인
-     * Comment 순서로 소프트 삭제 처리
+     * 하위 호환성을 위한 Comment 삭제 체인 (Deprecated)
      *
-     * @return Comment 삭제용 Handler 체인
+     * @deprecated universalDeleteHandlerChain 사용 권장
      */
+    @Deprecated
     @Bean(name = "commentDeleteHandlerChain")
-    public AbstractHandler<CommentDeleteContext> commentDeleteHandlerChain() {
-        return AbstractHandler.chainOf(
-                new SingleCommentSoftDeleteHandler(articleRepository)
-        );
+    public AbstractHandler<ContextData<?>> commentDeleteHandlerChain() {
+        return universalDeleteHandlerChain();
     }
 }

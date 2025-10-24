@@ -3,7 +3,7 @@ package ktb.service;
 import ktb.dto.CommentDto;
 import ktb.handler.AbstractHandler;
 import ktb.handler.context.CommentDeleteContext;
-import ktb.handler.context.SoftDeleteContext;
+import ktb.handler.context.ContextData;
 import ktb.handler.context.payload.CommentDeletePayload;
 import ktb.repository.ArticleRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CommentService {
     private final ArticleRepository articleRepository;
-    private final AbstractHandler<CommentDeleteContext> commentDeleteHandlerChain;
+    private final AbstractHandler<ContextData<?>> commentDeleteHandlerChain;
 
     public CommentDto addComment(CommentDto request, String nickname) {
         return CommentDto.from(articleRepository.addComment(request.articleId(), request.content(), request.createBy(), nickname));
@@ -28,6 +28,8 @@ public class CommentService {
         CommentDeletePayload payload = new CommentDeletePayload(request.articleId(), request.id());
         CommentDeleteContext context = new CommentDeleteContext(userId, payload);
 
+        // Handler 체인을 통한 소프트 삭제 처리 (Authorization → Validation → Execution → Audit)
+        // Execution 단계에서 SingleCommentDeleteStrategy가 실행
         // 인가는 @Authorized AOP 에서 확인
         commentDeleteHandlerChain.handle(context);
     }

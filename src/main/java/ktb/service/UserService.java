@@ -8,7 +8,9 @@ import ktb.exception.AuthenticateException;
 import ktb.exception.user.MisMatchPasswordException;
 import ktb.exception.user.NonExistUserException;
 import ktb.handler.AbstractHandler;
+import ktb.handler.context.ContextData;
 import ktb.handler.context.SoftDeleteContext;
+import ktb.handler.context.payload.SoftDeletePayload;
 import ktb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,7 +20,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    private final AbstractHandler<SoftDeleteContext> userDeleteHandlerChain;
+    private final AbstractHandler<ContextData<?>> userDeleteHandlerChain;
 
     public Long signUp(SignUpUserDto user) {
         UserAccount saveUser = userRepository.save(user.toEntity());
@@ -56,9 +58,14 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        SoftDeleteContext context = new SoftDeleteContext(id, null);
+        // User 전체 삭제: traceId에 userId, payload는 articleId null로 설정
+        SoftDeleteContext context = new SoftDeleteContext(
+                id,
+                new SoftDeletePayload(id, null)
+        );
 
-        // Handler 체인을 통한 소프트 삭제 처리 (User -> Article -> Comment 순서)
+        // Handler 체인을 통한 소프트 삭제 처리 (Authorization → Validation → Execution → Audit)
+        // Execution 단계에서 UserDeleteStrategy, UserArticlesDeleteStrategy, UserCommentsDeleteStrategy가 순서대로 실행
         userDeleteHandlerChain.handle(context);
     }
 }

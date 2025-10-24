@@ -12,6 +12,7 @@ import ktb.dto.response.ArticleSimpleDto;
 import ktb.dto.response.CommentDetailDto;
 import ktb.exception.article.NoExistArticleException;
 import ktb.handler.AbstractHandler;
+import ktb.handler.context.ContextData;
 import ktb.handler.context.SoftDeleteContext;
 import ktb.handler.context.payload.SoftDeletePayload;
 import ktb.repository.ArticleRepository;
@@ -23,7 +24,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class ArticleService {
     private final ArticleRepository articleRepository;
-    private final AbstractHandler<SoftDeleteContext> articleDeleteHandlerChain;
+    private final AbstractHandler<ContextData<?>> articleDeleteHandlerChain;
 
     public Slice<ArticleSimpleDto> findAll(PageInfoDto pageInfo) {
         Slice<Article> articleSlice = articleRepository.findAll(pageInfo.endCursor(), pageInfo.size());
@@ -71,9 +72,14 @@ public class ArticleService {
     }
 
     public void delete(Long id) {
-        SoftDeleteContext context = new SoftDeleteContext(null, new SoftDeletePayload(null, id));
+        // Article 단일 삭제: traceId는 null (권한은 AOP 로 확인), payload: articleId 설정
+        SoftDeleteContext context = new SoftDeleteContext(
+                null,
+                new SoftDeletePayload(null, id)
+        );
 
-        // Handler 체인을 통한 소프트 삭제 처리 (Article -> Comment 순서)
+        // Handler 체인을 통한 소프트 삭제 처리 (Authorization → Validation → Execution → Audit)
+        // Execution 단계에서 SingleArticleDeleteStrategy, ArticleCommentsDeleteStrategy 가 순서대로 실행
         articleDeleteHandlerChain.handle(context);
     }
 }
