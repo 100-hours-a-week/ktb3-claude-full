@@ -237,6 +237,10 @@ public final class ArticleData {
 
     private static void removeIndex(Article article) {
         titleIndex.remove(article.getTitle());
-        createByIndex.remove(article.getCreateBy());
+
+        createByIndex.computeIfPresent(article.getCreateBy(), (userId, userArticles) -> {
+            userArticles.remove(article);
+            return userArticles.isEmpty() ? null : userArticles;
+        });
     }
 }
