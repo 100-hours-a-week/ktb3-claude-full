@@ -21,8 +21,8 @@ import ktb.dto.response.ArticleDetailDto;
 import ktb.dto.response.ArticleSimpleDto;
 import ktb.dto.response.ArticlesResponse;
 import ktb.dto.response.CommonResponse;
-import ktb.service.ArticleService;
-
+import ktb.service.ArticleCommandService;
+import ktb.service.ArticleQueryService;
 import ktb.util.JwtKeyProvider;
 import lombok.RequiredArgsConstructor;
 
@@ -39,7 +39,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 public class ArticleController {
-    private final ArticleService articleService;
+    private final ArticleQueryService articleQueryService;
+    private final ArticleCommandService articleCommandService;
     private final JwtKeyProvider jwtProvider;
 
     @Operation(
@@ -54,7 +55,7 @@ public class ArticleController {
     public ResponseEntity<ArticlesResponse<ArticleSimpleDto>> getAll(@Valid @RequestBody AllArticleRetrieveRequest request) {
         PageInfoDto pageInfo = PageInfoDto.of(request.after(), request.limit());
 
-        Slice<ArticleSimpleDto> page = articleService.findAll(pageInfo);
+        Slice<ArticleSimpleDto> page = articleQueryService.findByIdAndCursorPagination(pageInfo);
 
         return ResponseEntity.ok(ArticlesResponse.of(Success.RETRIEVAL_ALL, page.getData(), page.getPageInfo()));
     }
@@ -75,7 +76,7 @@ public class ArticleController {
     ) {
         Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
 
-        articleService.save(
+        articleCommandService.save(
                 SaveArticleDto.builder()
                         .title(request.title())
                         .content(request.content())
@@ -99,7 +100,7 @@ public class ArticleController {
     public ResponseEntity<CommonResponse<ArticleDetailDto>> getOne(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id
     ) {
-        ArticleDetailDto response = articleService.findByIdDetail(id);
+        ArticleDetailDto response = articleQueryService.findByIdDetail(id);
 
         return ResponseEntity.ok(CommonResponse.of(Success.RETRIEVAL_POST, response));
     }
@@ -120,7 +121,7 @@ public class ArticleController {
             HttpServletRequest httpRequest
     ) {
         Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
-        articleService.save(SaveArticleDto.of(id, request, userId));
+        articleCommandService.save(SaveArticleDto.of(id, request, userId));
 
         return ResponseEntity.noContent().build();
     }
@@ -138,7 +139,7 @@ public class ArticleController {
     public ResponseEntity<Void> deleteArticle(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id
     ) {
-        articleService.delete(id);
+        articleCommandService.delete(id);
 
         return ResponseEntity.noContent().build();
     }

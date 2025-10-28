@@ -1,34 +1,26 @@
 package ktb.repository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import ktb.common.pagination.Slice;
+
 import ktb.domain.Article;
-import ktb.domain.ArticleComment;
 import ktb.domain.UserAccount;
 
-public interface ArticleRepository {
+import org.springframework.data.domain.Limit;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ArticleRepository extends JpaRepository<Article, Long> {
     Optional<Article> findById(Long id);
 
-    Collection<Article> findByCreateBy(Long createBy);
+    Collection<Article> findByCreateBy(UserAccount createBy);
 
     Optional<Article> findByTitle(String title);
 
-    Slice<Article> findAll(Long cursorId, int size);
+    List<Article> findAllByIdGreaterThanOrderByIdAsc(Long cursorId, Limit limit);
 
-    Optional<Long> getNextCursor(Long lastId);
-
-    void like(Long id);
-
-    void save (Article article);
+    List<Article> findAllByOrderByIdAsc(Limit limit);
 
 
     void deleteById(Long id);
-
-    // ✅ 댓글
-    ArticleComment addComment(Long articleId, String content, Long userId, String nickname);
-
-    void updateComment(Long articleId, Long commentId, String newContent);
-
-    void deleteComment(Long articleId, Long commentId);
 }

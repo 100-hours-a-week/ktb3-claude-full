@@ -1,85 +1,34 @@
 package ktb.service;
 
 import java.util.List;
+import java.util.Optional;
 
-import ktb.common.pagination.Slice;
 import ktb.domain.Article;
-import ktb.dto.ArticleDto;
-import ktb.dto.PageInfoDto;
-import ktb.dto.SaveArticleDto;
-import ktb.dto.response.ArticleDetailDto;
-import ktb.dto.response.ArticleSimpleDto;
-import ktb.dto.response.CommentDetailDto;
-import ktb.exception.article.NoExistArticleException;
-import ktb.handler.AbstractHandler;
-import ktb.handler.context.ContextData;
-import ktb.handler.context.SoftDeleteContext;
-import ktb.handler.context.payload.SoftDeletePayload;
 import ktb.repository.ArticleRepository;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class ArticleService {
     private final ArticleRepository articleRepository;
-    private final AbstractHandler<ContextData<?>> articleDeleteHandlerChain;
 
-    public Slice<ArticleSimpleDto> findAll(PageInfoDto pageInfo) {
-        Slice<Article> articleSlice = articleRepository.findAll(pageInfo.endCursor(), pageInfo.size());
-
-        List<ArticleSimpleDto> simpleDtoList = articleSlice.content().stream()
-                .map(ArticleSimpleDto::from)
-                .toList();
-
-        return Slice.of(simpleDtoList, articleSlice.hasNext(), articleSlice.nextCursor());
+    public Optional<Article> findById(Long articleId) {
+        return articleRepository.findById(articleId);
     }
 
-    public ArticleDto findById(Long articleId) {
-        return ArticleDto.from(articleRepository.findById(articleId).orElseThrow(NoExistArticleException::new));
+    public List<Article> findAllByOrderByIdAsc(Limit limit) {
+        return articleRepository.findAllByOrderByIdAsc(limit);
     }
 
-    public ArticleDetailDto findByIdDetail(Long articleId) {
-        Article article = articleRepository.findById(articleId).orElseThrow(NoExistArticleException::new);
-
-        // CommentDetailDto 리스트 생성 (저장된 nickname 사용)
-        List<CommentDetailDto> commentDetailDtoList = article.getAllComments().stream()
-                .map(CommentDetailDto::from)
-                .toList();
-
-        return ArticleDetailDto.from(article, commentDetailDtoList);
+    public List<Article> findAllByIdGreaterThan(Long cursorId, Limit limit) {
+        return articleRepository.findAllByIdGreaterThanOrderByIdAsc(cursorId, limit);
     }
 
-    public void save(SaveArticleDto updated) {
-        // Article 내용 변경
-        if (updated.id() != null) {
-            Article origin = articleRepository.findById(updated.id()).orElseThrow(NoExistArticleException::new);
-
-            if (origin != null) {
-                // 인가는 @Authorized AOP 에서 확인
-                origin.update(updated.title(), updated.content());
-                articleRepository.save(origin);
-
-                return;
-            }
-        }
-
-        // Article 신규 생성
-        Article article = updated.toEntity();
-
-        articleRepository.save(article);
-    }
-
-    public void delete(Long id) {
-        // Article 단일 삭제: traceId는 null (권한은 AOP 로 확인), payload: articleId 설정
-        SoftDeleteContext context = new SoftDeleteContext(
-                null,
-                new SoftDeletePayload(null, id)
-        );
-
-        // Handler 체인을 통한 소프트 삭제 처리 (Authorization → Validation → Execution → Audit)
-        // Execution 단계에서 SingleArticleDeleteStrategy, ArticleCommentsDeleteStrategy 가 순서대로 실행
-        articleDeleteHandlerChain.handle(context);
+    public Article save(Article article) {
+        return articleRepository.save(article);
     }
 }

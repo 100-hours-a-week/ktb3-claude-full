@@ -219,4 +219,11 @@ gradle-app.setting
 ### RSA Key
 src/main/resources/keys
 
+### Docker MySQL Data Directory
+docker/mysql_data
+
+### Enviroment File
+*.env
+**/*.env
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,java,intellij,git

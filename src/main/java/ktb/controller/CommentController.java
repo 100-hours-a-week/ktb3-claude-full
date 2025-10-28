@@ -15,7 +15,8 @@ import ktb.dto.request.CommentDeleteRequest;
 import ktb.dto.request.CommentRequest;
 import ktb.dto.request.CommentUpdateRequest;
 import ktb.dto.response.CommonResponse;
-import ktb.service.CommentService;
+import ktb.service.CommentCommandService;
+import ktb.service.CommentQueryService;
 
 import ktb.util.JwtKeyProvider;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(("/article"))
 @RequiredArgsConstructor
 public class CommentController {
-    private final CommentService commentService;
+    private final CommentQueryService commentQueryService;
+    private final CommentCommandService commentCommandService;
     private final JwtKeyProvider jwtProvider;
 
     @Operation(
@@ -59,9 +61,10 @@ public class CommentController {
                 .articleId(id)
                 .content(request.content())
                 .createBy(userId)
+                .createNickName(nickName)
                 .build();
 
-        CommentDto added = commentService.addComment(comment, nickName);
+        CommentDto added = commentCommandService.addComment(comment);
 
         return ResponseEntity.ok(CommonResponse.of("", added));
     }
@@ -82,9 +85,10 @@ public class CommentController {
             HttpServletRequest httpRequest
     ) {
         Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
-        CommentDto comment = CommentDto.ofUpdate(request.commentId(), id, request.content(), userId);
+        String nickName = jwtProvider.getNickNameFromRequest(httpRequest);
+        CommentDto comment = CommentDto.ofUpdate(request.commentId(), id, request.content(), userId, nickName);
 
-        commentService.update(comment);
+        commentCommandService.save(comment);
 
         return ResponseEntity.noContent().build();
     }
@@ -105,9 +109,10 @@ public class CommentController {
             HttpServletRequest httpRequest
     ) {
         Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
-        CommentDto comment = new CommentDto(request.commentId(), id, null, userId);
+        String nickName = jwtProvider.getNickNameFromRequest(httpRequest);
+        CommentDto comment = new CommentDto(request.commentId(), id, null, userId, nickName);
 
-        commentService.delete(userId, comment);
+        commentCommandService.delete(userId, comment);
 
         return ResponseEntity.noContent().build();
     }

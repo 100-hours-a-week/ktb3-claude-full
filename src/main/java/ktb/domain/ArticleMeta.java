@@ -1,24 +1,38 @@
 package ktb.domain;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "article_meta")
 @Getter
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArticleMeta {
-    private final Long articleId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @OneToOne
+    private Article article;
     private AtomicInteger likeCnt;
     private AtomicInteger viewCnt;
     private AtomicInteger commentCnt;
 
-    private final LocalDateTime createAt;
+    private LocalDateTime createAt;
     private LocalDateTime updateAt;
 
-    protected static ArticleMeta init(Long articleId) {
+    protected static ArticleMeta init(Article article) {
         return new ArticleMeta(
-                articleId,
+                article,
                 new AtomicInteger(0),
                 new AtomicInteger(0),
                 new AtomicInteger(0),
