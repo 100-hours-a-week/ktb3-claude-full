@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import ktb.annotation.Authorized;
@@ -23,7 +22,6 @@ import ktb.dto.response.ArticlesResponse;
 import ktb.dto.response.CommonResponse;
 import ktb.service.ArticleCommandService;
 import ktb.service.ArticleQueryService;
-import ktb.util.JwtKeyProvider;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -32,6 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,7 +40,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class ArticleController {
     private final ArticleQueryService articleQueryService;
     private final ArticleCommandService articleCommandService;
-    private final JwtKeyProvider jwtProvider;
 
     @Operation(
             summary = "Article search(page)",
@@ -72,10 +70,8 @@ public class ArticleController {
     @PostMapping("/article")
     public ResponseEntity<Void> insertArticle(
             @Valid @RequestBody ArticleRequest request,
-            HttpServletRequest httpRequest
+            @RequestAttribute Long userId
     ) {
-        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
-
         articleCommandService.save(
                 SaveArticleDto.builder()
                         .title(request.title())
@@ -118,9 +114,8 @@ public class ArticleController {
     public ResponseEntity<Void> patchArticle(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
             @Valid @RequestBody ArticlePatchRequest request,
-            HttpServletRequest httpRequest
+            @RequestAttribute Long userId
     ) {
-        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
         articleCommandService.save(SaveArticleDto.of(id, request, userId));
 
         return ResponseEntity.noContent().build();

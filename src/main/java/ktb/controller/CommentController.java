@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import ktb.annotation.Authorized;
@@ -18,7 +17,6 @@ import ktb.dto.response.CommonResponse;
 import ktb.service.CommentCommandService;
 import ktb.service.CommentQueryService;
 
-import ktb.util.JwtKeyProvider;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
@@ -26,6 +24,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,7 +36,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class CommentController {
     private final CommentQueryService commentQueryService;
     private final CommentCommandService commentCommandService;
-    private final JwtKeyProvider jwtProvider;
 
     @Operation(
             summary = "Comment insert",
@@ -52,16 +50,14 @@ public class CommentController {
     public ResponseEntity<CommonResponse<CommentDto>> addComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
             @Valid @RequestBody CommentRequest request,
-            HttpServletRequest httpRequest
+            @RequestAttribute Long userId,
+            @RequestAttribute String userNickname
     ) {
-        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
-        String nickName = jwtProvider.getNickNameFromRequest(httpRequest);
-
         CommentDto comment = CommentDto.builder()
                 .articleId(id)
                 .content(request.content())
                 .createBy(userId)
-                .createNickName(nickName)
+                .createNickName(userNickname)
                 .build();
 
         CommentDto added = commentCommandService.addComment(comment);
@@ -82,11 +78,10 @@ public class CommentController {
     public ResponseEntity<Void> updateComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
             @Valid @RequestBody CommentUpdateRequest request,
-            HttpServletRequest httpRequest
+            @RequestAttribute Long userId,
+            @RequestAttribute String userNickname
     ) {
-        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
-        String nickName = jwtProvider.getNickNameFromRequest(httpRequest);
-        CommentDto comment = CommentDto.ofUpdate(request.commentId(), id, request.content(), userId, nickName);
+        CommentDto comment = CommentDto.ofUpdate(request.commentId(), id, request.content(), userId, userNickname);
 
         commentCommandService.save(comment);
 
@@ -106,11 +101,10 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
             @Valid @RequestBody CommentDeleteRequest request,
-            HttpServletRequest httpRequest
+            @RequestAttribute Long userId,
+            @RequestAttribute String userNickname
     ) {
-        Long userId = jwtProvider.getUserIdFromRequest(httpRequest);
-        String nickName = jwtProvider.getNickNameFromRequest(httpRequest);
-        CommentDto comment = new CommentDto(request.commentId(), id, null, userId, nickName);
+        CommentDto comment = new CommentDto(request.commentId(), id, null, userId, userNickname);
 
         commentCommandService.delete(userId, comment);
 

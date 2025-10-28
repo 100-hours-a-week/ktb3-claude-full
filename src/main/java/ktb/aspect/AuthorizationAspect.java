@@ -52,7 +52,9 @@ public class AuthorizationAspect {
         try {
             // ✅ 2. JWT 검증
             Long userId = jwtProvider.validateAndGetUserId(token);
+            String userNickName = jwtProvider.getNickNameFromRequest(request);
             request.setAttribute("userId", userId);
+            request.setAttribute("userNickname", userNickName);
 
             // ✅ 3. Controller 실행
             Object result = joinPoint.proceed();
