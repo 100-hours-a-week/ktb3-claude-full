@@ -1,9 +1,11 @@
 package ktb.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
@@ -21,19 +23,16 @@ import lombok.NoArgsConstructor;
 public class ArticleMeta {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @OneToOne
-    private Article article;
+    private Long id;
     private AtomicInteger likeCnt;
     private AtomicInteger viewCnt;
-    private AtomicInteger commentCnt;
 
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
 
-    protected static ArticleMeta init(Article article) {
+    protected static ArticleMeta init() {
         return new ArticleMeta(
-                article,
-                new AtomicInteger(0),
+                null,
                 new AtomicInteger(0),
                 new AtomicInteger(0),
                 LocalDateTime.now() ,
@@ -42,8 +41,6 @@ public class ArticleMeta {
 
     protected void incrementViewCnt() { viewCnt.incrementAndGet(); }
     protected void incrementLikeCnt() { likeCnt.incrementAndGet(); }
-    protected void incrementCommentCnt() { commentCnt.incrementAndGet(); }
-    protected void decrementCommentCnt() { commentCnt.decrementAndGet(); }
 
     protected void updateTimestamp() {
         this.updateAt = LocalDateTime.now();

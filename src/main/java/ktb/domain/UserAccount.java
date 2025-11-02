@@ -45,6 +45,14 @@ public class UserAccount {
     @Column
     private LocalDateTime deleteAt;
 
+    private UserAccount(Long userId) {
+        this.id = userId;
+    }
+
+    public UserAccount init(Long userId) {
+        return new UserAccount(userId);
+    }
+
     public void changeNickName(String nickName) {
         this.nickname = nickName;
     }

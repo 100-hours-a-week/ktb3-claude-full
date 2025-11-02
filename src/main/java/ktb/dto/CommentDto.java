@@ -13,8 +13,8 @@ public record CommentDto(
         String createNickName
 ) {
     public static CommentDto from(ArticleComment comment) {
-        return new CommentDto(comment.getId(), comment.getArticle().getId(), comment.getContent(), comment.getCreateBy(),
-                comment.getCreateByNickname());
+        return new CommentDto(comment.getId(), comment.getArticle().getId(), comment.getContent(), comment.getCreateBy().getId(),
+                comment.getCreateBy().getNickname());
     }
 
     public static CommentDto ofUpdate(Long commentId, Long articleId, String content, Long userId, String userNickname) {
@@ -26,8 +26,7 @@ public record CommentDto(
                 article,
                 this.id,
                 this.content,
-                this.createBy,
-                this.createNickName
+                this.createBy
         );
     }
 }

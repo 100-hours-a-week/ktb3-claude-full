@@ -11,7 +11,7 @@ public record SignUpUserDto(
     public UserAccount toEntity() {
         return UserAccount.builder()
                 .email(email)
-                .nickName(nickName)
+                .nickname(nickName)
                 .password(password)
                 .profileImagePath(profileImagePath)
                 .build();

@@ -31,7 +31,7 @@ public record ArticleSimpleDto(
                 article.getId(),
                 article.getTitle(),
                 article.getMeta().getLikeCnt().get(),
-                article.getMeta().getCommentCnt().get(),
+                article.getComments().size(),
                 article.getMeta().getViewCnt().get()
         );
     }

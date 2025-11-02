@@ -27,4 +27,12 @@ public class CommentService {
     public ArticleComment save(ArticleComment comment) {
         return commentRepository.save(comment);
     }
+
+    public List<ArticleComment> findAllByUserId(Long userId) {
+        return commentRepository.findAllByCreateBy_Id(userId);
+    }
+
+    public List<ArticleComment> findAllByUserIdAndArticleId(Long userId, Long articleId) {
+        return commentRepository.findAllByCreateBy_IdAndArticle_Id(userId, articleId);
+    }
 }

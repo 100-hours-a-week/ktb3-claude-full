@@ -27,7 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ArticleQueryService {
     private final ArticleService articleService;
-    private final CommentService commentService;
 
     /**
      * 커서 기반 페이징으로 Article 목록 조회
@@ -68,16 +67,11 @@ public class ArticleQueryService {
      * @throws NoExistArticleException Article 존재하지 않을 경우
      */
     public ArticleDetailDto findByIdDetail(Long articleId) {
-        Article article = articleService.findById(articleId)
+        Article article = articleService.findDetail(articleId)
                 .orElseThrow(NoExistArticleException::new);
-        List<ArticleComment> comments = commentService.findAllByArticle(article);
 
-        comments.sort(Comparator.comparing(ArticleComment::getId));
+        article.getComments().sort(Comparator.comparing(ArticleComment::getId));
 
-        List<CommentDetailDto> commentDetailDtoList = comments.stream()
-                .map(CommentDetailDto::from)
-                .toList();
-
-        return ArticleDetailDto.from(article, commentDetailDtoList);
+        return ArticleDetailDto.from(article);
     }
 }

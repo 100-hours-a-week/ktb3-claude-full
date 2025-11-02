@@ -22,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ArticleCommandService {
     private final ArticleService articleService;
+
+    private final ArticleMetaService metaService;
+
     private final AbstractHandler<ContextData<?>> articleDeleteHandlerChain;
 
     /**
@@ -44,6 +47,7 @@ public class ArticleCommandService {
         // Article 신규 생성
         Article article = saveDto.toEntity();
         articleService.save(article);
+        metaService.save(article.getMeta());
     }
 
     /**

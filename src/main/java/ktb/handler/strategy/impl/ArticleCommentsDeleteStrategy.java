@@ -1,14 +1,20 @@
 package ktb.handler.strategy.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import ktb.domain.Article;
+import ktb.domain.ArticleComment;
 import ktb.exception.article.AlreadyDeletedArticle;
 import ktb.handler.context.SoftDeleteContext;
 import ktb.handler.strategy.DeleteExecutionStrategy;
 import ktb.handler.strategy.DeleteStrategyOrder;
 import ktb.repository.ArticleRepository;
+import ktb.service.ArticleService;
+import ktb.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Article 의 모든 Comments 삭제 전략
@@ -21,7 +27,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ArticleCommentsDeleteStrategy implements DeleteExecutionStrategy<SoftDeleteContext> {
-    private final ArticleRepository articleRepository;
+    private final ArticleService articleService;
 
     @Override
     public Class<SoftDeleteContext> getSupportedContextType() {
@@ -40,14 +46,12 @@ public class ArticleCommentsDeleteStrategy implements DeleteExecutionStrategy<So
     }
 
     @Override
+    @Transactional
     public void execute(SoftDeleteContext context) {
-        Article article = articleRepository.findById(context.payload().articleId())
+        Article article = articleService.findById(context.payload().articleId())
                 .orElseThrow(AlreadyDeletedArticle::new);
 
-        article.softDeleteAllComment();
-
-        // TODO: Save 실패 시 Rollback 가능하게 save 결과를 받아올 필요가 있음
-        articleRepository.save(article);
+        article.getComments().forEach(ArticleComment::softDelete);
 
         log.info("Article {} comments deleted", context.payload().articleId());
     }

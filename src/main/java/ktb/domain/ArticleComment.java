@@ -1,6 +1,8 @@
 package ktb.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,37 +21,54 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ArticleComment {
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Getter private Long id;
+    private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "id")
-    @Getter private Article article;
-    @Getter private String content;
+    @Getter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "article_id")
+    private Article article;
 
-    @Getter private Long createBy;
-    @Getter private String createByNickname;
-    @Getter private LocalDateTime createAt;
-    @Getter private LocalDateTime updateAt;
+    @Getter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "create_by")
+    private UserAccount createBy;
+
+    @Getter
+    private String content;
+
+    @Getter
+    @Column(name = "create_at")
+    private LocalDateTime createAt;
+
+    @Getter
+    @Column(name = "update_at")
+    private LocalDateTime updateAt;
+
+    @Column(name = "is_deleted")
     private boolean isDeleted;
+
+    @Column(name = "delete_at")
     private LocalDateTime deleteAt;
 
-    public static ArticleComment init(Article article, Long commentId, String content, Long userId, String nickname) {
+    public static ArticleComment init(Article article, Long commentId, String content, Long userId) {
         return new ArticleComment(
                 commentId,
                 article,
+                UserAccount.builder()
+                        .id(userId)
+                        .build(),
                 content,
-                userId,
-                nickname,
-                LocalDateTime.now(),
+                null,
                 null,
                 Boolean.FALSE,
                 null
         );
     }
 
-    protected void softDelete() {
+    public void softDelete() {
         if(!isDeleted) {
             isDeleted = Boolean.TRUE;
 

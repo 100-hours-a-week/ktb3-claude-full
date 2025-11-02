@@ -1,10 +1,13 @@
 package ktb.domain;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -18,6 +21,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.BatchSize;
 
 @Entity
 @Table(name = "article")
@@ -28,15 +32,28 @@ public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String title;
-    private String content;
 
     @ManyToOne
+    @JoinColumn(name = "create_by")
     private UserAccount createBy;
-    @OneToOne
+
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @MapsId
+    @JoinColumn(name = "meta_id")
     private ArticleMeta meta;
+
+    @OneToMany(mappedBy = "article", fetch = FetchType.LAZY)
+    @BatchSize(size = 10)
+    private List<ArticleComment> comments = new LinkedList<>();
+
+    private String title;
+
+    private String content;
+
     private String imagePath;
+
     private boolean isDeleted;
+
     private LocalDateTime deleteAt;
 
     public void softDelete() {
@@ -73,5 +90,25 @@ public class Article {
         if (title != null || content != null) {
             meta.updateTimestamp();
         }
+    }
+
+    public static Article create(Long id, String title, String content, Long userId, String imagePath) {
+        UserAccount user = UserAccount.builder()
+                .id(userId)
+                .build();
+
+        ArticleMeta meta = ArticleMeta.init();
+
+        return new Article(
+                id,
+                user,
+                meta,
+                new LinkedList<>(),
+                title,
+                content,
+                imagePath,
+                false,
+                null
+        );
     }
 }

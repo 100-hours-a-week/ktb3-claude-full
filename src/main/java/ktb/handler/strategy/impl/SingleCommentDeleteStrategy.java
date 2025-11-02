@@ -1,14 +1,18 @@
 package ktb.handler.strategy.impl;
 
 import ktb.domain.Article;
+import ktb.domain.ArticleComment;
 import ktb.exception.article.AlreadyDeletedArticle;
 import ktb.handler.context.CommentDeleteContext;
 import ktb.handler.strategy.DeleteExecutionStrategy;
 import ktb.handler.strategy.DeleteStrategyOrder;
 import ktb.repository.ArticleRepository;
+import ktb.service.ArticleService;
+import ktb.service.CommentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 단일 Comment 삭제 전략
@@ -21,7 +25,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class SingleCommentDeleteStrategy implements DeleteExecutionStrategy<CommentDeleteContext> {
-    private final ArticleRepository articleRepository;
+    private final CommentService commentService;
 
     @Override
     public Class<CommentDeleteContext> getSupportedContextType() {
@@ -34,18 +38,14 @@ public class SingleCommentDeleteStrategy implements DeleteExecutionStrategy<Comm
     }
 
     @Override
+    @Transactional
     public void execute(CommentDeleteContext context) {
-        Long articleId = context.payload().articleId();
-
-        Article article = articleRepository.findById(articleId)
-                .orElseThrow(AlreadyDeletedArticle::new);
-
+        Long articleId = context.traceId();
         Long commentId = context.payload().commentId();
 
-        article.softDeleteComment(commentId);
-
-        // TODO: Save 실패 시 Rollback 가능하게 save 결과를 받아올 필요가 있음
-        articleRepository.save(article);
+        ArticleComment comment = commentService.findById(commentId).orElseThrow();
+        comment.softDelete();
+        commentService.save(comment);
 
         log.info("Comment {} in Article {} deleted", commentId, articleId);
     }

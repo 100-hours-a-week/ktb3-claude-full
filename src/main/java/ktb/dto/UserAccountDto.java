@@ -9,7 +9,16 @@ public record UserAccountDto(
         String profileImagePath
 ) {
     public static UserAccountDto from(UserAccount userAccount) {
-        return new UserAccountDto(userAccount.getId(), userAccount.getEmail(), userAccount.getNickName(),
+        return new UserAccountDto(userAccount.getId(), userAccount.getEmail(), userAccount.getNickname(),
                 userAccount.getProfileImagePath());
+    }
+
+    public UserAccount toEntity() {
+        return UserAccount.builder()
+                .id(this.id)
+                .email(this.email)
+                .nickname(this.nickName)
+                .profileImagePath(this.profileImagePath)
+                .build();
     }
 }

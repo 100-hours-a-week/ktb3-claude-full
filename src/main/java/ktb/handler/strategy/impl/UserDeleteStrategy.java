@@ -9,6 +9,7 @@ import ktb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * User 삭제 전략
@@ -41,6 +42,7 @@ public class UserDeleteStrategy implements DeleteExecutionStrategy<SoftDeleteCon
     }
 
     @Override
+    @Transactional
     public void execute(SoftDeleteContext context) {
         Long userId = context.traceId();
 
@@ -48,9 +50,6 @@ public class UserDeleteStrategy implements DeleteExecutionStrategy<SoftDeleteCon
                 .orElseThrow(AlreadyDeletedUser::new);
 
         user.softDelete();
-
-        //TODO: Save 실패 시 Rollback 가능하게 save 결과를 받아올 필요가 있음
-        userRepository.save(user);
 
         log.info("User {} deleted", userId);
     }

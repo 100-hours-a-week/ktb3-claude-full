@@ -36,15 +36,17 @@ public record ArticleDetailDto(
         @JsonProperty("comment")
         List<CommentDetailDto> comment
 ) {
-    public static ArticleDetailDto from(Article article, List<CommentDetailDto> commentDetailDtoList) {
+    public static ArticleDetailDto from(Article article) {
         return new ArticleDetailDto(
                 String.valueOf(article.getId()),
                 article.getTitle(),
                 article.getContent(),
                 String.valueOf(article.getMeta().getLikeCnt().get()),
-                String.valueOf(article.getMeta().getCommentCnt().get()),
+                String.valueOf(article.getComments().size()),
                 String.valueOf(article.getMeta().getViewCnt().get()),
-                commentDetailDtoList
+                article.getComments().stream()
+                        .map(CommentDetailDto::from)
+                        .toList()
         );
     }
 }

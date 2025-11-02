@@ -6,10 +6,11 @@ import ktb.domain.Article;
 import ktb.handler.context.SoftDeleteContext;
 import ktb.handler.strategy.DeleteExecutionStrategy;
 import ktb.handler.strategy.DeleteStrategyOrder;
-import ktb.repository.ArticleRepository;
+import ktb.service.ArticleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * User 의 모든 Articles 삭제 전략
@@ -22,7 +23,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class UserArticlesDeleteStrategy implements DeleteExecutionStrategy<SoftDeleteContext> {
-    private final ArticleRepository articleRepository;
+    private final ArticleService articleService;
 
     @Override
     public Class<SoftDeleteContext> getSupportedContextType() {
@@ -42,17 +43,19 @@ public class UserArticlesDeleteStrategy implements DeleteExecutionStrategy<SoftD
     }
 
     @Override
+    @Transactional
     public void execute(SoftDeleteContext context) {
         Long userId = context.traceId();
 
-        List<Article> articles = articleRepository.findByCreateBy(userId)
-                .stream()
-                .toList();
+        List<Article> articles = articleService.findByCreateBy_Id(userId);
 
-        articles.forEach(Article::softDelete);
+        // Article softDelete
+        articles.stream()
+                .filter(article -> !article.isDelete())
+                .forEach(Article::softDelete);
 
-        // TODO: Save 실패 시 Rollback 가능하게 save 결과를 받아올 필요가 있음
-        articles.forEach(articleRepository::save);
+        // 저장
+        articleService.saveAll(articles);
 
         log.info("User {} articles deleted: {} articles", userId, articles.size());
     }

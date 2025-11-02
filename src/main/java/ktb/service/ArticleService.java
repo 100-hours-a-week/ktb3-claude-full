@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.data.domain.Limit;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,15 +21,32 @@ public class ArticleService {
         return articleRepository.findById(articleId);
     }
 
+    public Optional<Article> findDetail(Long articleId) {
+        return articleRepository.findDetail(articleId);
+    }
+
+    @Transactional(readOnly = true)
     public List<Article> findAllByOrderByIdAsc(Limit limit) {
         return articleRepository.findAllByOrderByIdAsc(limit);
     }
 
+    @Transactional(readOnly = true)
     public List<Article> findAllByIdGreaterThan(Long cursorId, Limit limit) {
         return articleRepository.findAllByIdGreaterThanOrderByIdAsc(cursorId, limit);
     }
 
+    @Transactional
     public Article save(Article article) {
         return articleRepository.save(article);
+    }
+
+    @Transactional
+    public List<Article> saveAll(List<Article> articles) {
+        return articleRepository.saveAll(articles);
+    }
+
+    @Transactional
+    public List<Article> findByCreateBy_Id(Long userId) {
+        return articleRepository.findByCreateBy_Id(userId);
     }
 }

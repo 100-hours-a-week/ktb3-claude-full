@@ -4,7 +4,6 @@ import ktb.domain.UserAccount;
 import ktb.dto.SignUpUserDto;
 import ktb.dto.UserAccountDto;
 import ktb.dto.request.PasswordUpdateRequest;
-import ktb.exception.AuthenticateException;
 import ktb.exception.user.MisMatchPasswordException;
 import ktb.exception.user.NonExistUserException;
 import ktb.handler.AbstractHandler;
@@ -13,7 +12,6 @@ import ktb.handler.context.SoftDeleteContext;
 import ktb.handler.context.payload.SoftDeletePayload;
 import ktb.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -58,7 +56,7 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        // User 전체 삭제: traceId에 userId, payload는 articleId null로 설정
+        // User 전체 삭제: traceId에 userId, payload 는 articleId null 로 설정
         SoftDeleteContext context = new SoftDeleteContext(
                 id,
                 new SoftDeletePayload(id, null)

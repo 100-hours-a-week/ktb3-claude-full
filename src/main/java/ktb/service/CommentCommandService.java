@@ -1,8 +1,12 @@
 package ktb.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
+import ktb.domain.UserAccount;
 import ktb.dto.CommentDto;
+import ktb.dto.UserAccountDto;
 import ktb.exception.article.NoExistArticleException;
 import ktb.handler.AbstractHandler;
 import ktb.handler.context.CommentDeleteContext;
@@ -80,5 +84,19 @@ public class CommentCommandService {
         // Execution 단계에서 SingleCommentDeleteStrategy가 실행
         // 인가는 @Authorized AOP 에서 확인
         commentDeleteHandlerChain.handle(context);
+    }
+
+    /**
+     * User 가 생성한 모든 댓글 정보 조회
+     *
+     * @param userId 요청 사용자 ID
+     * @return 유저가 생성한 댓글들
+     */
+    public List<CommentDto> findAllByUserId(Long userId) {
+        List<ArticleComment> comments = commentService.findAllByUserId(userId);
+
+        return comments.stream()
+                .map(CommentDto::from)
+                .collect(Collectors.toList());
     }
 }

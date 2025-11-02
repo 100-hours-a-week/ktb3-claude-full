@@ -3,13 +3,19 @@ package ktb.handler.strategy.impl;
 import java.util.List;
 
 import ktb.domain.Article;
+import ktb.domain.ArticleComment;
+import ktb.dto.UserAccountDto;
 import ktb.handler.context.SoftDeleteContext;
 import ktb.handler.strategy.DeleteExecutionStrategy;
 import ktb.handler.strategy.DeleteStrategyOrder;
-import ktb.repository.ArticleRepository;
+import ktb.repository.ArticleCommentRepository;
+import ktb.service.ArticleService;
+import ktb.service.CommentService;
+import ktb.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * User 의 모든 Comments 삭제 전략
@@ -22,7 +28,8 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class UserCommentsDeleteStrategy implements DeleteExecutionStrategy<SoftDeleteContext> {
-    private final ArticleRepository articleRepository;
+    private final CommentService commentService;
+    private final ArticleCommentRepository commentRepository;
 
     @Override
     public Class<SoftDeleteContext> getSupportedContextType() {
@@ -42,18 +49,19 @@ public class UserCommentsDeleteStrategy implements DeleteExecutionStrategy<SoftD
     }
 
     @Override
+    @Transactional
     public void execute(SoftDeleteContext context) {
         Long userId = context.traceId();
 
-        List<Article> articles = articleRepository.findByCreateBy(userId)
-                .stream()
-                .toList();
+        List<ArticleComment> comments = commentService.findAllByUserId(userId);
 
-        articles.forEach(Article::softDeleteAllComment);
+        // 이미 삭제된 댓글은 제외하고 softDelete
+        comments.stream()
+                .filter(comment -> !comment.isDelete())
+                .forEach(ArticleComment::softDelete);
 
-        // TODO: Save 실패 시 Rollback 가능하게 save 결과를 받아올 필요가 있음
-        articles.forEach(articleRepository::save);
+        commentRepository.saveAll(comments);
 
-        log.info("User {} comments deleted", userId);
+        log.info("User {} comments deleted: {} comments", userId, comments.size());
     }
 }
