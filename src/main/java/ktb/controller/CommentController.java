@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Comment", description = "댓글 리소스 관련 API")
 @RestController
-@RequestMapping(("/article"))
+@RequestMapping("/api/v1/article")
 @RequiredArgsConstructor
 public class CommentController {
     private final CommentQueryService commentQueryService;

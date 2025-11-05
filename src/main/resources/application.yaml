@@ -1,4 +1,13 @@
 spring:
+  web:
+    resources:
+      static-locations: classpath:/static/
+      add-mappings: true
+    mvc:
+      static-path-pattern: /**
+  server:
+    port: 8080
+
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 

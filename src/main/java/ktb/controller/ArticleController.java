@@ -32,10 +32,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Article", description = "게시글 리소스 관련 API")
 @RestController
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class ArticleController {
     private final ArticleQueryService articleQueryService;
@@ -63,7 +65,7 @@ public class ArticleController {
             description = "게시글 단건 등록합니다.",
             tags = { "Article" },
             responses = {
-                    @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = ArticleRequest.class))),
+                    @ApiResponse(responseCode = "204", description = "성공", content = @Content(schema = @Schema(implementation = ArticleRequest.class))),
             }
     )
     @Authorized
@@ -107,7 +109,7 @@ public class ArticleController {
             description = "게시글 수정합니다.",
             tags = { "Article" },
             responses = {
-                    @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = ArticlePatchRequest.class))),
+                    @ApiResponse(responseCode = "204", description = "성공", content = @Content(schema = @Schema(implementation = ArticlePatchRequest.class))),
             }
     )
     @PatchMapping("/article/{id}")
@@ -127,7 +129,7 @@ public class ArticleController {
             description = "게시글 삭제합니다.",
             tags = { "Article" },
             responses = {
-                    @ApiResponse(responseCode = "200", description = "성공"),
+                    @ApiResponse(responseCode = "204", description = "성공"),
             }
     )
     @DeleteMapping("/article/{id}")
