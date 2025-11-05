@@ -1,7 +1,6 @@
 package ktb.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,8 +23,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -64,12 +63,11 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = SignupRequest.class))),
             }
     )
-    @GetMapping("/{id}")
+    @GetMapping("/me")
     public ResponseEntity<CommonResponse<UserAccountDto>> search(
-            @Parameter(name = "id", description = "User ID(Sequential ID)", required = true)
-            @Valid @PathVariable Long id
+            @RequestAttribute Long userId
     ) {
-        UserAccountDto user = userService.search(id);
+        UserAccountDto user = userService.search(userId);
 
         CommonResponse<UserAccountDto> response = CommonResponse.of(Success.RETRIEVAL_USER, user);
 
@@ -85,13 +83,12 @@ public class UserController {
             }
     )
     @Authorized
-    @PatchMapping("/{id}/nickName")
+    @PatchMapping("/me/nickName")
     public ResponseEntity<Void> patch(
-            @Parameter(name = "id", description = "User ID(Sequential ID)", required = true)
-            @PathVariable Long id,
+            @RequestAttribute Long userId,
             @Valid @RequestBody NickNameUpdateRequest request
     ) {
-        userService.updateNickName(id, request.nickName());
+        userService.updateNickName(userId, request.nickName());
 
         return ResponseEntity.noContent().build();
     }
@@ -105,13 +102,12 @@ public class UserController {
             }
     )
     @Authorized
-    @PatchMapping("/{id}/password")
+    @PatchMapping("/me/password")
     public ResponseEntity<Void> patch(
-            @Parameter(name = "id", description = "User ID(Sequential ID)", required = true)
-            @PathVariable Long id,
+            @RequestAttribute Long userId,
             @Valid @RequestBody PasswordUpdateRequest request
     ) {
-        userService.updatePassword(id, request);
+        userService.updatePassword(userId, request);
 
         return ResponseEntity.noContent().build();
     }
@@ -125,12 +121,11 @@ public class UserController {
             }
     )
     @Authorized
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/me")
     public ResponseEntity<Void> delete(
-            @Parameter(name = "id", description = "User ID(Sequential ID)", required = true)
-            @PathVariable Long id
+            @RequestAttribute Long userId
     ) {
-        userService.delete(id);
+        userService.delete(userId);
 
         return ResponseEntity.noContent().build();
     }
