@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 아무 말 대잔치</title>
+</head>
+<body>
+    <div id="header-container"></div>
+
+    <main class="main-content">
+        <div class="auth-container">
+            <h2 class="auth-title">회원가입</h2>
+
+            <form class="auth-form" id="signupForm">
+                <div class="form-group">
+                    <label class="form-label required">프로필 사진</label>
+                    <div class="profile-upload">
+                        <div class="profile-upload-image" id="profilePreview">
+                            <img id="previewImg" style="display: none;">
+                        </div>
+                        <input
+                            type="file"
+                            id="profileImage"
+                            name="profileImage"
+                            class="profile-upload-input"
+                            accept="image/*"
+                        >
+                    </div>
+                    <span class="form-helper" id="profileError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="email" class="form-label required">이메일</label>
+                    <input
+                        type="text"
+                        id="email"
+                        name="email"
+                        class="form-input"
+                        placeholder="이메일을 입력하세요"
+                    >
+                    <span class="form-helper" id="emailError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label required">비밀번호</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        class="form-input"
+                        placeholder="비밀번호를 입력하세요"
+                    >
+                    <span class="form-helper" id="passwordError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="passwordConfirm" class="form-label required">비밀번호 확인</label>
+                    <input
+                        type="password"
+                        id="passwordConfirm"
+                        name="passwordConfirm"
+                        class="form-input"
+                        placeholder="비밀번호를 한번 더 입력하세요"
+                    >
+                    <span class="form-helper" id="passwordConfirmError"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="nickname" class="form-label required">닉네임</label>
+                    <input
+                        type="text"
+                        id="nickname"
+                        name="nickname"
+                        class="form-input"
+                        placeholder="닉네임을 입력하세요"
+                        maxlength="10"
+                    >
+                    <span class="form-helper" id="nicknameError"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full btn-signup-disabled" id="signupBtn" disabled>회원가입</button>
+            </form>
+
+            <div class="auth-links signup-links">
+                <button type="button" class="auth-link-btn" id="goToLoginBtn">로그인하러 가기</button>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        // 스타일 로더를 먼저 import하여 스타일 주입
+        import { loadStylesForPage } from '/js/styles/styleLoader.js';
+        loadStylesForPage('user');
+
+        // uris.js를 먼저 import하여 window.PageRoutes 설정
+        import '/js/common/uris.js';
+    </script>
+    <script src="/js/common/fragment-loader.js"></script>
+    <script type="module">
+        import { initSignupPage } from '/js/user/userHandler.js';
+        import { PageRoutes } from '/js/common/uris.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadHeader('auth-with-back');
+
+            const backBtn = document.getElementById('backBtn');
+            backBtn?.addEventListener('click', () => history.back());
+
+            const profilePreview = document.getElementById('profilePreview');
+            const profileImage = document.getElementById('profileImage');
+            profilePreview?.addEventListener('click', () => profileImage?.click());
+
+            initSignupPage();
+
+            const goToLoginBtn = document.getElementById('goToLoginBtn');
+            goToLoginBtn?.addEventListener('click', () => (window.location.href = PageRoutes.USER_LOGIN));
+        });
+    </script>
+</body>
+</html>
