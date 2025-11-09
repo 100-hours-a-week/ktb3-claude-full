@@ -26,3 +26,17 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.orm.jdbc.bind: TRACE
+cookie:
+  access-token-name: ACCESS_TOKEN
+  refresh-token-name: REFRESH_TOKEN
+  path: /
+  domain: localhost
+  secure: false
+  http-only: true
+  same-site: Strict
+
+jwt:
+  private-key-path: classpath:keys/jwtRS256.key
+  public-key-path: classpath:keys/jwtRS256.key.pub
+  access-expire: 60m     # 1시간
+  refresh-expire: 7d        # 7일
