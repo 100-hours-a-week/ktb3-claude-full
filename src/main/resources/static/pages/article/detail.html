@@ -5,62 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>게시글 상세 - 아무 말 대잔치</title>
 </head>
-<body>
+<body class="article-detail-body">
     <div id="header-container"></div>
 
     <main class="main-content article-detail-main">
-        <div class="article-detail-container">
-            <div class="article-detail-header" data-element-key="ARTICLE_HEADER"></div>
+        <section class="article-detail-container">
+            <section class="article-detail-card article-detail-header" data-element-key="ARTICLE_HEADER"></section>
 
-            <div data-element-key="ARTICLE_IMAGE_CONTAINER"></div>
+            <section class="article-detail-card article-detail-image-container" data-element-key="ARTICLE_IMAGE_CONTAINER">
+            <div class="article-image-placeholder">등록된 이미지가 없습니다.</div>
+            </section>
 
-            <div class="article-detail-content" data-element-key="ARTICLE_CONTENT"></div>
+            <section class="article-detail-card article-detail-content" data-element-key="ARTICLE_CONTENT"></section>
 
-            <div class="article-detail-stats" data-element-key="ARTICLE_STATS"></div>
+            <section class="article-detail-card article-detail-stats" data-element-key="ARTICLE_STATS"></section>
 
-            <div class="article-like-section">
-                <button type="button" class="article-like-button" id="articleLikeBtn" data-liked="false">🤍 좋아요</button>
-                <div class="article-like-meta">
-                    <span class="article-like-count-label">좋아요 수</span>
-                    <span class="article-like-count" id="articleLikeCount">0</span>
-                </div>
-            </div>
-
-            <div class="comment-section">
-                <form class="comment-form" id="commentForm">
+            <section class="article-detail-card comment-section">
+                <form class="comment-form" data-element-key="COMMENT_FORM">
                     <div class="comment-form-header">
-                        <h3 class="comment-form-title" id="commentFormTitle">댓글을 남겨주세요!</h3>
-                        <button type="button" class="comment-form-reset" id="commentResetBtn">취소</button>
+                        <h3 class="comment-form-title" data-element-key="COMMENT_FORM_TITLE">댓글을 남겨주세요!</h3>
+                        <button type="button" class="comment-form-reset" data-element-key="COMMENT_RESET_BTN">취소</button>
                     </div>
                     <div class="form-group">
                         <textarea
-                            id="commentContent"
+                            data-element-key="COMMENT_CONTENT"
                             name="content"
                             class="form-textarea"
                             placeholder="댓글을 남겨주세요!"
                             required
                         ></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary comment-submit-btn btn-comment-disabled" id="commentSubmitBtn" disabled>댓글 등록</button>
+                    <button
+                        type="submit"
+                        class="btn btn-primary comment-submit-btn btn-comment-disabled"
+                        data-element-key="COMMENT_SUBMIT_BTN"
+                        disabled
+                    >
+                        댓글 등록
+                    </button>
                 </form>
 
-                <div class="comment-list" id="commentList"></div>
-            </div>
-        </div>
+                <div class="comment-list" data-element-key="COMMENT_LIST"></div>
+            </section>
+        </section>
     </main>
 
     <script type="module">
-        import { loadStylesForPage } from '/js/styles/styleLoader.js';
+        import { loadStylesForPage } from '../../js/styles/styleLoader.js';
         loadStylesForPage('article');
-        import '/js/common/uris.js';
+        import '../../js/common/uris.js';
+        import '../../js/common/domElements.js';
     </script>
-    <script src="/js/common/fragment-loader.js"></script>
     <script type="module">
-        import { initArticleDetailPage } from '/js/article/articleHandler.js';
-        import { initAuthHeader } from '/js/user/userHandler.js';
+        import { initArticleDetailPage } from '../../js/article/articleHandler.js';
+        import { initAuthHeader } from '../../js/user/userHandler.js';
+        import { loadHeader } from '../../js/common/fragment-loader.js';
+        import { DomElements } from '../../js/common/domElements.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             await loadHeader('with-back');
+            // Re-initialize DomElements after loading header to ensure all elements have IDs
+            DomElements.initialize();
             initAuthHeader();
             await initArticleDetailPage();
         });

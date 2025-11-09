@@ -132,7 +132,48 @@ export const articleStyles = {
     '.article-detail-title': {
         fontSize: dt.fontSize['4xl'],
         fontWeight: dt.fontWeight.semibold,
-        marginBottom: dt.spacing[2],
+        marginBottom: dt.spacing[4],
+    },
+
+    '.article-detail-meta': {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+
+    '.article-detail-author': {
+        display: 'flex',
+        alignItems: 'center',
+        gap: dt.spacing[2],
+    },
+
+    '.article-detail-author-avatar': {
+        width: '40px',
+        height: '40px',
+        borderRadius: dt.borderRadius.full,
+        backgroundColor: '#c4c4c4',
+    },
+
+    '.article-detail-author-info': {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '2px',
+    },
+
+    '.article-detail-author-name': {
+        fontSize: dt.fontSize.base,
+        fontWeight: dt.fontWeight.medium,
+        color: dt.colors.text.primary,
+    },
+
+    '.article-detail-date': {
+        fontSize: dt.fontSize.sm,
+        color: dt.colors.text.secondary,
+    },
+
+    '.article-detail-actions': {
+        display: 'flex',
+        gap: dt.spacing[2],
     },
 
     '.article-detail-actions .btn': {
@@ -334,6 +375,19 @@ export const articleStyles = {
         },
     },
 
+    '.comment-header': {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: dt.spacing[2],
+    },
+
+    '.comment-author': {
+        display: 'flex',
+        alignItems: 'center',
+        gap: dt.spacing[2],
+    },
+
     '.comment-author-avatar': {
         width: '36px',
         height: '36px',
@@ -341,11 +395,34 @@ export const articleStyles = {
         backgroundColor: dt.colors.border.dark,
     },
 
+    '.comment-author-name': {
+        fontSize: dt.fontSize.base,
+        fontWeight: dt.fontWeight.medium,
+        color: dt.colors.text.primary,
+    },
+
+    '.comment-date': {
+        fontSize: dt.fontSize.sm,
+        color: dt.colors.text.secondary,
+        marginLeft: dt.spacing[2],
+    },
+
+    '.comment-actions': {
+        display: 'flex',
+        gap: dt.spacing[2],
+    },
+
+    '.comment-actions .btn': {
+        padding: `${dt.spacing[1]} ${dt.spacing[3]}`,
+        fontSize: dt.fontSize.sm,
+    },
+
     '.comment-content': {
         fontSize: dt.fontSize.md,
         color: '#444',
         lineHeight: dt.lineHeight.relaxed,
         marginLeft: '46px',
+        marginTop: dt.spacing[2],
     },
 
     /* Article Form */

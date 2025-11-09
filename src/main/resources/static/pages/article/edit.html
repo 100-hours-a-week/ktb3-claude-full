@@ -10,75 +10,76 @@
 
     <main class="main-content">
         <div class="article-form-container">
-            <h2 class="article-form-title" id="formTitle">게시글 작성</h2>
+            <h2 class="article-form-title" data-element-key="ARTICLE_FORM_TITLE">게시글 작성</h2>
 
-            <form class="article-form" id="articleForm">
-                <input type="hidden" id="articleId">
+            <form class="article-form" data-element-key="ARTICLE_FORM">
+                <input type="hidden" data-element-key="ARTICLE_ID">
 
                 <div class="form-group">
-                    <label for="title" class="form-label required">제목</label>
+                    <label class="form-label required">제목</label>
                     <input
                         type="text"
-                        id="title"
+                        data-element-key="ARTICLE_TITLE"
                         name="title"
                         class="form-input"
                         placeholder="제목을 입력해주세요 (최대 26글자)"
                         maxlength="26"
                         required
                     >
-                    <span class="form-helper" id="titleError"></span>
+                    <span class="form-helper" data-element-key="ARTICLE_TITLE_ERROR"></span>
                 </div>
 
                 <div class="form-group">
-                    <label for="content" class="form-label required">내용</label>
+                    <label class="form-label required">내용</label>
                     <textarea
-                        id="content"
+                        data-element-key="ARTICLE_CONTENT_INPUT"
                         name="content"
                         class="form-textarea"
                         placeholder="내용을 입력해주세요"
                         required
                     ></textarea>
-                    <span class="form-helper" id="contentError"></span>
+                    <span class="form-helper" data-element-key="ARTICLE_CONTENT_ERROR"></span>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">이미지</label>
                     <div class="file-upload">
-                        <button type="button" class="file-upload-btn" id="fileUploadBtn">
+                        <button type="button" class="file-upload-btn" data-element-key="ARTICLE_FILE_UPLOAD_BTN">
                             파일 선택
                         </button>
-                        <span class="file-upload-text" id="fileNameText">파일을 선택해주세요.</span>
+                        <span class="file-upload-text" data-element-key="ARTICLE_FILE_NAME_TEXT">파일을 선택해주세요.</span>
                         <input
                             type="file"
-                            id="imageInput"
+                            data-element-key="ARTICLE_IMAGE_INPUT"
                             name="image"
                             accept="image/*"
                             style="display: none;"
                         >
                     </div>
-                    <div class="article-image-preview" id="imagePreview" style="display: none;">
-                        <img id="previewImg" alt="미리보기">
+                    <div class="article-image-preview" data-element-key="ARTICLE_IMAGE_PREVIEW" style="display: none;">
+                        <img data-element-key="ARTICLE_PREVIEW_IMG" alt="미리보기">
                     </div>
-                    <span class="form-helper" id="imageError"></span>
+                    <span class="form-helper" data-element-key="ARTICLE_IMAGE_ERROR"></span>
                 </div>
 
-                <button type="submit" class="btn btn-primary btn-full mt-3" id="submitBtn">완료</button>
+                <button type="submit" class="btn btn-primary btn-full mt-3" data-element-key="ARTICLE_SUBMIT_BTN">완료</button>
             </form>
         </div>
     </main>
 
     <script type="module">
         // 스타일 로더를 먼저 import하여 스타일 주입
-        import { loadStylesForPage } from '/js/styles/styleLoader.js';
+        import { loadStylesForPage } from '../../js/styles/styleLoader.js';
         loadStylesForPage('article');
 
-        // uris.js를 먼저 import하여 window.PageRoutes 설정
-        import '/js/common/uris.js';
+        import '../../js/common/uris.js';
+        import '../../js/common/domElements.js';
     </script>
-    <script src="/js/common/fragment-loader.js"></script>
     <script type="module">
-        import { initArticleFormPage } from '/js/article/articleHandler.js';
-        import { initAuthHeader } from '/js/user/userHandler.js';
+        import { initArticleFormPage } from '../../js/article/articleHandler.js';
+        import { initAuthHeader } from '../../js/user/userHandler.js';
+        import { loadHeader } from '../../js/common/fragment-loader.js';
+        import { DomElements } from '../../js/common/domElements.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             const pathParts = window.location.pathname.split('/');
@@ -86,10 +87,12 @@
             const articleIdForEdit = isEditMode ? pathParts[2] : null;
 
             await loadHeader('with-back');
+            // Re-initialize DomElements after loading header to ensure all elements have IDs
+            DomElements.initialize();
             initAuthHeader();
             await initArticleFormPage(articleIdForEdit);
 
-            const backBtn = document.getElementById('backBtn');
+            const backBtn = DomElements.Common.getBackBtn();
             backBtn?.addEventListener('click', () => history.back());
         });
     </script>

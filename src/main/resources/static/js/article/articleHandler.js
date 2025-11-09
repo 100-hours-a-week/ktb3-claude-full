@@ -1,11 +1,12 @@
 import {
-    showModal,
-    showError,
-    showSuccess,
-    showErrorAlert,
     clearAllErrors,
     formatDate,
     previewArticleImage,
+    showError,
+    showErrorAlert,
+    showModal,
+    showSuccess,
+    showToast,
 } from '../common/event.js';
 import { ArticleApi } from '../api/articleApi.js';
 import { PageRoutes, UriUtils } from '../common/uris.js';
@@ -13,7 +14,6 @@ import { DomElements } from '../common/domElements.js';
 
 // Article handler for article CRUD operations and comments
 
-let currentUser = null;
 let currentArticle = null;
 let isLikeProcessing = false;
 let commentEditState = { mode: 'create', commentId: null };
@@ -23,60 +23,19 @@ let detailArticleId = null;
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
-function getCookieValue(name) {
-    if (typeof document === 'undefined') return null;
-    const match = document.cookie
-        ?.split(';')
-        .map(cookie => cookie.trim())
-        .find(cookie => cookie.startsWith(`${name}=`));
-    return match ? decodeURIComponent(match.substring(name.length + 1)) : null;
-}
-
-function decodeJwtPayload(token) {
-    if (!token) return null;
-    const parts = token.split('.');
-    if (parts.length < 2) return null;
-    try {
-        const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-        const padded = base64.padEnd(base64.length + (4 - (base64.length % 4 || 4)) % 4, '=');
-        const decoded = atob(padded);
-        const jsonPayload = decodeURIComponent(
-            Array.from(decoded)
-                .map(c => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
-                .join('')
-        );
-        return JSON.parse(jsonPayload);
-    } catch (error) {
-        console.warn('Failed to decode JWT payload:', error);
-        return null;
-    }
-}
-
-function extractUserFromJwt() {
-    const token = getCookieValue('jwt');
-    const payload = decodeJwtPayload(token);
-    if (!payload) return null;
-
-    const id = payload.userId ?? payload.sub;
-    const nickname = payload.userNickname ?? payload.nickName ?? payload.nickname;
-    if (!id && !nickname) return null;
-
-    return { id, nickname };
-}
-
-function normalizeIdentifier(value) {
-    if (value === undefined || value === null) return null;
-    return String(value);
-}
-
-function normalizeNickname(value) {
-    if (!value || typeof value !== 'string') return null;
-    return value.trim();
-}
-
 function parseNumber(value) {
     const num = Number(value);
     return Number.isNaN(num) ? 0 : num;
+}
+
+function escapeHtml(value) {
+    if (value === undefined || value === null) return '';
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 function formatCompactNumber(value) {
@@ -93,63 +52,12 @@ function formatCompactNumber(value) {
     return num.toString();
 }
 
-function resolveDateValue(...candidates) {
-    for (const value of candidates) {
-        if (value) return formatDate(value);
-    }
-    return '';
-}
-
-function resolveUserMeta(entity = {}) {
-    if (typeof entity !== 'object') {
-        return { id: null, nickname: null };
-    }
-
-    const nested = entity.userAccount || entity.user_account || {};
-    const id =
-        entity.user_id ??
-        entity.userId ??
-        entity.create_by ??
-        entity.createBy ??
-        nested.id ??
-        null;
-    const nickname =
-        entity.user_nickname ??
-        entity.userNickname ??
-        entity.create_nickname ??
-        entity.createNickname ??
-        nested.nickname ??
-        null;
-
-    return { id, nickname };
-}
-
-function isCurrentUser(meta) {
-    if (!currentUser || !meta) return false;
-
-    const currentId = normalizeIdentifier(currentUser.id);
-    const targetId = normalizeIdentifier(meta.id);
-    if (currentId && targetId) {
-        return currentId === targetId;
-    }
-
-    const currentNickname = normalizeNickname(currentUser.nickname);
-    const targetNickname = normalizeNickname(meta.nickname);
-    return Boolean(currentNickname && targetNickname && currentNickname === targetNickname);
-}
-
 function resolveLikeState(article = {}) {
     const value = article.is_liked ?? article.isLiked ?? article.like_yn ?? article.likeYn ?? false;
     if (typeof value === 'string') {
         return value.toUpperCase() === 'Y';
     }
     return Boolean(value);
-}
-
-async function ensureCurrentUser() {
-    if (currentUser) return currentUser;
-    currentUser = extractUserFromJwt();
-    return currentUser;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -159,11 +67,14 @@ async function ensureCurrentUser() {
 async function loadArticleList() {
     try {
         const response = await ArticleApi.getArticles();
-        renderArticleList(response?.data || response?.content || response);
+        console.log('Article API response:', response);
 
-
+        // Handle both response.data and direct array response
+        const articles = response?.data || response;
+        renderArticleList(articles);
     } catch (error) {
         console.error('Failed to load articles:', error);
+        showErrorAlert('게시글을 불러오는데 실패했습니다.');
     }
 }
 
@@ -180,13 +91,13 @@ function renderArticleList(articles = []) {
     articles.forEach(article => {
         const card = document.createElement('div');
         card.className = 'article-card';
-        card.addEventListener('click', () => location.href = `/article/${article.id}`);
+        card.addEventListener('click', () => location.href = PageRoutes.articleDetail(article.id));
 
-        const likeCount = formatCompactNumber(article.like_cnt ?? article.likeCount);
-        const commentCount = formatCompactNumber(article.comment_cnt ?? article.commentCount);
-        const viewCount = formatCompactNumber(article.view_cnt ?? article.viewCount);
-        const createdAt = resolveDateValue(article.created_at, article.create_at, article.createAt);
-        const author = escapeHtml(article.user_nickname || article.userNickname || '익명');
+        const likeCount = formatCompactNumber(article.like_cnt);
+        const commentCount = formatCompactNumber(article.comment_cnt);
+        const viewCount = formatCompactNumber(article.view_cnt);
+        const createdAt = formatDate(article.last_modified_date);
+        const author = escapeHtml(article.user_nickname || '익명');
 
         card.innerHTML = `
             <div class="article-card-header">
@@ -224,13 +135,21 @@ async function loadArticleDetail(id) {
 
         renderArticleDetail(article);
 
-        try {
-            const commentsResponse = await ArticleApi.getComments(id);
-            const comments = commentsResponse?.data || commentsResponse;
-            renderComments(comments);
-        } catch (error) {
-            console.error('Failed to load comments:', error);
-            renderComments([]);
+        const embeddedComments =
+            (Array.isArray(article.comment) && article.comment) ||
+            null;
+
+        if (embeddedComments) {
+            renderComments(embeddedComments);
+        } else {
+            try {
+                const commentsResponse = await ArticleApi.getComments(id);
+                const comments = commentsResponse?.data || commentsResponse;
+                renderComments(comments);
+            } catch (error) {
+                console.error('Failed to load comments:', error);
+                renderComments([]);
+            }
         }
     } catch (error) {
         console.error('Failed to load article:', error);
@@ -241,28 +160,22 @@ async function loadArticleDetail(id) {
 function renderArticleDetail(article) {
     if (!article) return;
 
-    const authorMeta = resolveUserMeta({ user_nickname: article.user_nickname, user_id: article.user_id });
-    const isAuthor = isCurrentUser(authorMeta);
+    const authorNickname = article.user_nickname || '익명';
+    const isAuthor = article.can_modify === true || article.can_modify === 'true';
 
     const headerContainer = DomElements.ArticleDetail.getHeader();
-    const createdAt = resolveDateValue(
-            article.last_modified_date,
-            article.updated_at,
-            article.update_at,
-            article.created_at,
-            article.create_at
-    );
+    const createdAt = formatDate(article.last_modified_date);
 
     if (headerContainer) {
         headerContainer.innerHTML = `
-            <div class="article-detail-header-top">
-                <div>
-                    <h2 class="article-detail-title">${escapeHtml(article.title)}</h2>
-                    <div class="article-detail-author">
-                        <div class="article-detail-author-avatar"></div>
-                        <span class="article-detail-author-name">${escapeHtml(authorMeta.nickname || '익명')}</span>
+            <h1 class="article-detail-title">${escapeHtml(article.title)}</h1>
+            <div class="article-detail-meta">
+                <div class="article-detail-author">
+                    <div class="article-detail-author-avatar" aria-hidden="true"></div>
+                    <div class="article-detail-author-info">
+                        <span class="article-detail-author-name">${escapeHtml(authorNickname)}</span>
+                        <span class="article-detail-date">${createdAt}</span>
                     </div>
-                    <span class="article-detail-date">${createdAt}</span>
                 </div>
                 ${isAuthor ? `
                 <div class="article-detail-actions">
@@ -292,35 +205,57 @@ function renderArticleDetail(article) {
         if (imageUrl) {
             imageContainer.innerHTML = `<img src="${imageUrl}" class="article-detail-image" alt="게시글 이미지">`;
         } else {
-            imageContainer.innerHTML = '';
+            imageContainer.innerHTML = '<div class="article-image-placeholder">등록된 이미지가 없습니다.</div>';
         }
     }
 
     const contentContainer = DomElements.ArticleDetail.getContent();
     if (contentContainer) {
-        contentContainer.textContent = article.content || '';
+        contentContainer.innerHTML = escapeHtml(article.content || '').replace(/\n/g, '<br>');
     }
 
-    const likeCount = parseNumber(article.like_cnt ?? article.likeCount);
-    const commentCount = parseNumber(article.comment_cnt ?? article.commentCount);
-    const viewCount = parseNumber(article.view_cnt ?? article.viewCount);
+    const likeCount = parseNumber(article.like_cnt);
+    const viewCount = parseNumber(article.view_cnt);
+    const commentCount = parseNumber(
+        article.comment_cnt ??
+        (Array.isArray(article.comment) ? article.comment.length : 0)
+    );
 
     const statsContainer = DomElements.ArticleDetail.getStats();
     if (statsContainer) {
         statsContainer.innerHTML = `
-            <div class="article-stat">
-                <span class="article-stat-number">${formatCompactNumber(likeCount)}</span>
+            <button
+                type="button"
+                class="article-stat article-stat--like"
+                id="articleLikeBtn"
+                data-liked="false"
+                aria-pressed="false"
+            >
+                <span class="article-stat-number" id="articleLikeCount">${formatCompactNumber(likeCount)}</span>
                 <span class="article-stat-label">좋아요수</span>
+            </button>
+            <div class="article-stat">
+                <span class="article-stat-number">${formatCompactNumber(viewCount)}</span>
+                <span class="article-stat-label">조회수</span>
             </div>
             <div class="article-stat">
                 <span class="article-stat-number">${formatCompactNumber(commentCount)}</span>
                 <span class="article-stat-label">댓글</span>
             </div>
-            <div class="article-stat">
-                <span class="article-stat-number">${formatCompactNumber(viewCount)}</span>
-                <span class="article-stat-label">조회수</span>
-            </div>
         `;
+    }
+
+    const likeBtn = DomElements.ArticleDetail.getLikeBtn();
+    const likeCountElement = DomElements.ArticleDetail.getLikeCount();
+    const isLiked = resolveLikeState(article);
+
+    if (likeBtn) {
+        likeBtn.dataset.liked = isLiked ? 'true' : 'false';
+        likeBtn.setAttribute('aria-pressed', isLiked ? 'true' : 'false');
+    }
+
+    if (likeCountElement) {
+        likeCountElement.textContent = formatCompactNumber(likeCount);
     }
 }
 
@@ -336,18 +271,11 @@ function renderComments(comments = []) {
     }
 
     comments.forEach(comment => {
-        const meta = resolveUserMeta({
-            user_id: comment.user_id ?? comment.create_by,
-            user_nickname: comment.user_nickname
-        });
-        const commentId = comment.comment_id ?? comment.id ?? comment.commentId;
-        const commentDate = resolveDateValue(
-                comment.last_modified_date,
-                comment.updated_at,
-                comment.created_at
-        );
-        const commentContent = comment.comment_content ?? comment.content ?? '';
-        const canModify = isCurrentUser(meta);
+        const commentId = comment.id;
+        const commentNickname = comment.user_nickname || '익명';
+        const commentDate = formatDate(comment.last_modified_date);
+        const commentContent = comment.content || '';
+        const canModify = comment.can_modify === true || comment.can_modify === 'true';
 
         const wrapper = document.createElement('div');
         wrapper.className = 'comment-item';
@@ -355,17 +283,15 @@ function renderComments(comments = []) {
             <div class="comment-header">
                 <div class="comment-author">
                     <div class="comment-author-avatar"></div>
-                    <span class="comment-author-name">${escapeHtml(meta.nickname || '익명')}</span>
-                </div>
-                <div class="comment-header-actions">
+                    <span class="comment-author-name">${escapeHtml(commentNickname)}</span>
                     <span class="comment-date">${commentDate}</span>
-                    ${canModify ? `
-                    <div class="comment-actions">
-                        <button class="btn btn-secondary" data-action="edit-comment">수정</button>
-                        <button class="btn btn-danger" data-action="delete-comment">삭제</button>
-                    </div>
-                    ` : ''}
                 </div>
+                ${canModify ? `
+                <div class="comment-actions">
+                    <button class="btn btn-secondary" data-action="edit-comment">수정</button>
+                    <button class="btn btn-danger" data-action="delete-comment">삭제</button>
+                </div>
+                ` : ''}
             </div>
             <p class="comment-content">${escapeHtml(commentContent)}</p>
         `;
@@ -374,8 +300,8 @@ function renderComments(comments = []) {
             const editBtn = wrapper.querySelector('[data-action="edit-comment"]');
             if (editBtn) {
                 editBtn.addEventListener('click', () => enterCommentEditMode({
-                    comment_id: commentId,
-                    comment_content: commentContent
+                    id: commentId,
+                    content: commentContent
                 }));
             }
 
@@ -437,10 +363,10 @@ function enterCommentEditMode(comment) {
 
     commentEditState = {
         mode: 'edit',
-        commentId: comment.comment_id ?? comment.commentId
+        commentId: comment.id
     };
 
-    textarea.value = comment.comment_content ?? '';
+    textarea.value = comment.content || '';
     title.textContent = '댓글을 수정합니다';
     submitBtn.textContent = '댓글 수정';
     resetBtn.style.display = 'inline';
@@ -490,10 +416,10 @@ async function handleCommentSubmit(event) {
     try {
         if (commentEditState.mode === 'edit' && commentEditState.commentId) {
             await ArticleApi.updateComment(detailArticleId, commentEditState.commentId, content);
-            showSuccess('댓글이 수정되었습니다.');
+            showToast('댓글이 수정되었습니다.');
         } else {
             await ArticleApi.createComment(detailArticleId, content);
-            showSuccess('댓글이 등록되었습니다.');
+            showToast('댓글이 등록되었습니다.');
         }
         resetCommentFormState();
         await loadArticleDetail(detailArticleId);
@@ -512,7 +438,7 @@ function showDeleteCommentModal(commentId) {
         async () => {
             try {
                 await ArticleApi.deleteComment(detailArticleId, commentId);
-                showSuccess('댓글이 삭제되었습니다.');
+                showToast('댓글이 삭제되었습니다.');
                 resetCommentFormState();
                 await loadArticleDetail(detailArticleId);
             } catch (error) {
@@ -520,6 +446,56 @@ function showDeleteCommentModal(commentId) {
             }
         }
     );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Article form validation                                                    */
+/* -------------------------------------------------------------------------- */
+
+function validateArticleForm() {
+    const title = DomElements.ArticleForm.getTitleValue();
+    const content = DomElements.ArticleForm.getContentValue();
+    const submitBtn = DomElements.ArticleForm.getSubmitBtn();
+    const titleError = DomElements.manager.get('titleError');
+    const contentError = DomElements.manager.get('contentError');
+
+    const isTitleValid = title && title.trim().length > 0;
+    const isContentValid = content && content.trim().length > 0;
+    const isFormValid = isTitleValid && isContentValid;
+
+    // Show/hide error messages
+    if (titleError && contentError) {
+        if (!isFormValid && (!isTitleValid || !isContentValid)) {
+            if (!isTitleValid && !isContentValid) {
+                titleError.textContent = '*제목, 내용을 모두 작성해주세요.';
+                titleError.style.display = 'block';
+                contentError.style.display = 'none';
+            } else if (!isTitleValid) {
+                titleError.textContent = '*제목을 작성해주세요.';
+                titleError.style.display = 'block';
+                contentError.style.display = 'none';
+            } else if (!isContentValid) {
+                contentError.textContent = '*내용을 작성해주세요.';
+                contentError.style.display = 'block';
+                titleError.style.display = 'none';
+            }
+        } else {
+            titleError.style.display = 'none';
+            contentError.style.display = 'none';
+        }
+    }
+
+    // Update button state
+    if (submitBtn) {
+        submitBtn.disabled = !isFormValid;
+        if (isFormValid) {
+            submitBtn.style.backgroundColor = '#7F6AEE';
+        } else {
+            submitBtn.style.backgroundColor = '#ACA0EB';
+        }
+    }
+
+    return isFormValid;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -564,33 +540,58 @@ async function handleArticleSubmit(event) {
     const imageInput = DomElements.ArticleForm.getImageInput();
     const image = imageInput?.files?.[0];
 
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('content', content);
+    // 서버가 @RequestBody JSON을 받으므로 JSON 형태로 전송
+    const requestBody = {
+        title,
+        content,
+        article_image_path: ''
+    };
+
+    // 이미지가 있으면 base64로 인코딩하여 전송
     if (image) {
-        formData.append('image', image);
+        try {
+            const base64Image = await convertImageToBase64(image);
+            requestBody.article_image_path = base64Image;
+        } catch (error) {
+            showError('imageError', '이미지 처리 중 오류가 발생했습니다.');
+            return;
+        }
     }
 
     try {
         if (articleIdValue) {
-            const updateResult = await ArticleApi.updateArticle(articleIdValue, formData);
+            const updateResult = await ArticleApi.updateArticle(articleIdValue, requestBody);
             const redirectUrl = updateResult?.redirectUrl;
-            showSuccess('게시글이 수정되었습니다.');
-            window.location.href = redirectUrl || PageRoutes.articleDetail(articleIdValue);
+            showToast('게시글이 수정되었습니다.');
+            setTimeout(() => {
+                window.location.href = redirectUrl || PageRoutes.articleDetail(articleIdValue);
+            }, 500);
         } else {
-            const result = await ArticleApi.createArticle(formData);
+            const result = await ArticleApi.createArticle(requestBody);
             const redirectUrl = result?.redirectUrl;
-            showSuccess('게시글이 작성되었습니다.');
-            if (redirectUrl) {
-                window.location.href = redirectUrl;
-                return;
-            }
-            const redirectId = result?.id;
-            window.location.href = redirectId ? PageRoutes.articleDetail(redirectId) : PageRoutes.ARTICLES;
+            showToast('게시글이 작성되었습니다.');
+            setTimeout(() => {
+                if (redirectUrl) {
+                    window.location.href = redirectUrl;
+                } else {
+                    const redirectId = result?.id;
+                    window.location.href = redirectId ? PageRoutes.articleDetail(redirectId) : PageRoutes.ARTICLES;
+                }
+            }, 500);
         }
     } catch (error) {
         showError('titleError', error.message);
     }
+}
+
+// 이미지를 Base64로 변환하는 헬퍼 함수
+function convertImageToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 }
 
 function showDeleteArticleModal() {
@@ -601,8 +602,10 @@ function showDeleteArticleModal() {
             try {
                 const result = await ArticleApi.deleteArticle(detailArticleId);
                 const redirectUrl = result?.redirectUrl;
-                showSuccess('게시글이 삭제되었습니다.');
-                window.location.href = redirectUrl || PageRoutes.ARTICLES;
+                showToast('게시글이 삭제되었습니다.');
+                setTimeout(() => {
+                    window.location.href = redirectUrl || PageRoutes.ARTICLES;
+                }, 500);
             } catch (error) {
                 showErrorAlert(error.message);
             }
@@ -628,6 +631,15 @@ function bindCommentInteractions() {
     }
 }
 
+function bindArticleDetailInteractions() {
+    bindCommentInteractions();
+
+    const likeBtn = DomElements.ArticleDetail.getLikeBtn();
+    if (likeBtn) {
+        likeBtn.addEventListener('click', handleLikeButtonClick);
+    }
+}
+
 /* -------------------------------------------------------------------------- */
 /* Public initializers                                                        */
 /* -------------------------------------------------------------------------- */
@@ -636,9 +648,8 @@ export async function initArticleDetailPage(articleIdParam) {
     detailArticleId = articleIdParam || UriUtils.getPathSegment(1);
     if (!detailArticleId) return;
 
-    await ensureCurrentUser();
     await loadArticleDetail(detailArticleId);
-    bindCommentInteractions();
+    bindArticleDetailInteractions();
 }
 
 export function initArticleListPage() {
@@ -660,6 +671,16 @@ export async function initArticleFormPage(articleIdParam) {
         await loadArticleForEdit(hiddenIdField.value);
     }
 
+    // Add validation event listeners
+    const titleInput = DomElements.ArticleForm.getTitle();
+    const contentInput = DomElements.ArticleForm.getContent();
+
+    titleInput?.addEventListener('input', validateArticleForm);
+    contentInput?.addEventListener('input', validateArticleForm);
+
     const articleForm = DomElements.ArticleForm.getForm();
     articleForm?.addEventListener('submit', handleArticleSubmit);
+
+    // Initial validation
+    validateArticleForm();
 }

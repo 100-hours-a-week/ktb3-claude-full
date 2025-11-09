@@ -44,12 +44,15 @@ async function handleArticleResponse(response, fallbackRedirect) {
 export const ArticleApi = {
     // Get all articles
     async getArticles(after = 0, limit = 10) {
-        const response = await fetch(ApiEndpoints.ARTICLE_LIST, {
+        const url = new URL(ApiEndpoints.ARTICLE_LIST, window.location.origin);
+        url.searchParams.append('after', after);
+        url.searchParams.append('limit', limit);
+
+        const response = await fetch(url, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ after, limit }),
         });
         return await handleArticleResponse(response);
     },
@@ -64,21 +67,33 @@ export const ArticleApi = {
     },
 
     // Create article
-    async createArticle(formData) {
+    async createArticle(requestBody) {
         const response = await fetch(ApiEndpoints.ARTICLE_BASE, {
             method: 'POST',
-            body: formData,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
         });
 
         return await handleArticleResponse(response, PageRoutes.ARTICLES);
     },
 
     // Update article
-    async updateArticle(id, formData) {
+    async updateArticle(id, requestBody) {
         const response = await fetch(ApiEndpoints.article(id), {
-            method: 'PUT',
-            body: formData,
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody),
         });
+
+        // Extract redirect URL from Location header if present
+        const redirectUrl = response.headers.get('Location');
+        if (redirectUrl) {
+            return { redirectUrl };
+        }
 
         return await handleArticleResponse(response, PageRoutes.articleDetail(id));
     },
