@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -128,5 +129,45 @@ public class UserController {
         userService.delete(userId);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+            summary = "닉네임 등록 여부",
+            description = "닉네임 중복 유효성 검사 목적",
+            tags = { "User" },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공"),
+            }
+    )
+    @Authorized
+    @PostMapping("/exist/nickname")
+    public ResponseEntity<CommonResponse<Boolean>> existsNickname(
+            @RequestBody String nickname
+    ) {
+        boolean isExist = userService.existNickname(nickname);
+
+        CommonResponse<Boolean> response = CommonResponse.of("", isExist);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(
+            summary = "이메일 등록 여부",
+            description = "이메일 중복 유효성 검사 목적",
+            tags = { "User" },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공"),
+            }
+    )
+    @Authorized
+    @PostMapping("/exist/email")
+    public ResponseEntity<CommonResponse<Boolean>> existsEmail(
+            @RequestBody String email
+    ) {
+        boolean isExist = userService.existEmail(email);
+
+        CommonResponse<Boolean> response = CommonResponse.of("", isExist);
+
+        return ResponseEntity.ok(response);
     }
 }

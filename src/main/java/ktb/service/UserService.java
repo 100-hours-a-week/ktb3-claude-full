@@ -66,4 +66,12 @@ public class UserService {
         // Execution 단계에서 UserDeleteStrategy, UserArticlesDeleteStrategy, UserCommentsDeleteStrategy가 순서대로 실행
         userDeleteHandlerChain.handle(context);
     }
+
+    public boolean existNickname(String nickname) {
+        return userRepository.existsByNickname(nickname);
+    }
+
+    public boolean existEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
 }
