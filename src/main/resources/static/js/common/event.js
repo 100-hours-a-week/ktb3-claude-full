@@ -18,58 +18,67 @@ document.addEventListener('click', function(event) {
     }
 });
 
-export function showModal(title, message, onConfirm) {
-    const modal = DomElements.Modal.getModal();
+const MODAL_IDS = {
+    WRAPPER: 'globalModal',
+    TITLE: 'globalModalTitle',
+    MESSAGE: 'globalModalMessage',
+    CANCEL: 'globalModalCancel',
+    CONFIRM: 'globalModalConfirm',
+};
+
+function ensureModalStructure() {
+    let modal = document.getElementById(MODAL_IDS.WRAPPER);
     if (!modal) {
-        // Create modal if it doesn't exist
-        const modalHTML = `
-            <div data-element-key="MODAL" class="modal">
-                <div class="modal-content">
-                    <h3 data-element-key="MODAL_TITLE"></h3>
-                    <p data-element-key="MODAL_MESSAGE"></p>
-                    <div class="modal-buttons">
-                        <button class="btn btn-secondary" data-element-key="MODAL_CANCEL">취소</button>
-                        <button class="btn btn-primary" data-element-key="MODAL_CONFIRM">확인</button>
-                    </div>
+        modal = document.createElement('div');
+        modal.id = MODAL_IDS.WRAPPER;
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 id="${MODAL_IDS.TITLE}"></h3>
+                <p id="${MODAL_IDS.MESSAGE}"></p>
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" id="${MODAL_IDS.CANCEL}">취소</button>
+                    <button class="btn btn-primary" id="${MODAL_IDS.CONFIRM}">확인</button>
                 </div>
             </div>
         `;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        // Re-initialize to register new elements
-        DomElements.initialize();
+        document.body.appendChild(modal);
     }
 
-    const modalElement = DomElements.Modal.getModal();
-    const modalTitle = DomElements.Modal.getTitle();
-    const modalMessage = DomElements.Modal.getMessage();
-    const modalCancel = DomElements.Modal.getCancel();
-    const modalConfirm = DomElements.Modal.getConfirm();
+    return {
+        modal,
+        title: document.getElementById(MODAL_IDS.TITLE),
+        message: document.getElementById(MODAL_IDS.MESSAGE),
+        cancel: document.getElementById(MODAL_IDS.CANCEL),
+        confirm: document.getElementById(MODAL_IDS.CONFIRM),
+    };
+}
 
-    modalTitle.textContent = title;
-    modalMessage.textContent = message;
-    modalElement.style.display = 'flex';
+export function showModal(title, message, onConfirm) {
+    const { modal, title: titleEl, message: messageEl, cancel, confirm } = ensureModalStructure();
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    modal.style.display = 'flex';
     if (!document.body.dataset.prevOverflow) {
         document.body.dataset.prevOverflow = document.body.style.overflow || '';
     }
     document.body.style.overflow = 'hidden';
 
-    // Remove existing event listeners by cloning
-    const newModalCancel = modalCancel.cloneNode(true);
-    modalCancel.parentNode.replaceChild(newModalCancel, modalCancel);
-    const newModalConfirm = modalConfirm.cloneNode(true);
-    modalConfirm.parentNode.replaceChild(newModalConfirm, modalConfirm);
+    const newCancel = cancel.cloneNode(true);
+    cancel.parentNode.replaceChild(newCancel, cancel);
+    const newConfirm = confirm.cloneNode(true);
+    confirm.parentNode.replaceChild(newConfirm, confirm);
 
-    newModalCancel.addEventListener('click', hideModal);
-
-    newModalConfirm.addEventListener('click', function() {
-        modalElement.style.display = 'none';
+    newCancel.addEventListener('click', hideModal);
+    newConfirm.addEventListener('click', () => {
+        hideModal();
         if (onConfirm) onConfirm();
     });
 }
 
-// Hide modal
 export function hideModal() {
-    const modal = DomElements.Modal.getModal();
+    const modal = document.getElementById(MODAL_IDS.WRAPPER);
     if (modal) {
         modal.style.display = 'none';
     }
