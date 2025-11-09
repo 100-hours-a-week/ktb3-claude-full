@@ -12,19 +12,19 @@
         <div class="user-edit-container">
             <h2 class="user-edit-title">회원정보수정</h2>
 
-            <form class="user-edit-form" id="userEditForm">
+            <form class="user-edit-form" data-element-key="USER_EDIT_FORM">
                 <div class="user-edit-profile">
                     <label class="profile-label">프로필 사진*</label>
                     <div class="profile-image-container">
-                        <div class="profile-image" id="profileImageClickArea">
-                            <img id="profilePreviewImg" style="display: none;">
-                            <span class="profile-image-placeholder">+</span>
+                        <div class="profile-image" data-element-key="USER_PROFILE_IMAGE_CLICK_AREA">
+                            <img data-element-key="USER_PROFILE_PREVIEW_IMG" style="display: none;">
+                            <span class="profile-image-placeholder" data-element-key="USER_PROFILE_IMAGE_PLACEHOLDER">+</span>
                             <div class="profile-image-change">변경</div>
                         </div>
                     </div>
                     <input
                         type="file"
-                        id="profileImageInput"
+                        data-element-key="USER_PROFILE_IMAGE_INPUT"
                         name="profileImage"
                         accept="image/*"
                         style="display: none;"
@@ -33,25 +33,25 @@
 
                 <div class="form-group">
                     <label class="form-label">이메일*</label>
-                    <div class="user-email-display" id="userEmail">example@example.com</div>
+                    <div class="user-email-display" data-element-key="USER_EMAIL">example@example.com</div>
                 </div>
 
                 <div class="form-group">
                     <label for="nickname" class="form-label required">닉네임</label>
                     <input
                         type="text"
-                        id="nickname"
+                        data-element-key="USER_NICKNAME"
                         name="nickname"
                         class="form-input"
                         placeholder="닉네임을 입력하세요"
                         required
                     >
-                    <span class="form-helper" id="nicknameError"></span>
+                    <span class="form-helper" data-element-key="USER_NICKNAME_ERROR"></span>
                 </div>
 
                 <div class="user-actions">
                     <button type="submit" class="btn btn-primary btn-full">수정하기</button>
-                    <button type="button" class="btn btn-danger btn-full" id="deleteAccountBtn">회원 탈퇴</button>
+                    <button type="button" class="btn btn-danger btn-full" data-element-key="USER_DELETE_ACCOUNT_BTN">회원 탈퇴</button>
                 </div>
             </form>
         </div>
@@ -65,12 +65,15 @@
         // uris.js를 먼저 import하여 window.PageRoutes 설정
         import '/js/common/uris.js';
     </script>
-    <script src="/js/common/fragment-loader.js"></script>
     <script type="module">
         import { initUserEditPage, initAuthHeader } from '/js/user/userHandler.js';
+        import { DomElements } from '/js/common/domElements.js';
+        import { loadHeader } from '/js/common/fragment-loader.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             await loadHeader('with-user-menu');
+            // Re-initialize DomElements after loading header to ensure all elements have IDs
+            DomElements.initialize();
             initAuthHeader();
             await initUserEditPage();
         });

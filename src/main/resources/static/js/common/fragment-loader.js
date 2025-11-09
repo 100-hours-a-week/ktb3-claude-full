@@ -1,3 +1,6 @@
+import { PageRoutes } from './uris.js';
+import { bind as HeaderLinkManager } from './headerLink.js';
+
 // Fragment loader utility
 async function loadFragment(url, targetId) {
     try {
@@ -11,6 +14,7 @@ async function loadFragment(url, targetId) {
             target.innerHTML = html;
             // Fragment 로드 후 URI 설정
             initFragmentUris(target);
+            bindHeaderLinks(target);
         }
     } catch (error) {
         console.error('Error loading fragment:', error);
@@ -19,20 +23,47 @@ async function loadFragment(url, targetId) {
 
 // Fragment 내의 data-route 속성을 실제 href로 변환
 function initFragmentUris(container) {
-    // data-route 속성을 가진 모든 요소를 찾아서 href 설정
     const elements = container.querySelectorAll('[data-route]');
+    const routes = PageRoutes || {};
     elements.forEach(element => {
-        const route = element.getAttribute('data-route');
-        if (route && window.PageRoutes) {
-            // PageRoutes에서 해당 경로 찾기
-            const href = window.PageRoutes[route] || route;
-            element.setAttribute('href', href);
+        const routeKey = element.getAttribute('data-route');
+        const routeValue = routes[routeKey];
+        if (typeof routeValue !== 'string') {
+            return;
+        }
+        if (element.tagName === 'A') {
+            element.setAttribute('href', routeValue);
         }
     });
 }
+let headerLinkScriptPromise = null;
+function bindHeaderLinks(container) {
+    if (!container) {
+        return;
+    }
+    const header = container.querySelector('.header');
+    if (!header) {
+        return;
+    }
+
+
+    if (!headerLinkScriptPromise) {
+        headerLinkScriptPromise = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = '/js/common/headerLink.js';
+            script.onload = () => resolve(HeaderLinkManager);
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+    headerLinkScriptPromise
+        .then(() => HeaderLinkManager(header))
+        .catch(error => console.error('Failed to load header link script', error));
+}
+
 
 // Load header fragment
-async function loadHeader(type = 'with-user-menu') {
+export async function loadHeader(type = 'with-user-menu') {
     const headerMap = {
         'with-user-menu': '/fragments/header-with-user-menu.html',
         'with-back': '/fragments/header-with-back.html',

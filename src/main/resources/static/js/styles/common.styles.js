@@ -418,6 +418,29 @@ export const commonStyles = {
         },
     },
 
+    /* Toast Message */
+    '.toast': {
+        position: 'fixed',
+        top: '100px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        background: `linear-gradient(90deg, ${dt.colors.primaryGradientStart} 0%, ${dt.colors.primaryGradientEnd} 100%)`,
+        color: dt.colors.white,
+        padding: `${dt.spacing[4]} ${dt.spacing[8]}`,
+        borderRadius: dt.borderRadius.lg,
+        boxShadow: dt.boxShadow.xl,
+        fontSize: dt.fontSize.lg,
+        fontWeight: dt.fontWeight.medium,
+        zIndex: dt.zIndex.modal + 1,
+        opacity: '0',
+        transition: 'opacity 0.3s ease-in-out',
+        pointerEvents: 'none',
+    },
+
+    '.toast.show': {
+        opacity: '1',
+    },
+
     /* Links */
     '.link': {
         color: '#8b7add',

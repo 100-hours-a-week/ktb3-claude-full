@@ -13,6 +13,8 @@ export let ElementIds = {
     LOGIN_BTN: 'loginBtn',
     LOGIN_EMAIL_ERROR: 'emailError',
     LOGIN_PASSWORD_ERROR: 'passwordError',
+    SIGNUP_LINK_BTN: 'signupLinkBtn',
+    LOGIN_LINK_BTN: 'loginLinkBtn',
 
     // User - Signup
     SIGNUP_FORM: 'signupForm',
@@ -23,21 +25,29 @@ export let ElementIds = {
     SIGNUP_NICKNAME: 'nickname',
     SIGNUP_PROFILE_IMAGE: 'profileImage',
     SIGNUP_PROFILE_ERROR: 'profileError',
+    SIGNUP_EMAIL_ERROR: 'emailError',
+    SIGNUP_PASSWORD_ERROR: 'passwordError',
+    SIGNUP_PASSWORD_CONFIRM_ERROR: 'passwordConfirmError',
+    SIGNUP_NICKNAME_ERROR: 'nicknameError',
     SIGNUP_PREVIEW_IMG: 'previewImg',
     SIGNUP_PROFILE_PREVIEW: 'profilePreview',
 
     // User - Edit
     USER_EMAIL: 'userEmail',
     USER_NICKNAME: 'nickname',
+    USER_NICKNAME_ERROR: 'nicknameError',
     USER_EDIT_FORM: 'userEditForm',
     USER_PROFILE_PREVIEW_IMG: 'profilePreviewImg',
     USER_PROFILE_IMAGE_CLICK_AREA: 'profileImageClickArea',
     USER_PROFILE_IMAGE_INPUT: 'profileImageInput',
+    USER_PROFILE_IMAGE_PLACEHOLDER: 'profileImagePlaceholder',
     USER_DELETE_ACCOUNT_BTN: 'deleteAccountBtn',
 
     // User - Password
     PASSWORD_CURRENT: 'currentPassword',
     PASSWORD_NEW: 'newPassword',
+    PASSWORD_CURRENT_ERROR: 'currentPasswordError',
+    PASSWORD_NEW_ERROR: 'newPasswordError',
     PASSWORD_UPDATE_FORM: 'passwordUpdateForm',
 
     // User - Header
@@ -67,6 +77,9 @@ export let ElementIds = {
     ARTICLE_FILE_UPLOAD_BTN: 'fileUploadBtn',
     ARTICLE_FORM_TITLE: 'formTitle',
     ARTICLE_SUBMIT_BTN: 'submitBtn',
+    ARTICLE_TITLE_ERROR: 'titleError',
+    ARTICLE_CONTENT_ERROR: 'contentError',
+    ARTICLE_IMAGE_ERROR: 'imageError',
 
     // Comment
     COMMENT_LIST: 'commentList',
@@ -75,6 +88,18 @@ export let ElementIds = {
     COMMENT_SUBMIT_BTN: 'commentSubmitBtn',
     COMMENT_FORM_TITLE: 'commentFormTitle',
     COMMENT_RESET_BTN: 'commentResetBtn',
+
+    // Modal
+    MODAL: 'modal',
+    MODAL_TITLE: 'modalTitle',
+    MODAL_MESSAGE: 'modalMessage',
+    MODAL_CANCEL: 'modalCancel',
+    MODAL_CONFIRM: 'modalConfirm',
+
+    // Common
+    USER_MENU_DROPDOWN: 'userMenuDropdown',
+    BACK_BTN: 'backBtn',
+    CREATE_ARTICLE_BTN: 'createArticleBtn',
 };
 
 /**
@@ -286,6 +311,10 @@ export let DomElements = {
         getProfileImage: () => DomElements.manager.get(ElementIds.SIGNUP_PROFILE_IMAGE),
         getSignupBtn: () => DomElements.manager.get(ElementIds.SIGNUP_BTN),
         getProfileError: () => DomElements.manager.get(ElementIds.SIGNUP_PROFILE_ERROR),
+        getEmailError: () => DomElements.manager.get(ElementIds.SIGNUP_EMAIL_ERROR),
+        getPasswordError: () => DomElements.manager.get(ElementIds.SIGNUP_PASSWORD_ERROR),
+        getPasswordConfirmError: () => DomElements.manager.get(ElementIds.SIGNUP_PASSWORD_CONFIRM_ERROR),
+        getNicknameError: () => DomElements.manager.get(ElementIds.SIGNUP_NICKNAME_ERROR),
         getPreviewImg: () => DomElements.manager.get(ElementIds.SIGNUP_PREVIEW_IMG),
         getProfilePreview: () => DomElements.manager.get(ElementIds.SIGNUP_PROFILE_PREVIEW),
 
@@ -302,9 +331,11 @@ export let DomElements = {
         getForm: () => DomElements.manager.get(ElementIds.USER_EDIT_FORM),
         getEmail: () => DomElements.manager.get(ElementIds.USER_EMAIL),
         getNickname: () => DomElements.manager.get(ElementIds.USER_NICKNAME),
+        getNicknameError: () => DomElements.manager.get(ElementIds.USER_NICKNAME_ERROR),
         getProfilePreviewImg: () => DomElements.manager.get(ElementIds.USER_PROFILE_PREVIEW_IMG),
         getProfileImageClickArea: () => DomElements.manager.get(ElementIds.USER_PROFILE_IMAGE_CLICK_AREA),
         getProfileImageInput: () => DomElements.manager.get(ElementIds.USER_PROFILE_IMAGE_INPUT),
+        getProfileImagePlaceholder: () => DomElements.manager.get(ElementIds.USER_PROFILE_IMAGE_PLACEHOLDER),
         getDeleteAccountBtn: () => DomElements.manager.get(ElementIds.USER_DELETE_ACCOUNT_BTN),
 
         getNicknameValue: () => DomElements.manager.getValue(ElementIds.USER_NICKNAME),
@@ -317,6 +348,8 @@ export let DomElements = {
         getForm: () => DomElements.manager.get(ElementIds.PASSWORD_UPDATE_FORM),
         getCurrentPassword: () => DomElements.manager.get(ElementIds.PASSWORD_CURRENT),
         getNewPassword: () => DomElements.manager.get(ElementIds.PASSWORD_NEW),
+        getCurrentPasswordError: () => DomElements.manager.get(ElementIds.PASSWORD_CURRENT_ERROR),
+        getNewPasswordError: () => DomElements.manager.get(ElementIds.PASSWORD_NEW_ERROR),
 
         getCurrentPasswordValue: () => DomElements.manager.getValue(ElementIds.PASSWORD_CURRENT),
         getNewPasswordValue: () => DomElements.manager.getValue(ElementIds.PASSWORD_NEW),
@@ -364,6 +397,9 @@ export let DomElements = {
         getFileUploadBtn: () => DomElements.manager.get(ElementIds.ARTICLE_FILE_UPLOAD_BTN),
         getFormTitle: () => DomElements.manager.get(ElementIds.ARTICLE_FORM_TITLE),
         getSubmitBtn: () => DomElements.manager.get(ElementIds.ARTICLE_SUBMIT_BTN),
+        getTitleError: () => DomElements.manager.get(ElementIds.ARTICLE_TITLE_ERROR),
+        getContentError: () => DomElements.manager.get(ElementIds.ARTICLE_CONTENT_ERROR),
+        getImageError: () => DomElements.manager.get(ElementIds.ARTICLE_IMAGE_ERROR),
 
         getTitleValue: () => DomElements.manager.getValue(ElementIds.ARTICLE_TITLE),
         getContentValue: () => DomElements.manager.getValue(ElementIds.ARTICLE_CONTENT_INPUT),
@@ -381,6 +417,26 @@ export let DomElements = {
         getResetBtn: () => DomElements.manager.get(ElementIds.COMMENT_RESET_BTN),
 
         getContentValue: () => DomElements.manager.getValue(ElementIds.COMMENT_CONTENT),
+    },
+
+    /**
+     * Modal 요소들
+     */
+    Modal: {
+        getModal: () => DomElements.manager.get(ElementIds.MODAL),
+        getTitle: () => DomElements.manager.get(ElementIds.MODAL_TITLE),
+        getMessage: () => DomElements.manager.get(ElementIds.MODAL_MESSAGE),
+        getCancel: () => DomElements.manager.get(ElementIds.MODAL_CANCEL),
+        getConfirm: () => DomElements.manager.get(ElementIds.MODAL_CONFIRM),
+    },
+
+    /**
+     * Common 공통 요소들
+     */
+    Common: {
+        getUserMenuDropdown: () => DomElements.manager.get(ElementIds.USER_MENU_DROPDOWN),
+        getBackBtn: () => DomElements.manager.get(ElementIds.BACK_BTN),
+        getCreateArticleBtn: () => DomElements.manager.get(ElementIds.CREATE_ARTICLE_BTN),
     },
 
     /**

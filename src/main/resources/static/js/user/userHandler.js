@@ -6,16 +6,173 @@ import {
     showModal,
     toggleUserMenu,
     previewProfileImage,
+    clearError,
+    showToast,
 } from '../common/event.js';
 import { UserApi } from '../api/userApi.js';
 import { PageRoutes } from '../common/uris.js';
-import { DomElements } from '../common/domElements.js';
+import { DomElements, ElementIds } from '../common/domElements.js';
 
 let hasProfileImage = false;
+let validationState = {
+    email: false,
+    password: false,
+    passwordConfirm: false,
+    nickname: false,
+};
+let debounceTimers = {
+    email: null,
+    nickname: null,
+};
+
+// Debounce helper function
+function debounce(func, delay) {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
 
 /* -------------------------------------------------------------------------- */
 /* Validation                                                                 */
 /* -------------------------------------------------------------------------- */
+
+async function validateEmailField() {
+    const email = DomElements.Signup.getEmailValue();
+
+    if (!email || email.trim().length === 0) {
+        showError('emailError', '*이메일을 입력해주세요.');
+        validationState.email = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    const emailRegex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    if (!emailRegex.test(email)) {
+        showError('emailError', '*올바른 이메일 주소 형식을 입력해주세요. (예: example@example.com)');
+        validationState.email = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    // Check email duplication
+    try {
+        const exists = await UserApi.checkEmailExists(email);
+        if (exists) {
+            showError('emailError', '*중복된 이메일입니다.');
+            validationState.email = false;
+            updateSignupButtonState();
+            return false;
+        }
+    } catch (error) {
+        console.error('Email check failed:', error);
+    }
+
+    clearError('emailError');
+    validationState.email = true;
+    updateSignupButtonState();
+    return true;
+}
+
+async function validatePasswordField() {
+    const password = DomElements.Signup.getPasswordValue();
+    const passwordConfirm = DomElements.Signup.getPasswordConfirmValue();
+
+    if (!password || password.trim().length === 0) {
+        showError('passwordError', '*비밀번호를 입력해주세요');
+        validationState.password = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    const passwordRegExp = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,20}$/;
+    if (!passwordRegExp.test(password)) {
+        showError('passwordError', '*비밀번호는 8자 이상, 20자 이하이며, 대문자, 소문자, 숫자, 특수문자를 각각 최소 1개 포함해야 합니다.');
+        validationState.password = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    if (passwordConfirm && password !== passwordConfirm) {
+        showError('passwordError', '*비밀번호가 다릅니다.');
+        validationState.password = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    clearError('passwordError');
+    validationState.password = true;
+    updateSignupButtonState();
+    return true;
+}
+
+async function validatePasswordConfirmField() {
+    const password = DomElements.Signup.getPasswordValue();
+    const passwordConfirm = DomElements.Signup.getPasswordConfirmValue();
+
+    if (!passwordConfirm || passwordConfirm.trim().length === 0) {
+        showError('passwordConfirmError', '*비밀번호를 한번더 입력해주세요.');
+        validationState.passwordConfirm = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    if (password !== passwordConfirm) {
+        showError('passwordConfirmError', '*비밀번호가 다릅니다.');
+        validationState.passwordConfirm = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    clearError('passwordConfirmError');
+    validationState.passwordConfirm = true;
+    updateSignupButtonState();
+    return true;
+}
+
+async function validateNicknameField() {
+    const nickname = DomElements.Signup.getNicknameValue();
+
+    if (!nickname || nickname.trim().length === 0) {
+        showError('nicknameError', '*닉네임을 입력해주세요.');
+        validationState.nickname = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    if (/\s/.test(nickname)) {
+        showError('nicknameError', '*띄어쓰기를 없애주세요');
+        validationState.nickname = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    if (nickname.length > 10) {
+        showError('nicknameError', '*닉네임은 최대 10자 까지 가능합니다.');
+        validationState.nickname = false;
+        updateSignupButtonState();
+        return false;
+    }
+
+    // Check nickname duplication
+    try {
+        const exists = await UserApi.checkNicknameExists(nickname);
+        if (exists) {
+            showError('nicknameError', '*중복된 닉네임입니다.');
+            validationState.nickname = false;
+            updateSignupButtonState();
+            return false;
+        }
+    } catch (error) {
+        console.error('Nickname check failed:', error);
+    }
+
+    clearError('nicknameError');
+    validationState.nickname = true;
+    updateSignupButtonState();
+    return true;
+}
 
 function validateEmail(email) {
     if (!email || email.trim().length === 0) {
@@ -85,36 +242,46 @@ function validateLoginForm() {
     return isFormValid;
 }
 
-function validateSignupForm() {
-    const signupBtn = DomElements.Signup.getSignupBtn();
+function validateProfileImage() {
     const profileError = DomElements.Signup.getProfileError();
 
     if (profileError) {
-        profileError.textContent = hasProfileImage ? '' : '**프로필 사진을 추가해주세요.';
-        profileError.style.display = hasProfileImage ? 'none' : 'block';
+        profileError.textContent = '';
+        profileError.style.display = 'none';
     }
 
-    const email = DomElements.Signup.getEmailValue();
-    const password = DomElements.Signup.getPasswordValue();
-    const passwordConfirm = DomElements.Signup.getPasswordConfirmValue();
-    const nickname = DomElements.Signup.getNicknameValue();
+    updateSignupButtonState();
+    return true;
+}
 
-    const isProfileValid = hasProfileImage;
-    const isEmailValid = validateEmail(email).valid;
-    const isPasswordValid = validatePassword(password).valid;
-    const isPasswordConfirmValid = passwordConfirm === password && passwordConfirm.length > 0;
-    const isNicknameValid = nickname.trim().length > 0 && nickname.length <= 10 && !/\s/.test(nickname);
-
+function updateSignupButtonState() {
+    const signupBtn = DomElements.Signup.getSignupBtn();
     const isFormValid =
-        isProfileValid && isEmailValid && isPasswordValid && isPasswordConfirmValid && isNicknameValid;
+        validationState.email &&
+        validationState.password &&
+        validationState.passwordConfirm &&
+        validationState.nickname;
 
     if (signupBtn) {
         signupBtn.disabled = !isFormValid;
-        signupBtn.classList.toggle('btn-signup-enabled', isFormValid);
-        signupBtn.classList.toggle('btn-signup-disabled', !isFormValid);
+        if (isFormValid) {
+            signupBtn.classList.remove('btn-signup-disabled');
+            signupBtn.classList.add('btn-signup-enabled');
+            signupBtn.style.backgroundColor = '#7F6AEE';
+        } else {
+            signupBtn.classList.remove('btn-signup-enabled');
+            signupBtn.classList.add('btn-signup-disabled');
+            signupBtn.style.backgroundColor = '#ACA0EB';
+        }
     }
+}
 
-    return isFormValid;
+function validateSignupForm() {
+    updateSignupButtonState();
+    return validationState.email &&
+           validationState.password &&
+           validationState.passwordConfirm &&
+           validationState.nickname;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -143,7 +310,7 @@ async function handleLogin(event) {
 }
 
 export function initLoginPage() {
-    const signupBtn = DomElements.manager.get('signupBtn');
+    const signupBtn = DomElements.manager.get(ElementIds.SIGNUP_LINK_BTN);
     if (signupBtn) {
         signupBtn.addEventListener('click', () => (window.location.href = PageRoutes.USER_SIGNUP));
     }
@@ -164,7 +331,6 @@ export function initLoginPage() {
 function handleProfileImageChange(event) {
     const file = event.target.files?.[0];
     const previewImg = DomElements.Signup.getPreviewImg();
-    const profileError = DomElements.Signup.getProfileError();
 
     if (file && previewImg) {
         const reader = new FileReader();
@@ -182,12 +348,7 @@ function handleProfileImageChange(event) {
         hasProfileImage = false;
     }
 
-    if (profileError) {
-        profileError.textContent = hasProfileImage ? '' : '**프로필 사진을 추가해주세요.';
-        profileError.style.display = hasProfileImage ? 'none' : 'block';
-    }
-
-    validateSignupForm();
+    validateProfileImage();
 }
 
 async function handleSignup(event) {
@@ -209,16 +370,26 @@ async function handleSignup(event) {
         return;
     }
 
-    const formData = new FormData();
-    formData.append('email', email);
-    formData.append('password', password);
-    formData.append('nickname', nickname);
+    // 서버가 @RequestBody JSON을 받으므로 JSON 형태로 전송
+    let profileImageBase64 = '';
     if (profileImage) {
-        formData.append('profileImage', profileImage);
+        try {
+            profileImageBase64 = await convertImageToBase64User(profileImage);
+        } catch (error) {
+            showError('profileError', '*프로필 이미지 처리 중 오류가 발생했습니다.');
+            return;
+        }
     }
 
+    const requestBody = {
+        email,
+        password,
+        nickname,
+        profile_image_path: profileImageBase64
+    };
+
     try {
-        const result = await UserApi.signup(formData);
+        const result = await UserApi.signup(requestBody);
         const redirectUrl = result?.redirectUrl || result?.location;
         showSuccess('회원가입이 완료되었습니다.');
         window.location.href = redirectUrl || PageRoutes.USER_LOGIN;
@@ -236,8 +407,25 @@ async function handleSignup(event) {
     }
 }
 
+// 이미지를 Base64로 변환하는 헬퍼 함수
+function convertImageToBase64User(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 export function initSignupPage() {
     hasProfileImage = false;
+    validationState = {
+        email: false,
+        password: false,
+        passwordConfirm: false,
+        nickname: false,
+    };
+
     const profileInput = DomElements.Signup.getProfileImage();
     profileInput?.addEventListener('change', handleProfileImageChange);
 
@@ -246,17 +434,53 @@ export function initSignupPage() {
     const passwordConfirm = DomElements.Signup.getPasswordConfirm();
     const nickname = DomElements.Signup.getNickname();
 
-    email?.addEventListener('input', validateSignupForm);
-    email?.addEventListener('blur', validateSignupForm);
-    password?.addEventListener('input', validateSignupForm);
-    password?.addEventListener('blur', validateSignupForm);
-    passwordConfirm?.addEventListener('input', validateSignupForm);
-    passwordConfirm?.addEventListener('blur', validateSignupForm);
-    nickname?.addEventListener('input', validateSignupForm);
-    nickname?.addEventListener('blur', validateSignupForm);
+    // Email validation with debounced duplicate check
+    const debouncedEmailCheck = debounce(async () => {
+        await validateEmailField();
+    }, 500);
+
+    email?.addEventListener('input', () => {
+        clearError('emailError');
+        validationState.email = false;
+        updateSignupButtonState();
+        debouncedEmailCheck();
+    });
+    email?.addEventListener('blur', validateEmailField);
+
+    // Password validation
+    password?.addEventListener('input', () => {
+        clearError('passwordError');
+        validationState.password = false;
+        updateSignupButtonState();
+    });
+    password?.addEventListener('blur', validatePasswordField);
+
+    // Password confirm validation
+    passwordConfirm?.addEventListener('input', () => {
+        clearError('passwordConfirmError');
+        validationState.passwordConfirm = false;
+        updateSignupButtonState();
+    });
+    passwordConfirm?.addEventListener('blur', validatePasswordConfirmField);
+
+    // Nickname validation with debounced duplicate check
+    const debouncedNicknameCheck = debounce(async () => {
+        await validateNicknameField();
+    }, 500);
+
+    nickname?.addEventListener('input', () => {
+        clearError('nicknameError');
+        validationState.nickname = false;
+        updateSignupButtonState();
+        debouncedNicknameCheck();
+    });
+    nickname?.addEventListener('blur', validateNicknameField);
 
     const signupForm = DomElements.Signup.getForm();
     signupForm?.addEventListener('submit', handleSignup);
+
+    // Initial validation state
+    updateSignupButtonState();
 }
 
 /* -------------------------------------------------------------------------- */
@@ -271,17 +495,19 @@ async function loadUserInfo() {
     const profilePreviewImg = DomElements.UserEdit.getProfilePreviewImg();
 
     if (emailElement) {
-        emailElement.textContent = user.email;
+        emailElement.textContent = user.email || user.user_email || '';
     }
 
     if (nicknameInput) {
-        nicknameInput.value = user.nickname || '';
+        nicknameInput.value = user.nickname || user.user_nickname || user.userNickname || '';
     }
 
-    if (profilePreviewImg && user.profileImage) {
-        profilePreviewImg.src = user.profileImage;
+    // Support multiple field name variations for profile image path
+    const profileImageUrl = user.profile_image_path || user.profileImage || user.profileImagePath || user.profile_image || user.user_profile_image;
+    if (profilePreviewImg && profileImageUrl) {
+        profilePreviewImg.src = profileImageUrl;
         profilePreviewImg.style.display = 'block';
-        const placeholder = document.querySelector('.profile-image-placeholder');
+        const placeholder = DomElements.UserEdit.getProfileImagePlaceholder();
         if (placeholder) {
             placeholder.style.display = 'none';
         }
@@ -295,16 +521,54 @@ async function handleUserEdit(event) {
     const nickname = DomElements.UserEdit.getNicknameValue();
     const profileImage = DomElements.UserEdit.getProfileImageInput()?.files?.[0];
 
-    const formData = new FormData();
-    formData.append('nickname', nickname);
+    // Validate nickname
+    if (!nickname || nickname.trim().length === 0) {
+        showError('nicknameError', '*닉네임을 입력해주세요.');
+        return;
+    }
+
+    if (nickname.length > 10) {
+        showError('nicknameError', '*닉네임은 최대 10자 까지 작성 가능합니다.');
+        return;
+    }
+
+    if (/\s/.test(nickname)) {
+        showError('nicknameError', '*띄어쓰기를 없애주세요');
+        return;
+    }
+
+    // Check nickname duplication
+    try {
+        const exists = await UserApi.checkNicknameExists(nickname);
+        if (exists) {
+            showError('nicknameError', '*중복된 닉네임입니다.');
+            return;
+        }
+    } catch (error) {
+        console.error('Nickname check failed:', error);
+    }
+
+    // 서버가 @RequestBody JSON을 받으므로 JSON 형태로 전송
+    const requestBody = {
+        nickname
+    };
+
     if (profileImage) {
-        formData.append('profileImage', profileImage);
+        try {
+            const base64Image = await convertImageToBase64User(profileImage);
+            requestBody.profile_image_path = base64Image;
+        } catch (error) {
+            showError('nicknameError', '프로필 이미지 처리 중 오류가 발생했습니다.');
+            return;
+        }
     }
 
     try {
-        await UserApi.updateProfile(formData);
-        showSuccess('회원정보가 수정되었습니다.');
-        window.location.reload();
+        await UserApi.updateProfile(requestBody);
+        showToast('수정 완료');
+        setTimeout(() => {
+            window.location.reload();
+        }, 2500);
     } catch (error) {
         showError('nicknameError', error.message);
     }
@@ -348,6 +612,16 @@ export async function initUserEditPage() {
     const profileImageClickArea = DomElements.UserEdit.getProfileImageClickArea();
     const profileImageInput = DomElements.UserEdit.getProfileImageInput();
     if (profileImageClickArea && profileImageInput) {
+        profileImageClickArea.style.cursor = 'pointer';
+
+        // Add hover effect
+        profileImageClickArea.addEventListener('mouseenter', () => {
+            profileImageClickArea.style.backgroundColor = '#E9E9E9';
+        });
+        profileImageClickArea.addEventListener('mouseleave', () => {
+            profileImageClickArea.style.backgroundColor = '';
+        });
+
         profileImageClickArea.addEventListener('click', () => profileImageInput.click());
         profileImageInput.addEventListener('change', previewProfileImage);
     }
