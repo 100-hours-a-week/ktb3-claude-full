@@ -1,15 +1,13 @@
 package ktb.service;
 
-import java.util.Comparator;
 import java.util.List;
 
 import ktb.common.pagination.Slice;
 import ktb.domain.Article;
-import ktb.domain.ArticleComment;
 import ktb.dto.PageInfoDto;
 import ktb.dto.response.ArticleDetailDto;
 import ktb.dto.response.ArticleSimpleDto;
-import ktb.dto.response.CommentDetailDto;
+import ktb.exception.article.AlreadyDeletedArticle;
 import ktb.exception.article.NoExistArticleException;
 
 import lombok.RequiredArgsConstructor;
@@ -44,9 +42,14 @@ public class ArticleQueryService {
             articles = articleService.findAllByIdGreaterThan(pageInfo.endCursor(), limit);
         }
 
+        List<Article> activeArticles =
+                articles.stream()
+                        .filter(article -> !article.isDelete())
+                        .toList();
+
         int size = pageInfo.size();
-        boolean hasNext = articles.size() > size;
-        List<Article> content = hasNext ? articles.subList(0, size) : articles;
+        boolean hasNext = activeArticles.size() > size;
+        List<Article> content = hasNext ? activeArticles.subList(0, size) : activeArticles;
 
         Long nextCursor = hasNext
                 ? content.get(content.size() - 1).getId()
@@ -71,7 +74,11 @@ public class ArticleQueryService {
         Article article = articleService.findDetail(articleId)
                 .orElseThrow(NoExistArticleException::new);
 
-        article.getComments().sort(Comparator.comparing(ArticleComment::getId));
+        if(article.isDelete()) {
+            throw new AlreadyDeletedArticle();
+        }
+
+        article.refreshActiveComments();
 
         return ArticleDetailDto.from(article, userId);
     }

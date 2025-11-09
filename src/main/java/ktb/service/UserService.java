@@ -4,6 +4,7 @@ import ktb.domain.UserAccount;
 import ktb.dto.SignUpUserDto;
 import ktb.dto.UserAccountDto;
 import ktb.dto.request.PasswordUpdateRequest;
+import ktb.exception.article.AlreadyDeletedUser;
 import ktb.exception.user.MisMatchPasswordException;
 import ktb.exception.user.NonExistUserException;
 import ktb.handler.AbstractHandler;
@@ -27,9 +28,14 @@ public class UserService {
     }
 
     public UserAccountDto search(Long id) {
-        return userRepository.findById(id)
-                .map(UserAccountDto::from)
-                .orElseThrow(NonExistUserException::new);
+
+        UserAccount account = userRepository.findById(id).orElseThrow(NonExistUserException::new);
+
+        if(account.isDelete()) {
+            throw new AlreadyDeletedUser();
+        }
+
+        return UserAccountDto.from(account);
     }
 
     public void updateNickName(Long id, String nickName) {

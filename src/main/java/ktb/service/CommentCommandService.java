@@ -7,6 +7,8 @@ import ktb.domain.ArticleComment;
 import ktb.domain.UserAccount;
 import ktb.dto.CommentDto;
 import ktb.dto.UserAccountDto;
+import ktb.exception.article.AlreadyDeletedArticle;
+import ktb.exception.article.AlreadyDeletedComment;
 import ktb.exception.article.NoExistArticleException;
 import ktb.handler.AbstractHandler;
 import ktb.handler.context.CommentDeleteContext;
@@ -40,6 +42,11 @@ public class CommentCommandService {
     public CommentDto addComment(CommentDto request) {
         Article article = articleService.findById(request.articleId())
                 .orElseThrow(NoExistArticleException::new);
+
+        if (article.isDelete()) {
+            throw new AlreadyDeletedArticle();
+        }
+
         commentService.save(request.toEntity(article));
 
         return request;
@@ -55,7 +62,18 @@ public class CommentCommandService {
     public CommentDto save(CommentDto dto) {
         Article article = articleService.findById(dto.articleId())
                 .orElseThrow(NoExistArticleException::new);
-        commentService.save(dto.toEntity(article));
+
+        if (article.isDelete()) {
+            throw new AlreadyDeletedArticle();
+        }
+
+        ArticleComment comment = commentService.findById(dto.id()).orElseThrow(NoExistArticleException::new);
+
+        if (comment.isDelete()) {
+            throw new AlreadyDeletedComment();
+        }
+
+        comment.update(dto.content());
 
         return dto;
     }

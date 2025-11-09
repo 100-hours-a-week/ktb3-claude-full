@@ -12,6 +12,8 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -76,6 +78,17 @@ public class Article {
 
     public boolean isDelete() {
         return (isDeleted == Boolean.TRUE) && (deleteAt != null);
+    }
+
+    public void refreshActiveComments() {
+        if(Boolean.TRUE.equals(isDeleted)) {
+            this.comments = Collections.emptyList();
+        }
+
+        this.comments = this.comments.stream()
+                .filter(comment -> !comment.isDelete())
+                .sorted(Comparator.comparing(ArticleComment::getId))
+                .toList();
     }
 
     public void update(String title, String content) {
