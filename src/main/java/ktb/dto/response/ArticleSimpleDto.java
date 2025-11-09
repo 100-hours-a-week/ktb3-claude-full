@@ -1,7 +1,9 @@
 package ktb.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.time.LocalDateTime;
 import ktb.domain.Article;
 
 @Schema(description = "게시글 페이지 조회 시 각 게시글 별 응답 구조")
@@ -24,15 +26,25 @@ public record ArticleSimpleDto(
 
         @Schema(description = "조회 수", example = "1")
         @JsonProperty("view_cnt")
-        int viewCnt
+        int viewCnt,
+
+        @Schema(description = "마지막 수정 일자", example = "2025-01-01T00:00:00")
+        @JsonProperty("last_modified_date")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime lastModifiedDate
 ) {
     public static ArticleSimpleDto from(Article article) {
+        LocalDateTime lastModified = article.getMeta().getUpdateAt() != null
+                ? article.getMeta().getUpdateAt()
+                : article.getMeta().getCreateAt();
+
         return new ArticleSimpleDto(
                 article.getId(),
                 article.getTitle(),
                 article.getMeta().getLikeCnt().get(),
                 article.getComments().size(),
-                article.getMeta().getViewCnt().get()
+                article.getMeta().getViewCnt().get(),
+                lastModified
         );
     }
 }

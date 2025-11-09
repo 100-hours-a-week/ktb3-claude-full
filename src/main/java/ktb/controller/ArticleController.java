@@ -8,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import ktb.annotation.Authorized;
 import ktb.common.pagination.Slice;
 import ktb.constant.MessageConstant.Success;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Article", description = "게시글 리소스 관련 API")
@@ -52,8 +55,15 @@ public class ArticleController {
             }
     )
     @GetMapping("/articles")
-    public ResponseEntity<ArticlesResponse<ArticleSimpleDto>> getAll(@Valid @RequestBody AllArticleRetrieveRequest request) {
-        PageInfoDto pageInfo = PageInfoDto.of(request.after(), request.limit());
+    public ResponseEntity<ArticlesResponse<ArticleSimpleDto>> getAll(
+            @Parameter(description = "조회할 게시글의 ID(해당 ID 초과 조회)", example = "0")
+            @RequestParam Long after,
+
+            @Parameter(description = "조회할 게시글 개수", example = "10")
+            @Min(1)
+            @RequestParam int limit
+    ) {
+        PageInfoDto pageInfo = PageInfoDto.of(after, limit);
 
         Slice<ArticleSimpleDto> page = articleQueryService.findByIdAndCursorPagination(pageInfo);
 
@@ -96,9 +106,10 @@ public class ArticleController {
     )
     @GetMapping("/article/{id}")
     public ResponseEntity<CommonResponse<ArticleDetailDto>> getOne(
-            @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id
+            @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
+            @RequestAttribute(required = false) Long userId
     ) {
-        ArticleDetailDto response = articleQueryService.findByIdDetail(id);
+        ArticleDetailDto response = articleQueryService.findByIdDetail(id, userId);
 
         return ResponseEntity.ok(CommonResponse.of(Success.RETRIEVAL_POST, response));
     }

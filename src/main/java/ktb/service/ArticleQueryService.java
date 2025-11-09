@@ -63,15 +63,16 @@ public class ArticleQueryService {
      * Article 상세 조회 (댓글 포함)
      *
      * @param articleId Article ID
+     * @param userId 현재 사용자 ID (권한 확인용, null 가능)
      * @return Article 상세 정보 + 댓글 목록
      * @throws NoExistArticleException Article 존재하지 않을 경우
      */
-    public ArticleDetailDto findByIdDetail(Long articleId) {
+    public ArticleDetailDto findByIdDetail(Long articleId, Long userId) {
         Article article = articleService.findDetail(articleId)
                 .orElseThrow(NoExistArticleException::new);
 
         article.getComments().sort(Comparator.comparing(ArticleComment::getId));
 
-        return ArticleDetailDto.from(article);
+        return ArticleDetailDto.from(article, userId);
     }
 }
