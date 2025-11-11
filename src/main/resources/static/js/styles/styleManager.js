@@ -200,9 +200,4 @@ class StyleManager {
 // 싱글톤 인스턴스 생성
 const styleManager = new StyleManager();
 
-// 전역 접근을 위해 window 객체에 추가
-if (typeof window !== 'undefined') {
-    window.styleManager = styleManager;
-}
-
 export default styleManager;

@@ -3,6 +3,8 @@
  * 모든 색상, 간격, 타이포그래피 등을 중앙에서 관리합니다.
  */
 
+import styleManager from './styleManager.js';
+
 export const designTokens = {
     // Colors
     colors: {
@@ -246,19 +248,38 @@ export const darkTheme = {
 };
 
 /**
- * 현재 활성 테마
+ * 현재 활성 테마 관리
  */
-export let currentTheme = lightTheme;
+const themeManager = (() => {
+    let currentTheme = lightTheme;
+
+    return {
+        getCurrentTheme: () => currentTheme,
+        setTheme: (theme) => {
+            currentTheme = theme;
+            styleManager.setCSSVariables(theme.variables);
+        }
+    };
+})();
+
+/**
+ * 현재 활성 테마 (getter)
+ */
+export const getCurrentTheme = themeManager.getCurrentTheme;
 
 /**
  * 테마 변경 함수
  */
-export function setTheme(theme) {
-    currentTheme = theme;
-    if (typeof window !== 'undefined' && window.styleManager) {
-        window.styleManager.setCSSVariables(theme.variables);
-    }
-}
+export const setTheme = themeManager.setTheme;
+
+/**
+ * 현재 테마 객체 접근용 프록시
+ * For backwards compatibility with code that accesses currentTheme directly
+ */
+export const currentTheme = {
+    get name() { return themeManager.getCurrentTheme().name; },
+    get variables() { return themeManager.getCurrentTheme().variables; }
+};
 
 /**
  * CSS 헬퍼 함수들
@@ -308,6 +329,7 @@ export default {
     lightTheme,
     darkTheme,
     currentTheme,
+    getCurrentTheme,
     setTheme,
     css,
 };

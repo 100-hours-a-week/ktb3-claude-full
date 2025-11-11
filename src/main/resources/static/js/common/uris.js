@@ -17,6 +17,8 @@ export const ApiEndpoints = {
     USER_SIGNUP: '/api/v1/users/signup',
     USER_ME: '/api/v1/users/me',
     USER_ME_PASSWORD: '/api/v1/users/me/password',
+    USER_EXIST_NICKNAME: '/api/v1/users/exist/nickname',
+    USER_EXIST_EMAIL: '/api/v1/users/exist/email',
 
     // Articles
     ARTICLE_LIST: '/api/v1/articles',

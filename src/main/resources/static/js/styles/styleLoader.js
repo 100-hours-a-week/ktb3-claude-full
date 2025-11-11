@@ -101,26 +101,3 @@ export function addCustomStyles(id, styles) {
 export function removeStyles(id) {
     styleManager.removeStyles(id);
 }
-
-// 전역 객체에 노출
-if (typeof window !== 'undefined') {
-    window.loadBaseStyles = loadBaseStyles;
-    window.loadUserStyles = loadUserStyles;
-    window.loadArticleStyles = loadArticleStyles;
-    window.loadStylesForPage = loadStylesForPage;
-    window.autoLoadStyles = autoLoadStyles;
-    window.changeTheme = changeTheme;
-    window.addCustomStyles = addCustomStyles;
-    window.removeStyles = removeStyles;
-}
-
-export default {
-    loadBaseStyles,
-    loadUserStyles,
-    loadArticleStyles,
-    loadStylesForPage,
-    autoLoadStyles,
-    changeTheme,
-    addCustomStyles,
-    removeStyles,
-};

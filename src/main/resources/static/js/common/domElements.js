@@ -6,7 +6,7 @@
 /**
  * DOM 요소 ID 상수
  */
-export let ElementIds = {
+export const ElementIds = {
     // User - Login
     LOGIN_EMAIL: 'email',
     LOGIN_PASSWORD: 'password',
@@ -282,7 +282,7 @@ class DomElementManager {
 /**
  * 페이지별 DOM 요소 헬퍼
  */
-export let DomElements = {
+export const DomElements = {
     manager: new DomElementManager(),
 
     /**
@@ -450,21 +450,3 @@ export let DomElements = {
      */
     initialize: () => DomElements.manager.initializeElements(),
 };
-
-// 전역 객체에 노출 (디버깅 용도)
-if (typeof window !== 'undefined') {
-    window.ElementIds = ElementIds;
-    window.DomElements = DomElements;
-
-    // DOMContentLoaded 시 자동으로 data-element-key 요소들을 초기화
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            DomElements.initialize();
-        });
-    } else {
-        // 이미 로드된 경우 즉시 초기화
-        DomElements.initialize();
-    }
-}
-
-export default DomElements;
