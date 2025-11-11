@@ -114,4 +114,30 @@ export const UserApi = {
 
         return await handleResponse(response);
     },
+
+    async checkNicknameExists(nickname) {
+        const response = await fetch(ApiEndpoints.USER_EXIST_NICKNAME, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: nickname,
+        });
+
+        const result = await handleResponse(response);
+        return result?.data ?? false;
+    },
+
+    async checkEmailExists(email) {
+        const response = await fetch(ApiEndpoints.USER_EXIST_EMAIL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: email,
+        });
+
+        const result = await handleResponse(response);
+        return result?.data ?? false;
+    }
 };

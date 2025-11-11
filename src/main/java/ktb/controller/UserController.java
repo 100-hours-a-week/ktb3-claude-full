@@ -139,7 +139,6 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "성공"),
             }
     )
-    @Authorized
     @PostMapping("/exist/nickname")
     public ResponseEntity<CommonResponse<Boolean>> existsNickname(
             @RequestBody String nickname
@@ -159,7 +158,6 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "성공"),
             }
     )
-    @Authorized
     @PostMapping("/exist/email")
     public ResponseEntity<CommonResponse<Boolean>> existsEmail(
             @RequestBody String email
