@@ -8,11 +8,11 @@ public record SignUpUserDto(
         String nickName,
         String profileImagePath
 ) {
-    public UserAccount toEntity() {
+    public UserAccount toEntity(String encodedPassword) {
         return UserAccount.builder()
                 .email(email)
                 .nickname(nickName)
-                .password(password)
+                .password(encodedPassword)
                 .profileImagePath(profileImagePath)
                 .build();
     }

@@ -5,6 +5,7 @@ import ktb.dto.UserAccountDto;
 import ktb.exception.AuthenticateException;
 import ktb.repository.UserRepository;
 
+import ktb.util.BCryptEncoder;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -18,7 +19,9 @@ public class AuthService {
         UserAccount user = userRepository.findByEmail(email)
                 .orElseThrow(AuthenticateException::new);
 
-        if (!password.equals(user.getPassword())) {
+        boolean passwordMatched = BCryptEncoder.matches(password, user.getPassword());
+
+        if (!passwordMatched) {
             throw new AuthenticateException();
         }
 
