@@ -60,7 +60,7 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge(30 * 60); // 15분
+        cookie.setMaxAge(jwt.getExpiredTime());
         httpResponse.addCookie(cookie);
 
         CommonResponse<Void> response = CommonResponse.of(Success.LOGIN);

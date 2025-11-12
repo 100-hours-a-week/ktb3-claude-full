@@ -133,4 +133,8 @@ public class JwtKeyProvider {
         }
         return claims.get("nickName", String.class);
     }
+
+    public int getExpiredTime() {
+        return (int)cfg.getAccessExpireSeconds();
+    }
 }
