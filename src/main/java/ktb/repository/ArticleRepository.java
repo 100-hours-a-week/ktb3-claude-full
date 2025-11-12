@@ -17,6 +17,13 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
     @Query("""
         SELECT article FROM Article article
+        LEFT JOIN FETCH article.comments comment
+        WHERE article.id = :id
+    """)
+    Optional<Article> findForDelete(@Param ("id") Long id);
+
+    @Query("""
+        SELECT article FROM Article article
         LEFT JOIN FETCH article.createBy
         INNER JOIN FETCH article.meta
         LEFT JOIN FETCH article.comments comment

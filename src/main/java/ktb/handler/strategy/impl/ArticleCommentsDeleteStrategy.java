@@ -1,18 +1,16 @@
 package ktb.handler.strategy.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
 import ktb.exception.article.AlreadyDeletedArticle;
 import ktb.handler.context.SoftDeleteContext;
 import ktb.handler.strategy.DeleteExecutionStrategy;
 import ktb.handler.strategy.DeleteStrategyOrder;
-import ktb.repository.ArticleRepository;
 import ktb.service.ArticleService;
-import ktb.service.CommentService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,10 +46,12 @@ public class ArticleCommentsDeleteStrategy implements DeleteExecutionStrategy<So
     @Override
     @Transactional
     public void execute(SoftDeleteContext context) {
-        Article article = articleService.findById(context.payload().articleId())
+        Article article = articleService.findForDelete(context.payload().articleId())
                 .orElseThrow(AlreadyDeletedArticle::new);
 
-        article.getComments().forEach(ArticleComment::softDelete);
+        article.getComments().stream()
+                .filter(comment -> !comment.isDelete())
+                .forEach(ArticleComment::softDelete);
 
         log.info("Article {} comments deleted", context.payload().articleId());
     }

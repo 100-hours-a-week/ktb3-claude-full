@@ -21,6 +21,10 @@ public class ArticleService {
         return articleRepository.findById(articleId);
     }
 
+    public Optional<Article> findForDelete(Long articleId) {
+        return articleRepository.findForDelete(articleId);
+    }
+
     public Optional<Article> findDetail(Long articleId) {
         return articleRepository.findDetail(articleId);
     }
