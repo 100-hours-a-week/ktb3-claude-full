@@ -16,6 +16,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
+import java.util.Optional;
 import ktb.config.JwtConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class JwtKeyProvider {
-
     private final JwtConfig cfg;
     private final ResourceLoader loader;
     private PrivateKey privateKey;
@@ -88,19 +88,20 @@ public class JwtKeyProvider {
     }
 
     // ✅ HTTP Request JWT 문자열 추출
-    private String extractToken(HttpServletRequest request) {
-        if (request.getCookies() == null) return null;
+    public Optional<String> extractTokenFromRequest(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return Optional.empty();
+        }
 
         return Arrays.stream(request.getCookies())
-                .filter(c -> "jwt".equals(c.getName()))
+                .filter(c -> cfg.getAccessTokenName().equals(c.getName()))
                 .map(Cookie::getValue)
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     // ✅ Claims 추출
     private Claims extractClaims(HttpServletRequest request) {
-        String token = extractToken(request);
+        String token = extractTokenFromRequest(request).orElse(null);
         if (token == null) {
             return null;
         }

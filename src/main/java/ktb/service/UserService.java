@@ -75,6 +75,10 @@ public class UserService {
         userDeleteHandlerChain.handle(context);
     }
 
+    public boolean existId(Long id) {
+        return userRepository.existsById(id);
+    }
+
     public boolean existNickname(String nickname) {
         return userRepository.existsByNickname(nickname);
     }

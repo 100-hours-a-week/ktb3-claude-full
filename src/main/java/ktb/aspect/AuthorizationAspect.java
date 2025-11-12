@@ -1,7 +1,6 @@
 package ktb.aspect;
 
 import io.jsonwebtoken.JwtException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 import ktb.annotation.Authorized;
@@ -19,15 +18,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.Arrays;
-
 @Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
 public class AuthorizationAspect {
-
     private final JwtKeyProvider jwtProvider;
+
     @Around("@annotation(authorized)")
     public Object verifyToken(ProceedingJoinPoint joinPoint, Authorized authorized) throws Throwable {
 
@@ -37,11 +34,7 @@ public class AuthorizationAspect {
         // ✅ 1. 쿠키에서 JWT 추출
         String token = null;
         if (request.getCookies() != null) {
-            token = Arrays.stream(request.getCookies())
-                    .filter(c -> "jwt".equals(c.getName()))
-                    .map(Cookie::getValue)
-                    .findFirst()
-                    .orElse(null);
+            token = jwtProvider.extractTokenFromRequest(request).orElse(null);
         }
 
         if (token == null) {

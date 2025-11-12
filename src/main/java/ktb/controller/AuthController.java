@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
+import ktb.config.JwtConfig;
 import ktb.constant.MessageConstant.Success;
 import ktb.util.JwtKeyProvider;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import ktb.dto.response.CommonResponse;
 @RequiredArgsConstructor
 public class AuthController {
     private final JwtKeyProvider jwt;
+    private final JwtConfig cfg;
     private final AuthService authService;
 
     @Operation(
@@ -56,11 +58,11 @@ public class AuthController {
         String token = jwt.generateToken(userId, nickName);
 
         // ✅ 3. 쿠키 설정
-        Cookie cookie = new Cookie("jwt", token);
+        Cookie cookie = new Cookie(cfg.getAccessTokenName(), token);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setPath("/");
-        cookie.setMaxAge(jwt.getExpiredTime());
+        cookie.setMaxAge((int)cfg.getAccessExpireSeconds());
         httpResponse.addCookie(cookie);
 
         CommonResponse<Void> response = CommonResponse.of(Success.LOGIN);

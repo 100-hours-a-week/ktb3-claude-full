@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "jwt")
 public class JwtConfig {
+    private String accessTokenName;
+    private String refreshTokenName;
     private String privateKeyPath;
     private String publicKeyPath;
     @DurationUnit(ChronoUnit.MINUTES)
