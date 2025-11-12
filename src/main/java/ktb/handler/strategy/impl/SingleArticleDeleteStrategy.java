@@ -5,10 +5,11 @@ import ktb.exception.article.AlreadyDeletedArticle;
 import ktb.handler.context.SoftDeleteContext;
 import ktb.handler.strategy.DeleteExecutionStrategy;
 import ktb.handler.strategy.DeleteStrategyOrder;
-import ktb.repository.ArticleRepository;
 import ktb.service.ArticleService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,9 +51,6 @@ public class SingleArticleDeleteStrategy implements DeleteExecutionStrategy<Soft
                 .orElseThrow(AlreadyDeletedArticle::new);
 
         article.softDelete();
-
-        // TODO: Save 실패 시 Rollback 가능하게 save 결과를 받아올 필요가 있음
-        articleService.save(article);
 
         log.info("Article {} deleted", articleId);
     }

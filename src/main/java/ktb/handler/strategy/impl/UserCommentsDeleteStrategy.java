@@ -60,8 +60,6 @@ public class UserCommentsDeleteStrategy implements DeleteExecutionStrategy<SoftD
                 .filter(comment -> !comment.isDelete())
                 .forEach(ArticleComment::softDelete);
 
-        commentRepository.saveAll(comments);
-
         log.info("User {} comments deleted: {} comments", userId, comments.size());
     }
 }

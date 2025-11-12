@@ -54,8 +54,6 @@ public class UserArticlesDeleteStrategy implements DeleteExecutionStrategy<SoftD
                 .filter(article -> !article.isDelete())
                 .forEach(Article::softDelete);
 
-        // 저장
-        articleService.saveAll(articles);
 
         log.info("User {} articles deleted: {} articles", userId, articles.size());
     }
