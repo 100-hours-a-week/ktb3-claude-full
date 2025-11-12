@@ -3,10 +3,10 @@ import {
     showErrorAlert,
     showModal,
     showToast,
-} from '../../common/event.js';
-import { ArticleApi } from '../../api/articleApi.js';
-import { PageRoutes, UriUtils } from '../../common/uris.js';
-import { DomElements } from '../../common/domElements.js';
+} from '/js/common/event.js';
+import { ArticleApi } from '/js/api/articleApi.js';
+import { PageRoutes, UriUtils } from '/js/common/uris.js';
+import { DomElements } from '/js/common/domElements.js';
 
 /**
  * Article Detail Handler

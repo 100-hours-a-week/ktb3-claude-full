@@ -51,16 +51,16 @@
     </main>
 
     <script type="module">
-        import { loadStylesForPage } from '../../js/styles/styleLoader.js';
+        import { loadStylesForPage } from '/js/styles/styleLoader.js';
         loadStylesForPage('article');
-        import '../../js/common/uris.js';
-        import '../../js/common/domElements.js';
+        import '/js/common/uris.js';
+        import '/js/common/domElements.js';
     </script>
     <script type="module">
-        import { initArticleDetailPage } from '../../js/handler/article/detailHandler.js';
-        import { initAuthHeader } from '../../js/handler/user/userEditHandler.js';
-        import { loadHeader } from '../../js/common/fragment-loader.js';
-        import { DomElements } from '../../js/common/domElements.js';
+        import { initArticleDetailPage } from '/js/handler/article/detailHandler.js';
+        import { initAuthHeader } from '/js/handler/user/userEditHandler.js';
+        import { loadHeader } from '/js/common/fragment-loader.js';
+        import { DomElements } from '/js/common/domElements.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             await loadHeader('with-back');

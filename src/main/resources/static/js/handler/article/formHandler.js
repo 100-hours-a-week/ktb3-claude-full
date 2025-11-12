@@ -4,10 +4,10 @@ import {
     showError,
     showErrorAlert,
     showToast,
-} from '../../common/event.js';
-import { ArticleApi } from '../../api/articleApi.js';
-import { PageRoutes } from '../../common/uris.js';
-import { DomElements, ElementIds } from '../../common/domElements.js';
+} from '/js/common/event.js';
+import { ArticleApi } from '/js/api/articleApi.js';
+import { PageRoutes } from '/js/common/uris.js';
+import { DomElements, ElementIds } from '/js/common/domElements.js';
 
 /**
  * Article Form Handler

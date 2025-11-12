@@ -1,5 +1,5 @@
 // Article API Module
-import { ApiEndpoints, PageRoutes } from '../common/uris.js';
+import { ApiEndpoints, PageRoutes } from '/js/common/uris.js';
 
 const DEFAULT_ARTICLE_ERROR_MESSAGE = '게시글 요청 처리 중 문제가 발생했습니다.';
 

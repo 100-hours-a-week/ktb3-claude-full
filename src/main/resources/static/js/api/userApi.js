@@ -1,5 +1,5 @@
 // User API Module
-import { ApiEndpoints, PageRoutes } from '../common/uris.js';
+import { ApiEndpoints, PageRoutes } from '/js/common/uris.js';
 
 const DEFAULT_ERROR_MESSAGE = '요청 처리에 실패했습니다.';
 
