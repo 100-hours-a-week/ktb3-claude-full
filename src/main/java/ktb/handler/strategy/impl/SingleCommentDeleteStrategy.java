@@ -36,6 +36,12 @@ public class SingleCommentDeleteStrategy implements DeleteExecutionStrategy<Comm
     }
 
     @Override
+    public boolean shouldExecute(CommentDeleteContext context) {
+        // 단일 Comment 삭제: commentId가 있을 때만 실행
+        return (context.payload().commentId() != null);
+    }
+
+    @Override
     @Transactional
     public void execute(CommentDeleteContext context) {
         Long commentId = context.payload().commentId();
