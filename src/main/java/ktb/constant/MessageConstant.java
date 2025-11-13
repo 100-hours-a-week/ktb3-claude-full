@@ -8,6 +8,7 @@ public final class MessageConstant {
         public static final String RETRIEVAL_USER = "user_retrieval_success";
         public static final String RETRIEVAL_ALL = "post_retrieval_success";
         public static final String RETRIEVAL_POST = "post_detail_retrieval_success";
+        public static final String ARTICLE_LIKE_UPDATED = "article_like_updated";
     }
 
     public static final class Password {

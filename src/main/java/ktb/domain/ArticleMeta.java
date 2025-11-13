@@ -1,12 +1,9 @@
 package ktb.domain;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -39,8 +36,13 @@ public class ArticleMeta {
                 null);
     }
 
-    protected void incrementViewCnt() { viewCnt.incrementAndGet(); }
-    protected void incrementLikeCnt() { likeCnt.incrementAndGet(); }
+    public void increaseLikeCnt() {
+        likeCnt.incrementAndGet();
+    }
+
+    public void decreaseLikeCnt() {
+        likeCnt.updateAndGet(current -> Math.max(0, current - 1));
+    }
 
     protected void updateTimestamp() {
         this.updateAt = LocalDateTime.now();

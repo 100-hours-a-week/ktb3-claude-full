@@ -1,9 +1,11 @@
 package ktb.service;
 
 import ktb.domain.ArticleMeta;
+import ktb.exception.article.NoExistArticleException;
 import ktb.repository.ArticleMetaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -12,5 +14,21 @@ public class ArticleMetaService {
 
     public ArticleMeta save(ArticleMeta meta) {
         return metaRepository.save(meta);
+    }
+
+    @Transactional
+    public void applyLikeDelta(Long articleId, int delta) {
+        ArticleMeta meta = requireMeta(articleId);
+
+        if (delta > 0) {
+            meta.increaseLikeCnt();
+        } else {
+            meta.decreaseLikeCnt();
+        }
+    }
+
+    private ArticleMeta requireMeta(Long articleId) {
+        return metaRepository.findById(articleId)
+                .orElseThrow(NoExistArticleException::new);
     }
 }

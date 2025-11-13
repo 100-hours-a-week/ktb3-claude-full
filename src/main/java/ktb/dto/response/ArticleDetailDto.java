@@ -38,6 +38,10 @@ public record ArticleDetailDto(
         @JsonProperty("view_cnt")
         String viewCnt,
 
+        @Schema(description = "좋아요 여부", example = "true")
+        @JsonProperty("is_liked")
+        Boolean isLiked,
+
         @Schema(description = "마지막 수정 일자", example = "2025-01-01T00:00:00")
         @JsonProperty("last_modified_date")
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -51,7 +55,7 @@ public record ArticleDetailDto(
         @JsonProperty("comment")
         List<CommentDetailDto> comment
 ) {
-    public static ArticleDetailDto from(Article article, Long userId) {
+    public static ArticleDetailDto from(Article article, Long userId, boolean isLiked) {
         LocalDateTime lastModified = article.getMeta().getUpdateAt() != null
                 ? article.getMeta().getUpdateAt()
                 : article.getMeta().getCreateAt();
@@ -65,6 +69,7 @@ public record ArticleDetailDto(
                 String.valueOf(article.getMeta().getLikeCnt().get()),
                 String.valueOf(article.getComments().size()),
                 String.valueOf(article.getMeta().getViewCnt().get()),
+                isLiked,
                 lastModified,
                 canModify,
                 article.getComments().stream()

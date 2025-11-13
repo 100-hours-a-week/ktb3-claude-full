@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class ArticleQueryService {
     private final ArticleService articleService;
+    private final ArticleLikeService articleLikeService;
 
     /**
      * 커서 기반 페이징으로 Article 목록 조회
@@ -80,6 +81,8 @@ public class ArticleQueryService {
 
         article.refreshActiveComments();
 
-        return ArticleDetailDto.from(article, userId);
+        boolean isLiked = articleLikeService.isLiked(articleId, userId);
+
+        return ArticleDetailDto.from(article, userId, isLiked);
     }
 }

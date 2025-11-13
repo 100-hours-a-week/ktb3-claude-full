@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
 import ktb.annotation.Authorized;
 import ktb.common.pagination.Slice;
 import ktb.constant.MessageConstant.Success;
@@ -19,10 +18,12 @@ import ktb.dto.request.AllArticleRetrieveRequest;
 import ktb.dto.request.ArticlePatchRequest;
 import ktb.dto.request.ArticleRequest;
 import ktb.dto.response.ArticleDetailDto;
+import ktb.dto.response.ArticleLikeResponse;
 import ktb.dto.response.ArticleSimpleDto;
 import ktb.dto.response.ArticlesResponse;
 import ktb.dto.response.CommonResponse;
 import ktb.service.ArticleCommandService;
+import ktb.service.ArticleLikeService;
 import ktb.service.ArticleQueryService;
 import lombok.RequiredArgsConstructor;
 
@@ -45,6 +46,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ArticleController {
     private final ArticleQueryService articleQueryService;
     private final ArticleCommandService articleCommandService;
+    private final ArticleLikeService articleLikeService;
 
     @Operation(
             summary = "Article search(page)",
@@ -112,6 +114,27 @@ public class ArticleController {
         ArticleDetailDto response = articleQueryService.findByIdDetail(id, userId);
 
         return ResponseEntity.ok(CommonResponse.of(Success.RETRIEVAL_POST, response));
+    }
+
+    @Authorized
+    @Operation(
+            summary = "Article like toggle",
+            description = "게시글 좋아요 상태를 토글합니다.",
+            tags = { "Article" },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = ArticleLikeResponse.class))),
+            }
+    )
+    @PostMapping("/article/{id}/like")
+    public ResponseEntity<CommonResponse<ArticleLikeResponse>> toggleLike(
+            @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
+            @RequestAttribute Long userId
+    ) {
+        boolean liked = articleLikeService.toggleLike(id, userId);
+
+        return ResponseEntity.ok(
+                CommonResponse.of(Success.ARTICLE_LIKE_UPDATED, ArticleLikeResponse.from(liked))
+        );
     }
 
     @Authorized
