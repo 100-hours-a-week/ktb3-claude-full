@@ -3,6 +3,7 @@ package ktb.constant;
 public final class MessageConstant {
     public static final class Success {
         public static final String LOGIN = "login_success";
+        public static final String LOGOUT = "logout_success";
         public static final String SIGNUP = "user_register_success";
         public static final String RETRIEVAL_USER = "user_retrieval_success";
         public static final String RETRIEVAL_ALL = "post_retrieval_success";

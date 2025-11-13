@@ -72,4 +72,25 @@ public class AuthController {
                 .header(HttpHeaders.LOCATION, "/articles")
                 .body(response);
     }
+
+    @Operation(
+            summary = "Logout",
+            description = "로그아웃 처리 (쿠키 만료)",
+            tags = { "Authentication" },
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "성공"),
+            }
+    )
+    @PostMapping("/logout")
+    public ResponseEntity<CommonResponse<Void>> logout(HttpServletResponse httpResponse) {
+        Cookie cookie = new Cookie(cfg.getAccessTokenName(), null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        httpResponse.addCookie(cookie);
+
+        return ResponseEntity
+                .ok(CommonResponse.of(Success.LOGOUT));
+    }
 }
