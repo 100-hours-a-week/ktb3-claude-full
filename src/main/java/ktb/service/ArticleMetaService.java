@@ -27,6 +27,12 @@ public class ArticleMetaService {
         }
     }
 
+    @Transactional
+    public void increaseViewCount(Long articleId) {
+        ArticleMeta meta = requireMeta(articleId);
+        meta.increaseViewCnt();
+    }
+
     private ArticleMeta requireMeta(Long articleId) {
         return metaRepository.findById(articleId)
                 .orElseThrow(NoExistArticleException::new);

@@ -36,6 +36,10 @@ public class ArticleMeta {
                 null);
     }
 
+    public void increaseViewCnt() {
+        viewCnt.incrementAndGet();
+    }
+
     public void increaseLikeCnt() {
         likeCnt.incrementAndGet();
     }

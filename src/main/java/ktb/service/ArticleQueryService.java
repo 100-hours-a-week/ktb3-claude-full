@@ -9,6 +9,7 @@ import ktb.dto.response.ArticleDetailDto;
 import ktb.dto.response.ArticleSimpleDto;
 import ktb.exception.article.AlreadyDeletedArticle;
 import ktb.exception.article.NoExistArticleException;
+import ktb.event.article.ArticleEventPublisher;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class ArticleQueryService {
     private final ArticleService articleService;
     private final ArticleLikeService articleLikeService;
+    private final ArticleEventPublisher articleEventPublisher;
 
     /**
      * 커서 기반 페이징으로 Article 목록 조회
@@ -82,6 +84,8 @@ public class ArticleQueryService {
         article.refreshActiveComments();
 
         boolean isLiked = articleLikeService.isLiked(articleId, userId);
+
+        articleEventPublisher.publishView(articleId);
 
         return ArticleDetailDto.from(article, userId, isLiked);
     }

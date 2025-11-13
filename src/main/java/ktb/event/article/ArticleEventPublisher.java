@@ -14,4 +14,8 @@ public class ArticleEventPublisher {
     public void publishLikeDelta(Long articleId, int delta) {
         eventPublisher.publishEvent(new ArticleLikeEvent(articleId, delta));
     }
+
+    public void publishView(Long articleId) {
+        eventPublisher.publishEvent(new ArticleViewEvent(articleId));
+    }
 }
