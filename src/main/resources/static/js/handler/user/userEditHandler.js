@@ -48,7 +48,7 @@ const createUserEditHandlerModule = (() => {
         }
 
         if (nicknameInput) {
-            nicknameInput.value = user.nickname || user.user_nickname || user.userNickname || '';
+            nicknameInput.value = user.nickname || user.user_nickname || user.nickName || '';
         }
 
         // Support multiple field name variations for profile image path
