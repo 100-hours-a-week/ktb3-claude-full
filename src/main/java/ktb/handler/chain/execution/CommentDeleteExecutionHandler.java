@@ -5,6 +5,8 @@ import java.util.List;
 import ktb.handler.strategy.DeleteExecutionStrategy;
 import ktb.handler.strategy.impl.SingleCommentDeleteStrategy;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class CommentDeleteExecutionHandler extends BaseExecutionHandler {
 
     private final SingleCommentDeleteStrategy singleCommentDeleteStrategy;

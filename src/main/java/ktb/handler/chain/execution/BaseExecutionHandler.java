@@ -40,15 +40,16 @@ public abstract class BaseExecutionHandler extends AbstractHandler<ContextData<?
         // 1. 컨텍스트 타입에 맞는 전략들 필터링
         // 2. 조건(shouldExecute) 확인
         // 3. 실행 순서대로 정렬
-        List<DeleteExecutionStrategy<?>> applicableStrategies = (List<DeleteExecutionStrategy<?>>) (List<?>) getStrategies().stream()
+        List<DeleteExecutionStrategy<?>> applicableStrategies = (List<DeleteExecutionStrategy<?>>) getStrategies().stream()
                 .filter(strategy -> strategy.getSupportedContextType().isInstance(context))
                 .filter(strategy -> shouldExecuteStrategy(strategy, context))
                 .sorted(Comparator.comparingInt(DeleteExecutionStrategy::getOrder))
-                .collect(Collectors.toList());
+                .toList();
 
         if (applicableStrategies.isEmpty()) {
             log.warn("[{}] No applicable strategy found for context: {}",
                     getHandlerName(), context.getClass());
+
             return super.handle(context);
         }
 

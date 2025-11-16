@@ -7,6 +7,8 @@ import ktb.handler.strategy.impl.UserArticlesDeleteStrategy;
 import ktb.handler.strategy.impl.UserCommentsDeleteStrategy;
 import ktb.handler.strategy.impl.UserDeleteStrategy;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class UserDeleteExecutionHandler extends BaseExecutionHandler {
 
     private final UserDeleteStrategy userDeleteStrategy;

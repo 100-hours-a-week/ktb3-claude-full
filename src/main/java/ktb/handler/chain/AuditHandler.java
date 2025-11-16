@@ -7,6 +7,8 @@ import ktb.handler.context.ContextData;
 import ktb.handler.strategy.AuditStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
 public class AuditHandler extends AbstractHandler<ContextData<?>> {
     private final List<AuditStrategy<?>> auditStrategies;
 
