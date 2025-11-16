@@ -6,25 +6,25 @@
 import styleManager from './styleManager.js';
 
 export const designTokens = {
-    // Colors
+    // Colors - Spring-inspired Green Theme
     colors: {
-        primary: '#7f6aee',
-        primaryLight: '#aca0eb',
-        primaryDark: '#6a56e8',
-        primaryGradientStart: '#7f6aee',
-        primaryGradientEnd: '#aca0eb',
+        primary: '#6db33f',        // Spring Green
+        primaryLight: '#8cc63f',   // Light Spring Green
+        primaryDark: '#5ca632',    // Dark Spring Green
+        primaryGradientStart: '#6db33f',
+        primaryGradientEnd: '#8cc63f',
 
         secondary: '#2c2c2c',
         secondaryDark: '#1a1a1a',
 
-        danger: '#ff4444',
-        dangerDark: '#cc0000',
-        dangerLight: '#ff5a5a',
-        dangerBorder: '#ffb5b5',
+        danger: '#dc3545',         // Bootstrap-style red
+        dangerDark: '#bd2130',
+        dangerLight: '#e4606d',
+        dangerBorder: '#f5c6cb',
 
-        success: '#00cc66',
-        warning: '#ffaa00',
-        info: '#3399ff',
+        success: '#6db33f',        // Same as primary
+        warning: '#ffc107',        // Warmer yellow
+        info: '#17a2b8',           // Teal info color
 
         // Neutral colors
         white: '#ffffff',
@@ -45,44 +45,44 @@ export const designTokens = {
 
         // Background colors
         bgPrimary: '#ffffff',
-        bgSecondary: '#f5f5f5',
-        bgTertiary: '#f4f2ff',
-        bgPurpleLight: '#f4f2ff',
-        bgGrayLight: '#d9d9d9',
+        bgSecondary: '#f8faf8',      // Very light green tint
+        bgTertiary: '#f0f8f0',       // Light green background
+        bgGreenLight: '#f0f8f0',
+        bgGrayLight: '#e9ecef',
 
         // Border colors
         border: {
-            light: '#ecebf5',
-            default: '#ddd',
-            dark: '#d8d5e9',
-            purple: '#cfc4ff',
-            purple2: '#e0dafc',
+            light: '#e9f5e4',        // Light green border
+            default: '#dee2e6',      // Clean neutral border
+            dark: '#c3d9b8',         // Green-tinted border
+            green: '#b8d9a8',        // Green border
+            green2: '#d4eac8',       // Lighter green border
         },
 
         // Text colors
         text: {
-            primary: '#333',
-            secondary: '#666',
-            tertiary: '#999',
+            primary: '#212529',       // Darker, more readable
+            secondary: '#6c757d',     // Bootstrap gray
+            tertiary: '#adb5bd',
             inverse: '#ffffff',
-            muted: '#8b88a8',
-            dark: '#302c63',
-            darkSecondary: '#6f6d83',
-            link: '#8b7add',
-            error: '#ff4444',
+            muted: '#869e94',         // Green-tinted muted
+            dark: '#2d3e34',          // Dark green
+            darkSecondary: '#5a6e5f',
+            link: '#5ca632',          // Dark green for links
+            error: '#dc3545',
         },
 
         // Shadow colors
         shadow: {
-            sm: 'rgba(0, 0, 0, 0.08)',
-            md: 'rgba(0, 0, 0, 0.12)',
-            lg: 'rgba(0, 0, 0, 0.15)',
-            purple: 'rgba(172, 160, 235, 0.35)',
-            card: 'rgba(25, 20, 62, 0.08)',
-            cardLight: 'rgba(25, 20, 62, 0.04)',
-            cardMedium: 'rgba(25, 20, 62, 0.05)',
-            button: 'rgba(127, 106, 238, 0.28)',
-            buttonHover: 'rgba(107, 87, 229, 0.32)',
+            sm: 'rgba(0, 0, 0, 0.075)',
+            md: 'rgba(0, 0, 0, 0.1)',
+            lg: 'rgba(0, 0, 0, 0.125)',
+            green: 'rgba(109, 179, 63, 0.25)',      // Green shadow
+            card: 'rgba(0, 0, 0, 0.08)',
+            cardLight: 'rgba(0, 0, 0, 0.04)',
+            cardMedium: 'rgba(0, 0, 0, 0.06)',
+            button: 'rgba(109, 179, 63, 0.25)',     // Green button shadow
+            buttonHover: 'rgba(92, 166, 50, 0.35)', // Darker green hover
         },
     },
 
@@ -139,31 +139,31 @@ export const designTokens = {
         loose: '1.8',
     },
 
-    // Border radius
+    // Border radius - Spring style (less rounded)
     borderRadius: {
         none: '0',
-        sm: '8px',
-        md: '10px',
-        lg: '12px',
-        xl: '16px',
-        '2xl': '18px',
+        sm: '4px',     // Spring uses subtle radius
+        md: '6px',
+        lg: '8px',
+        xl: '12px',
+        '2xl': '16px',
         full: '9999px',
     },
 
-    // Shadows
+    // Shadows - Spring style (softer, more subtle)
     boxShadow: {
         none: 'none',
-        sm: '0 1px 4px rgba(0, 0, 0, 0.08)',
-        md: '0 2px 8px rgba(0, 0, 0, 0.12)',
-        lg: '0 4px 12px rgba(0, 0, 0, 0.15)',
-        xl: '0 10px 24px rgba(127, 106, 238, 0.28)',
-        '2xl': '0 18px 36px rgba(107, 87, 229, 0.32)',
-        card: '0 20px 40px rgba(25, 20, 62, 0.08)',
-        cardLight: '0 20px 40px rgba(25, 20, 62, 0.04)',
-        cardMedium: '0 12px 32px rgba(25, 20, 62, 0.05)',
-        purple: '0 10px 24px rgba(172, 160, 235, 0.35)',
-        input: '0 0 0 3px rgba(127, 106, 238, 0.12)',
-        inset: 'inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+        sm: '0 1px 2px rgba(0, 0, 0, 0.075)',
+        md: '0 2px 4px rgba(0, 0, 0, 0.1)',
+        lg: '0 4px 8px rgba(0, 0, 0, 0.125)',
+        xl: '0 8px 16px rgba(109, 179, 63, 0.2)',
+        '2xl': '0 12px 24px rgba(92, 166, 50, 0.25)',
+        card: '0 2px 8px rgba(0, 0, 0, 0.08)',
+        cardLight: '0 1px 4px rgba(0, 0, 0, 0.04)',
+        cardMedium: '0 2px 6px rgba(0, 0, 0, 0.06)',
+        green: '0 4px 12px rgba(109, 179, 63, 0.25)',
+        input: '0 0 0 3px rgba(109, 179, 63, 0.15)',
+        inset: 'inset 0 1px 0 rgba(255, 255, 255, 0.15)',
     },
 
     // Transitions

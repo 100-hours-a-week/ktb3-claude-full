@@ -217,7 +217,7 @@ export const userStyles = {
         marginTop: '0',
         backgroundColor: dt.colors.white,
         color: dt.colors.primary,
-        border: `1px solid ${dt.colors.border.purple}`,
+        border: `1px solid ${dt.colors.primary}`,
         borderRadius: dt.borderRadius.md,
         fontSize: dt.fontSize.md,
         fontWeight: dt.fontWeight.semibold,
@@ -228,7 +228,8 @@ export const userStyles = {
 
         ':hover': {
             backgroundColor: dt.colors.bgTertiary,
-            color: '#6a56e8',
+            color: dt.colors.primaryDark,
+            borderColor: dt.colors.primaryDark,
         },
     },
 

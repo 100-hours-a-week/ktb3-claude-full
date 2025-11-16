@@ -175,21 +175,22 @@ export const commonStyles = {
     },
 
     '.btn-primary': {
-        background: `linear-gradient(90deg, ${dt.colors.primaryGradientStart} 0%, ${dt.colors.primaryGradientEnd} 100%)`,
+        backgroundColor: dt.colors.primary,
         color: dt.colors.white,
         border: 'none',
-        boxShadow: dt.boxShadow.xl,
+        boxShadow: dt.boxShadow.sm,
 
         ':hover': {
-            background: `linear-gradient(90deg, ${dt.colors.primaryDark} 0%, #9d8cf0 100%)`,
-            boxShadow: dt.boxShadow['2xl'],
+            backgroundColor: dt.colors.primaryDark,
+            boxShadow: dt.boxShadow.md,
         },
 
         ':disabled': {
-            background: dt.colors.primaryLight,
+            backgroundColor: dt.colors.primaryLight,
             color: dt.colors.white,
             cursor: 'not-allowed',
             boxShadow: dt.boxShadow.none,
+            opacity: '0.6',
         },
     },
 
@@ -227,10 +228,11 @@ export const commonStyles = {
     '.btn-outline': {
         backgroundColor: dt.colors.white,
         color: dt.colors.primary,
-        border: `1px solid ${dt.colors.border.purple}`,
+        border: `1px solid ${dt.colors.primary}`,
 
         ':hover': {
             backgroundColor: dt.colors.bgTertiary,
+            borderColor: dt.colors.primaryDark,
         },
     },
 
@@ -295,15 +297,17 @@ export const commonStyles = {
     '.file-upload-btn': {
         padding: `10px 18px`,
         border: `1px solid ${dt.colors.border.dark}`,
-        borderRadius: dt.borderRadius.lg,
-        background: dt.colors.bgTertiary,
+        borderRadius: dt.borderRadius.md,
+        background: dt.colors.white,
         cursor: 'pointer',
         fontSize: dt.fontSize.base,
-        transition: `background-color ${dt.transition.base}`,
-        color: '#5a55a1',
+        transition: `all ${dt.transition.base}`,
+        color: dt.colors.text.primary,
 
         ':hover': {
-            backgroundColor: '#e7e2ff',
+            backgroundColor: dt.colors.bgTertiary,
+            borderColor: dt.colors.primary,
+            color: dt.colors.primary,
         },
     },
 
@@ -409,11 +413,11 @@ export const commonStyles = {
         },
 
         '.btn-primary': {
-            backgroundColor: '#8b7add',
+            backgroundColor: dt.colors.primary,
             color: dt.colors.white,
 
             ':hover': {
-                backgroundColor: '#7a68cc',
+                backgroundColor: dt.colors.primaryDark,
             },
         },
     },
@@ -424,11 +428,11 @@ export const commonStyles = {
         top: '100px',
         left: '50%',
         transform: 'translateX(-50%)',
-        background: `linear-gradient(90deg, ${dt.colors.primaryGradientStart} 0%, ${dt.colors.primaryGradientEnd} 100%)`,
+        backgroundColor: dt.colors.primary,
         color: dt.colors.white,
         padding: `${dt.spacing[4]} ${dt.spacing[8]}`,
-        borderRadius: dt.borderRadius.lg,
-        boxShadow: dt.boxShadow.xl,
+        borderRadius: dt.borderRadius.md,
+        boxShadow: dt.boxShadow.lg,
         fontSize: dt.fontSize.lg,
         fontWeight: dt.fontWeight.medium,
         zIndex: dt.zIndex.modal + 1,
@@ -443,12 +447,13 @@ export const commonStyles = {
 
     /* Links */
     '.link': {
-        color: '#8b7add',
+        color: dt.colors.text.link,
         textDecoration: 'none',
         fontSize: dt.fontSize.base,
 
         ':hover': {
             textDecoration: 'underline',
+            color: dt.colors.primaryDark,
         },
     },
 

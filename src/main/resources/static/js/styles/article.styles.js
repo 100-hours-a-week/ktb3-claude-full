@@ -338,19 +338,19 @@ export const articleStyles = {
     },
 
     '.btn-comment-disabled': {
-        backgroundColor: '#ACA0EB !important',
+        backgroundColor: `${dt.colors.primaryLight} !important`,
         color: `${dt.colors.white} !important`,
         cursor: 'not-allowed !important',
-        opacity: '1 !important',
+        opacity: '0.6 !important',
     },
 
     '.btn-comment-enabled': {
-        backgroundColor: '#7F6AEE !important',
+        backgroundColor: `${dt.colors.primary} !important`,
         color: `${dt.colors.white} !important`,
         cursor: 'pointer !important',
 
         ':hover': {
-            backgroundColor: '#6B5DD3 !important',
+            backgroundColor: `${dt.colors.primaryDark} !important`,
             boxShadow: dt.boxShadow.md,
         },
 
