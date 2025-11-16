@@ -16,6 +16,10 @@ public record ArticleSimpleDto(
         @JsonProperty("title")
         String title,
 
+        @Schema(description = "게시글 작성한 유저 닉네임", example = "닉네임")
+        @JsonProperty("user_nickname")
+        String userNickname,
+
         @Schema(description = "좋아요 수", example = "0")
         @JsonProperty("like_cnt")
         int likeCnt,
@@ -41,6 +45,7 @@ public record ArticleSimpleDto(
         return new ArticleSimpleDto(
                 article.getId(),
                 article.getTitle(),
+                article.getCreateBy().getNickname(),
                 article.getMeta().getLikeCnt().get(),
                 article.getComments().size(),
                 article.getMeta().getViewCnt().get(),
