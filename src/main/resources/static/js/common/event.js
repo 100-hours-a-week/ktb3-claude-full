@@ -1,6 +1,57 @@
 // Common event handlers and utility functions
 import { DomElements } from './domElements.js';
 
+/* -------------------------------------------------------------------------- */
+/* Event Listener Manager - for cleanup on page navigation                   */
+/* -------------------------------------------------------------------------- */
+
+class EventListenerManager {
+    constructor() {
+        this.listeners = [];
+    }
+
+    add(element, eventType, handler, options) {
+        if (!element) return;
+        element.addEventListener(eventType, handler, options);
+        this.listeners.push({ element, eventType, handler, options });
+    }
+
+    removeAll() {
+        this.listeners.forEach(({ element, eventType, handler, options }) => {
+            element.removeEventListener(eventType, handler, options);
+        });
+        this.listeners = [];
+    }
+}
+
+export const eventManager = new EventListenerManager();
+
+// Clean up event listeners when navigating away
+window.addEventListener('beforeunload', () => {
+    eventManager.removeAll();
+});
+
+/* -------------------------------------------------------------------------- */
+/* Authentication                                                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Check if user is authenticated
+ * @returns {Promise<boolean>} true if authenticated, false otherwise
+ */
+export async function checkAuth() {
+    try {
+        const response = await fetch('/api/v1/users/me');
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}
+
+/* -------------------------------------------------------------------------- */
+/* User Menu                                                                  */
+/* -------------------------------------------------------------------------- */
+
 export function toggleUserMenu() {
     const dropdown = DomElements.Common.getUserMenuDropdown();
     if (dropdown) {
@@ -9,14 +60,15 @@ export function toggleUserMenu() {
 }
 
 // Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
+const closeDropdownHandler = function(event) {
     const userMenu = document.querySelector('.user-menu');
     const dropdown = DomElements.Common.getUserMenuDropdown();
 
     if (dropdown && userMenu && !userMenu.contains(event.target)) {
         dropdown.style.display = 'none';
     }
-});
+};
+eventManager.add(document, 'click', closeDropdownHandler);
 
 const MODAL_IDS = {
     WRAPPER: 'globalModal',
@@ -70,11 +122,14 @@ export function showModal(title, message, onConfirm) {
     const newConfirm = confirm.cloneNode(true);
     confirm.parentNode.replaceChild(newConfirm, confirm);
 
-    newCancel.addEventListener('click', hideModal);
-    newConfirm.addEventListener('click', () => {
+    const cancelHandler = () => hideModal();
+    const confirmHandler = () => {
         hideModal();
         if (onConfirm) onConfirm();
-    });
+    };
+
+    eventManager.add(newCancel, 'click', cancelHandler);
+    eventManager.add(newConfirm, 'click', confirmHandler);
 }
 
 export function hideModal() {
