@@ -125,20 +125,21 @@ class DomElementManager {
         if (this.initialized) return;
 
         document.querySelectorAll('[data-element-key]').forEach(element => {
+            // 이미 ID가 할당된 요소는 건너뛰기 (중복 처리 방지)
+            if (element.id) return;
+
             const key = element.getAttribute('data-element-key');
             const id = ElementIds[key];
 
             if (id) {
-                // ID가 이미 있다면 경고 (중복 방지)
-                if (element.id && element.id !== id) {
-                    console.warn(`Element with data-element-key="${key}" already has different id="${element.id}". Overwriting with "${id}".`);
-                }
                 element.id = id;
             } else {
                 console.warn(`No ElementIds mapping found for key: ${key}`);
             }
         });
 
+        // 초기화 후 캐시 클리어 (새로운 요소들이 추가되었으므로)
+        this.clearCache();
         this.initialized = true;
     }
 

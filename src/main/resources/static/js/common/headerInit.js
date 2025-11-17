@@ -34,9 +34,10 @@ export async function initializeHeaderUserInfo() {
             dropdownUserName.textContent = nickname;
         }
 
-        // 헤더 생성 버튼에 클릭 핸들러 추가
+        // 헤더 게시글 작성 버튼 표시 및 클릭 핸들러 추가
         const headerCreateBtn = DomElements.Header.getCreateArticleBtn();
         if (headerCreateBtn) {
+            headerCreateBtn.style.display = 'inline-block';
             headerCreateBtn.addEventListener('click', (e) => {
                 e.preventDefault();
                 window.location.href = PageRoutes.ARTICLE_NEW;
