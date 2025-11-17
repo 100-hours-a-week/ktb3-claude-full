@@ -6,7 +6,7 @@
 import { designTokens as dt } from './theme.js';
 
 export const userStyles = {
-    /* Auth Container - javascript.info style clean auth */
+    /* 인증 컨테이너 */
     '.auth-container': {
         maxWidth: '480px',  // Increased from 400px
         margin: '0 auto',
@@ -39,7 +39,7 @@ export const userStyles = {
         justifyContent: 'center',
     },
 
-    /* Login/Signup Buttons */
+    /* 로그인/회원가입 버튼 */
     '.btn-login-disabled, .btn-signup-disabled': {
         backgroundColor: `${dt.colors.primaryLight} !important`,
         cursor: 'not-allowed',
@@ -52,7 +52,7 @@ export const userStyles = {
         opacity: '1',
     },
 
-    /* Signup Profile */
+    /* 회원가입 프로필 */
     '.signup-profile': {
         marginBottom: dt.spacing[8],
 
@@ -113,7 +113,7 @@ export const userStyles = {
         display: 'none',
     },
 
-    /* User Edit - javascript.info style */
+    /* 사용자 편집 */
     '.user-edit-container': {
         maxWidth: '680px',  // Increased from 600px
         margin: '0 auto',
@@ -177,7 +177,7 @@ export const userStyles = {
         },
     },
 
-    /* Password Update - javascript.info style */
+    /* 비밀번호 수정 */
     '.password-update-container': {
         maxWidth: '560px',  // Increased from 500px
         margin: '0 auto',
@@ -200,7 +200,7 @@ export const userStyles = {
         boxShadow: dt.boxShadow.card,  // Changed from none
     },
 
-    /* Auth Links */
+    /* 인증 링크 */
     '.auth-link': {
         display: 'block',
         textAlign: 'center',
@@ -250,7 +250,69 @@ export const userStyles = {
         width: '100%',
     },
 
-    /* Responsive */
+    /* 인증 분할 레이아웃 (로그인 페이지) */
+    '.auth-split-container': {
+        display: 'flex',
+        minHeight: 'calc(100vh - 80px)',
+        width: '100%',
+    },
+
+    '.auth-split-left': {
+        flex: '1',
+        background: `linear-gradient(135deg, ${dt.colors.primary} 0%, ${dt.colors.primaryDark} 100%)`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: dt.spacing[12],
+    },
+
+    '.auth-brand-image': {
+        textAlign: 'center',
+        color: '#ffffff',
+    },
+
+    '.brand-logo': {
+        fontSize: '4rem',
+        fontWeight: dt.fontWeight.bold,
+        marginBottom: dt.spacing[4],
+        textShadow: '0 2px 10px rgba(0,0,0,0.2)',
+    },
+
+    '.brand-tagline': {
+        fontSize: dt.fontSize['2xl'],
+        fontWeight: dt.fontWeight.medium,
+        opacity: '0.9',
+    },
+
+    '.auth-split-right': {
+        flex: '1',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: dt.spacing[8],
+        backgroundColor: '#ffffff',
+    },
+
+    /* 반응형 */
+    '@media (max-width: 768px)': {
+        '.auth-split-container': {
+            flexDirection: 'column',
+        },
+
+        '.auth-split-left': {
+            minHeight: '200px',
+            flex: 'none',
+        },
+
+        '.brand-logo': {
+            fontSize: '3rem',
+        },
+
+        '.brand-tagline': {
+            fontSize: dt.fontSize.xl,
+        },
+    },
+
     '@media (max-width: 480px)': {
         '.auth-container, .user-edit-form, .password-update-form': {
             padding: `${dt.spacing[6]} ${dt.spacing[5]}`,
@@ -258,6 +320,14 @@ export const userStyles = {
 
         '.auth-title, .user-edit-title, .password-update-title': {
             fontSize: dt.fontSize['3xl'],
+        },
+
+        '.auth-split-left': {
+            padding: dt.spacing[6],
+        },
+
+        '.brand-logo': {
+            fontSize: '2.5rem',
         },
     },
 };

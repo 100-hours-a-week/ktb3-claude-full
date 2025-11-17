@@ -10,8 +10,8 @@ import { PageRoutes } from '/js/common/uris.js';
 import { DomElements, ElementIds } from '/js/common/domElements.js';
 
 /**
- * Article Form Handler
- * Handles article creation and editing
+ * 게시글 폼 핸들러
+ * 게시글 생성 및 수정 처리
  */
 
 const createFormHandlerModule = (() => {
@@ -30,7 +30,7 @@ const createFormHandlerModule = (() => {
         const isContentValid = content && content.trim().length > 0;
         const isFormValid = isTitleValid && isContentValid;
 
-        // Show/hide error messages
+        // 오류 메시지 표시/숨김
         if (titleError && contentError) {
             if (!isFormValid && (!isTitleValid || !isContentValid)) {
                 if (!isTitleValid && !isContentValid) {
@@ -52,7 +52,7 @@ const createFormHandlerModule = (() => {
             }
         }
 
-        // Update button state
+        // 버튼 상태 업데이트
         if (submitBtn) {
             submitBtn.disabled = !isFormValid;
             if (isFormValid) {
@@ -180,7 +180,7 @@ const createFormHandlerModule = (() => {
             await loadArticleForEdit(hiddenIdField.value);
         }
 
-        // Add validation event listeners
+        // 유효성 검사 이벤트 리스너 추가
         const titleInput = DomElements.ArticleForm.getTitle();
         const contentInput = DomElements.ArticleForm.getContent();
 
@@ -190,15 +190,15 @@ const createFormHandlerModule = (() => {
         const articleForm = DomElements.ArticleForm.getForm();
         articleForm?.addEventListener('submit', handleArticleSubmit);
 
-        // Initial validation
+        // 초기 유효성 검사
         validateArticleForm();
     }
 
-    // Public API
+    // 공개 API
     return {
         initArticleFormPage
     };
 })();
 
-// Export the public function
+// 공개 함수 내보내기
 export const { initArticleFormPage } = createFormHandlerModule;

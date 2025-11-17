@@ -6,7 +6,7 @@
 import { designTokens as dt } from './theme.js';
 
 export const articleStyles = {
-    /* Article List */
+    /* 게시글 목록 */
     '.article-detail-main': {
         display: 'flex',
         justifyContent: 'center',
@@ -48,7 +48,7 @@ export const articleStyles = {
         gap: dt.spacing[5],  // Increased from spacing[4]
     },
 
-    /* Article Card - javascript.info style clean cards */
+    /* 게시글 카드 */
     '.article-card': {
         background: dt.colors.white,
         borderRadius: dt.borderRadius.lg,
@@ -124,7 +124,7 @@ export const articleStyles = {
         color: dt.colors.text.secondary,
     },
 
-    /* Article Detail */
+    /* 게시글 상세 */
     '.article-detail-container': {
         width: '100%',
         maxWidth: '720px',
@@ -348,7 +348,7 @@ export const articleStyles = {
         color: dt.colors.text.secondary,
     },
 
-    /* Comment Section - javascript.info style */
+    /* 댓글 섹션 */
     '.comment-section': {
         background: dt.colors.white,
         padding: dt.spacing[8],
@@ -497,7 +497,7 @@ export const articleStyles = {
         marginTop: dt.spacing[2],
     },
 
-    /* Article Form - javascript.info style clean forms */
+    /* 게시글 폼 */
     '.article-form-container': {
         maxWidth: '800px',  // Increased from 720px
         margin: '0 auto',
@@ -528,7 +528,7 @@ export const articleStyles = {
         lineHeight: dt.lineHeight.relaxed,
     },
 
-    /* Responsive */
+    /* 반응형 */
     '@media (max-width: 768px)': {
         '.article-form': {
             padding: `${dt.spacing[6]} ${dt.spacing[5]}`,

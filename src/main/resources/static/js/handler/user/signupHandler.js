@@ -10,13 +10,13 @@ import { PageRoutes } from '/js/common/uris.js';
 import { DomElements, ElementIds } from '/js/common/domElements.js';
 
 /**
- * Signup Handler
- * Handles user signup functionality
- * Using closure pattern to encapsulate module state
+ * 회원가입 핸들러
+ * 사용자 회원가입 기능 처리
+ * 클로저 패턴을 사용하여 모듈 상태 캡슐화
  */
 
 const createSignupHandlerModule = (() => {
-    // Private state - encapsulated in closure
+    // 클로저로 캡슐화된 비공개 상태
     let hasProfileImage = false;
     let validationState = {
         email: false,
@@ -30,7 +30,7 @@ const createSignupHandlerModule = (() => {
     };
 
     /* -------------------------------------------------------------------------- */
-    /* Helpers                                                                    */
+    /* 헬퍼 함수                                                                    */
     /* -------------------------------------------------------------------------- */
 
     function debounce(func, delay) {
@@ -51,7 +51,7 @@ const createSignupHandlerModule = (() => {
     }
 
     /* -------------------------------------------------------------------------- */
-    /* Validation                                                                 */
+    /* 유효성 검사                                                                  */
     /* -------------------------------------------------------------------------- */
 
     async function validateEmailField() {
@@ -72,7 +72,7 @@ const createSignupHandlerModule = (() => {
             return false;
         }
 
-        // Check email duplication
+        // 이메일 중복 확인
         try {
             const exists = await UserApi.checkEmailExists(email);
             if (exists) {
@@ -171,7 +171,7 @@ const createSignupHandlerModule = (() => {
             return false;
         }
 
-        // Check nickname duplication
+        // 닉네임 중복 확인
         try {
             const exists = await UserApi.checkNicknameExists(nickname);
             if (exists) {
@@ -233,7 +233,7 @@ const createSignupHandlerModule = (() => {
     }
 
     /* -------------------------------------------------------------------------- */
-    /* Signup                                                                     */
+    /* 회원가입                                                                    */
     /* -------------------------------------------------------------------------- */
 
     function handleProfileImageChange(event) {
@@ -316,11 +316,11 @@ const createSignupHandlerModule = (() => {
     }
 
     /* -------------------------------------------------------------------------- */
-    /* Public initializer                                                         */
+    /* 공개 초기화 함수                                                              */
     /* -------------------------------------------------------------------------- */
 
     function initSignupPage() {
-        // Reset state
+        // 상태 초기화
         hasProfileImage = false;
         validationState = {
             email: false,
@@ -337,7 +337,7 @@ const createSignupHandlerModule = (() => {
         const passwordConfirm = DomElements.Signup.getPasswordConfirm();
         const nickname = DomElements.Signup.getNickname();
 
-        // Email validation with debounced duplicate check
+        // 디바운스가 적용된 이메일 중복 검사
         const debouncedEmailCheck = debounce(async () => {
             await validateEmailField();
         }, 500);
@@ -350,7 +350,7 @@ const createSignupHandlerModule = (() => {
         });
         email?.addEventListener('blur', validateEmailField);
 
-        // Password validation
+        // 비밀번호 유효성 검사
         password?.addEventListener('input', () => {
             clearError(ElementIds.SIGNUP_PASSWORD_ERROR);
             validationState.password = false;
@@ -358,7 +358,7 @@ const createSignupHandlerModule = (() => {
         });
         password?.addEventListener('blur', validatePasswordField);
 
-        // Password confirm validation
+        // 비밀번호 확인 유효성 검사
         passwordConfirm?.addEventListener('input', () => {
             clearError(ElementIds.SIGNUP_PASSWORD_CONFIRM_ERROR);
             validationState.passwordConfirm = false;
@@ -366,7 +366,7 @@ const createSignupHandlerModule = (() => {
         });
         passwordConfirm?.addEventListener('blur', validatePasswordConfirmField);
 
-        // Nickname validation with debounced duplicate check
+        // 디바운스가 적용된 닉네임 중복 검사
         const debouncedNicknameCheck = debounce(async () => {
             await validateNicknameField();
         }, 500);
@@ -382,15 +382,15 @@ const createSignupHandlerModule = (() => {
         const signupForm = DomElements.Signup.getForm();
         signupForm?.addEventListener('submit', handleSignup);
 
-        // Initial validation state
+        // 초기 유효성 검사 상태
         updateSignupButtonState();
     }
 
-    // Public API
+    // 공개 API
     return {
         initSignupPage
     };
 })();
 
-// Export the public function
+// 공개 함수 내보내기
 export const { initSignupPage } = createSignupHandlerModule;

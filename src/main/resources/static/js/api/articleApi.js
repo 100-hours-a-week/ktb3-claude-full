@@ -1,4 +1,4 @@
-// Article API Module
+// 게시글 API 모듈
 import { ApiEndpoints, PageRoutes } from '/js/common/uris.js';
 
 const DEFAULT_ARTICLE_ERROR_MESSAGE = '게시글 요청 처리 중 문제가 발생했습니다.';
@@ -42,7 +42,7 @@ async function handleArticleResponse(response, fallbackRedirect) {
 }
 
 export const ArticleApi = {
-    // Get all articles
+    // 모든 게시글 조회
     async getArticles(after = 0, limit = 10) {
         const url = new URL(ApiEndpoints.ARTICLE_LIST, window.location.origin);
         url.searchParams.append('after', after);
@@ -57,7 +57,7 @@ export const ArticleApi = {
         return await handleArticleResponse(response);
     },
 
-    // Get article by ID
+    // ID로 게시글 조회
     async getArticle(id) {
         const response = await fetch(ApiEndpoints.article(id), {
             method: 'GET',
@@ -66,7 +66,7 @@ export const ArticleApi = {
         return await handleArticleResponse(response);
     },
 
-    // Create article
+    // 게시글 생성
     async createArticle(requestBody) {
         const response = await fetch(ApiEndpoints.ARTICLE_BASE, {
             method: 'POST',
@@ -79,7 +79,7 @@ export const ArticleApi = {
         return await handleArticleResponse(response, PageRoutes.ARTICLES);
     },
 
-    // Update article
+    // 게시글 수정
     async updateArticle(id, requestBody) {
         const response = await fetch(ApiEndpoints.article(id), {
             method: 'PATCH',
@@ -89,7 +89,7 @@ export const ArticleApi = {
             body: JSON.stringify(requestBody),
         });
 
-        // Extract redirect URL from Location header if present
+        // Location 헤더에서 리다이렉트 URL 추출
         const redirectUrl = response.headers.get('Location');
         if (redirectUrl) {
             return { redirectUrl };
@@ -98,7 +98,7 @@ export const ArticleApi = {
         return await handleArticleResponse(response, PageRoutes.articleDetail(id));
     },
 
-    // Delete article
+    // 게시글 삭제
     async deleteArticle(id) {
         const response = await fetch(ApiEndpoints.article(id), {
             method: 'DELETE',
@@ -107,7 +107,7 @@ export const ArticleApi = {
         return await handleArticleResponse(response, PageRoutes.ARTICLES);
     },
 
-    // Like article
+    // 게시글 좋아요
     async likeArticle(id) {
         const response = await fetch(ApiEndpoints.articleLike(id), {
             method: 'POST',
@@ -116,7 +116,7 @@ export const ArticleApi = {
         return await handleArticleResponse(response);
     },
 
-    // Get comments for article
+    // 게시글의 댓글 조회
     async getComments(articleId) {
         const response = await fetch(ApiEndpoints.articleComments(articleId), {
             method: 'GET',
@@ -125,7 +125,7 @@ export const ArticleApi = {
         return await handleArticleResponse(response);
     },
 
-    // Create comment
+    // 댓글 생성
     async createComment(articleId, content) {
         const response = await fetch(ApiEndpoints.articleComments(articleId), {
             method: 'POST',
@@ -138,7 +138,7 @@ export const ArticleApi = {
         return await handleArticleResponse(response);
     },
 
-    // Update comment
+    // 댓글 수정
     async updateComment(articleId, commentId, content) {
         const response = await fetch(ApiEndpoints.articleComments(articleId), {
             method: 'PUT',
@@ -154,7 +154,7 @@ export const ArticleApi = {
         return await handleArticleResponse(response, PageRoutes.articleDetail(articleId));
     },
 
-    // Delete comment
+    // 댓글 삭제
     async deleteComment(articleId, commentId) {
         const response = await fetch(ApiEndpoints.articleComments(articleId), {
             method: 'DELETE',

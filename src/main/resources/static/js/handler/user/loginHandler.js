@@ -4,14 +4,14 @@ import { PageRoutes } from '/js/common/uris.js';
 import { DomElements, ElementIds } from '/js/common/domElements.js';
 
 /**
- * Login Handler
- * Handles user login functionality
- * Using closure pattern to encapsulate module state
+ * 로그인 핸들러
+ * 사용자 로그인 기능 처리
+ * 클로저 패턴을 사용하여 모듈 상태 캡슐화
  */
 
 const createLoginHandlerModule = (() => {
     /* -------------------------------------------------------------------------- */
-    /* Validation Helpers                                                         */
+    /* 유효성 검사 헬퍼                                                              */
     /* -------------------------------------------------------------------------- */
 
     function validateEmail(email) {
@@ -83,7 +83,7 @@ const createLoginHandlerModule = (() => {
     }
 
     /* -------------------------------------------------------------------------- */
-    /* Login                                                                      */
+    /* 로그인                                                                      */
     /* -------------------------------------------------------------------------- */
 
     async function handleLogin(event) {
@@ -108,7 +108,7 @@ const createLoginHandlerModule = (() => {
     }
 
     /* -------------------------------------------------------------------------- */
-    /* Public initializer                                                         */
+    /* 공개 초기화 함수                                                              */
     /* -------------------------------------------------------------------------- */
 
     function initLoginPage() {
@@ -126,11 +126,11 @@ const createLoginHandlerModule = (() => {
         loginBtn?.addEventListener('click', handleLogin);
     }
 
-    // Public API
+    // 공개 API
     return {
         initLoginPage
     };
 })();
 
-// Export the public function
+// 공개 함수 내보내기
 export const { initLoginPage } = createLoginHandlerModule;

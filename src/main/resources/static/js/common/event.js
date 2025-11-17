@@ -1,8 +1,8 @@
-// Common event handlers and utility functions
+// 공통 이벤트 핸들러 및 유틸리티 함수
 import { DomElements } from './domElements.js';
 
 /* -------------------------------------------------------------------------- */
-/* Event Listener Manager - for cleanup on page navigation                   */
+/* 이벤트 리스너 관리자 - 페이지 전환 시 정리용                                    */
 /* -------------------------------------------------------------------------- */
 
 class EventListenerManager {
@@ -26,18 +26,18 @@ class EventListenerManager {
 
 export const eventManager = new EventListenerManager();
 
-// Clean up event listeners when navigating away
+// 페이지 이탈 시 이벤트 리스너 정리
 window.addEventListener('beforeunload', () => {
     eventManager.removeAll();
 });
 
 /* -------------------------------------------------------------------------- */
-/* Authentication                                                             */
+/* 인증                                                                        */
 /* -------------------------------------------------------------------------- */
 
 /**
- * Check if user is authenticated
- * @returns {Promise<boolean>} true if authenticated, false otherwise
+ * 사용자 인증 상태 확인
+ * @returns {Promise<boolean>} 인증되었으면 true, 그렇지 않으면 false
  */
 export async function checkAuth() {
     try {
@@ -49,7 +49,7 @@ export async function checkAuth() {
 }
 
 /* -------------------------------------------------------------------------- */
-/* User Menu                                                                  */
+/* 사용자 메뉴                                                                  */
 /* -------------------------------------------------------------------------- */
 
 export function toggleUserMenu() {
@@ -59,7 +59,7 @@ export function toggleUserMenu() {
     }
 }
 
-// Close dropdown when clicking outside
+// 외부 클릭 시 드롭다운 닫기
 const closeDropdownHandler = function(event) {
     const userMenu = document.querySelector('.user-menu');
     const dropdown = DomElements.Common.getUserMenuDropdown();
@@ -143,7 +143,7 @@ export function hideModal() {
     }
 }
 
-// Show error message in form
+// 폼에 오류 메시지 표시
 export function showError(elementId, message) {
     const element = DomElements.manager.get(elementId);
     if (element) {
@@ -152,7 +152,7 @@ export function showError(elementId, message) {
     }
 }
 
-// Clear error message
+// 오류 메시지 지우기
 export function clearError(elementId) {
     const element = DomElements.manager.get(elementId);
     if (element) {
@@ -161,7 +161,7 @@ export function clearError(elementId) {
     }
 }
 
-// Clear all errors
+// 모든 오류 지우기
 export function clearAllErrors() {
     const errors = document.querySelectorAll('.form-helper');
     errors.forEach(error => {
@@ -170,43 +170,43 @@ export function clearAllErrors() {
     });
 }
 
-// Show success message (using browser alert for now)
+// 성공 메시지 표시 (현재 브라우저 알림 사용)
 export function showSuccess(message) {
     alert(message);
 }
 
-// Show error message (using browser alert for now)
+// 오류 메시지 표시 (현재 브라우저 알림 사용)
 export function showErrorAlert(message) {
     alert(message);
 }
 
-// Show toast message
+// 토스트 메시지 표시
 export function showToast(message, duration = 2000) {
-    // Check if toast already exists
+    // 토스트가 이미 존재하는지 확인
     let toast = document.querySelector('.toast');
 
     if (!toast) {
-        // Create toast element
+        // 토스트 요소 생성
         toast = document.createElement('div');
         toast.className = 'toast';
         document.body.appendChild(toast);
     }
 
-    // Set message
+    // 메시지 설정
     toast.textContent = message;
 
-    // Show toast
+    // 토스트 표시
     setTimeout(() => {
         toast.classList.add('show');
     }, 10);
 
-    // Hide toast after duration
+    // 일정 시간 후 토스트 숨기기
     setTimeout(() => {
         toast.classList.remove('show');
     }, duration);
 }
 
-// Format date
+// 날짜 포맷
 export function formatDate(dateString) {
     const date = new Date(dateString);
     const year = date.getFullYear();
@@ -218,7 +218,7 @@ export function formatDate(dateString) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
-// Preview profile image
+// 프로필 이미지 미리보기
 export function previewProfileImage(event) {
     const file = event.target.files[0];
     if (file) {
@@ -234,7 +234,7 @@ export function previewProfileImage(event) {
     }
 }
 
-// Preview article image
+// 게시글 이미지 미리보기
 export function previewArticleImage(event) {
     const file = event.target.files[0];
     const fileNameText = DomElements.ArticleForm.getFileNameText();

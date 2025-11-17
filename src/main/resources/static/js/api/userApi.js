@@ -1,4 +1,4 @@
-// User API Module
+// 사용자 API 모듈
 import { ApiEndpoints, PageRoutes } from '/js/common/uris.js';
 
 const DEFAULT_ERROR_MESSAGE = '요청 처리에 실패했습니다.';
@@ -42,7 +42,7 @@ async function handleResponse(response, fallbackRedirect) {
 }
 
 export const UserApi = {
-    // Login
+    // 로그인
     async login(email, password) {
         const response = await fetch(ApiEndpoints.AUTH_LOGIN, {
             method: 'POST',
@@ -55,17 +55,17 @@ export const UserApi = {
         return await handleResponse(response, PageRoutes.ARTICLES);
     },
 
-    // Signup
+    // 회원가입
     async signup(formData) {
         const response = await fetch(ApiEndpoints.USER_SIGNUP, {
             method: 'POST',
-            body: formData, // FormData includes file upload
+            body: formData, // FormData에 파일 업로드 포함
         });
 
         return await handleResponse(response, PageRoutes.USER_LOGIN);
     },
 
-    // Logout
+    // 로그아웃
     async logout() {
         const response = await fetch(ApiEndpoints.AUTH_LOGOUT, {
             method: 'POST',
@@ -74,7 +74,7 @@ export const UserApi = {
         return await handleResponse(response, PageRoutes.USER_LOGIN);
     },
 
-    // Get current user
+    // 현재 사용자 조회
     async getCurrentUser() {
         const response = await fetch(ApiEndpoints.USER_ME, {
             method: 'GET',
@@ -83,7 +83,7 @@ export const UserApi = {
         return await handleResponse(response);
     },
 
-    // Update user profile
+    // 사용자 프로필 수정
     async updateProfile(formData) {
         const response = await fetch(ApiEndpoints.USER_ME, {
             method: 'PUT',
@@ -93,7 +93,7 @@ export const UserApi = {
         return await handleResponse(response);
     },
 
-    // Update password
+    // 비밀번호 수정
     async updatePassword(currentPassword, newPassword) {
         const response = await fetch(ApiEndpoints.USER_ME_PASSWORD, {
             method: 'PUT',
@@ -106,7 +106,7 @@ export const UserApi = {
         return await handleResponse(response);
     },
 
-    // Delete user account
+    // 사용자 계정 삭제
     async deleteAccount() {
         const response = await fetch(ApiEndpoints.USER_ME, {
             method: 'DELETE',

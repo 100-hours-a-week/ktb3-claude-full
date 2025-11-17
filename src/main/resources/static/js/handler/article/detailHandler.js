@@ -10,12 +10,12 @@ import { DomElements } from '/js/common/domElements.js';
 import { renderMarkdown } from '/js/common/markdownRenderer.js';
 
 /**
- * Article Detail Handler
- * Handles article detail display, likes, and comments
+ * 게시글 상세 핸들러
+ * 게시글 상세 표시, 좋아요, 댓글 처리
  */
 
 const createDetailHandlerModule = (() => {
-    // Private state
+    // 비공개 상태
     let currentArticle = null;
     let isLikeProcessing = false;
     let commentEditState = { mode: 'create', commentId: null };
@@ -105,7 +105,7 @@ const createDetailHandlerModule = (() => {
 
         if (!tocNav || !tocContainer || !contentContainer) return;
 
-        // Find all h1, h2, h3 tags in the already-rendered content
+        // 이미 렌더링된 콘텐츠에서 모든 h1, h2, h3 태그 찾기
         const headings = contentContainer.querySelectorAll('h1, h2, h3');
 
         if (headings.length === 0) {
@@ -121,12 +121,12 @@ const createDetailHandlerModule = (() => {
             const id = heading.id || `heading-${index}`;
             const text = heading.textContent;
 
-            // Ensure heading has an ID
+            // 제목에 ID가 있는지 확인
             if (!heading.id) {
                 heading.id = id;
             }
 
-            // Create TOC link
+            // 목차 링크 생성
             const link = document.createElement('a');
             link.href = `#${id}`;
             link.className = `toc-link toc-link-${level}`;
@@ -136,7 +136,7 @@ const createDetailHandlerModule = (() => {
                 const target = document.getElementById(id);
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    // Update active state
+                    // 활성 상태 업데이트
                     document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
                     link.classList.add('active');
                 }
@@ -145,7 +145,7 @@ const createDetailHandlerModule = (() => {
             tocNav.appendChild(link);
         });
 
-        // Scroll spy
+        // 스크롤 스파이
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -224,10 +224,10 @@ const createDetailHandlerModule = (() => {
         const contentContainer = DomElements.ArticleDetail.getContent();
         const rawContent = article.content || '';
         if (contentContainer) {
-            // Render markdown content
+            // 마크다운 콘텐츠 렌더링
             contentContainer.innerHTML = renderMarkdown(rawContent);
 
-            // Generate TOC after content is rendered
+            // 콘텐츠 렌더링 후 목차 생성
             generateTableOfContents();
         }
 
@@ -272,7 +272,7 @@ const createDetailHandlerModule = (() => {
         const container = DomElements.Comment.getList();
         if (!container) return;
 
-        // Update comment count in title
+        // 제목의 댓글 수 업데이트
         const commentFormTitle = DomElements.Comment.getFormTitle();
         if (commentFormTitle) {
             const count = comments?.length || 0;
@@ -516,11 +516,11 @@ const createDetailHandlerModule = (() => {
         bindArticleDetailInteractions();
     }
 
-    // Public API
+    // 공개 API
     return {
         initArticleDetailPage
     };
 })();
 
-// Export the public function
+// 공개 함수 내보내기
 export const { initArticleDetailPage } = createDetailHandlerModule;

@@ -1,18 +1,18 @@
 /**
- * Markdown Renderer
- * Handles markdown to HTML conversion using marked.js
+ * 마크다운 렌더러
+ * marked.js를 사용한 마크다운에서 HTML로의 변환 처리
  */
 
 export function renderMarkdown(markdownText) {
     if (!markdownText) return '';
 
-    // Check if marked is available
+    // marked가 사용 가능한지 확인
     if (typeof marked === 'undefined') {
         console.warn('marked.js is not loaded. Falling back to plain text with line breaks.');
         return markdownText.replace(/\n/g, '<br>');
     }
 
-    // Configure marked options
+    // marked 옵션 설정
     marked.setOptions({
         breaks: true,        // Convert \n to <br>
         gfm: true,          // GitHub Flavored Markdown

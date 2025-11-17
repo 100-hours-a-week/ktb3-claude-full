@@ -6,7 +6,7 @@
 import { designTokens as dt, css } from './theme.js';
 
 export const commonStyles = {
-    /* Reset and Base Styles */
+    /* 리셋 및 기본 스타일 */
     '*': {
         margin: '0',
         padding: '0',
@@ -37,7 +37,7 @@ export const commonStyles = {
         boxShadow: dt.boxShadow.lg,  // Cleaner shadow
     },
 
-    /* Header - javascript.info style clean header */
+    /* 헤더 */
     '.header': {
         backgroundColor: dt.colors.white,
         borderBottom: `1px solid ${dt.colors.border.default}`,
@@ -112,7 +112,7 @@ export const commonStyles = {
         },
     },
 
-    /* Notification Button */
+    /* 알림 버튼 */
     '.notification-btn': {
         background: 'none',
         border: 'none',
@@ -130,7 +130,7 @@ export const commonStyles = {
         },
     },
 
-    /* User Menu */
+    /* 사용자 메뉴 */
     '.user-menu': {
         position: 'relative',
         marginLeft: dt.spacing[2],
@@ -244,7 +244,7 @@ export const commonStyles = {
         },
     },
 
-    /* Main Content - javascript.info style spacious layout */
+    /* 메인 컨텐츠 */
     '.main-content': {
         maxWidth: '1080px',  // Increased from 960px
         margin: '0 auto',
@@ -252,7 +252,7 @@ export const commonStyles = {
         minHeight: 'calc(100vh - 80px)',  // Updated for new header height
     },
 
-    /* Buttons - javascript.info style clean buttons */
+    /* 버튼 */
     '.btn': {
         padding: `${dt.spacing[3]} ${dt.spacing[5]}`,
         border: 'none',
@@ -332,7 +332,7 @@ export const commonStyles = {
         },
     },
 
-    /* Forms */
+    /* 폼 */
     '.form-group': {
         marginBottom: dt.spacing[5],
     },
@@ -385,7 +385,7 @@ export const commonStyles = {
         color: dt.colors.danger,
     },
 
-    /* File Upload */
+    /* 파일 업로드 */
     '.file-upload': {
         display: 'flex',
         alignItems: 'center',
@@ -414,7 +414,7 @@ export const commonStyles = {
         color: dt.colors.text.secondary,
     },
 
-    /* Profile Image */
+    /* 프로필 이미지 */
     '.profile-image-container': {
         display: 'flex',
         justifyContent: 'center',
@@ -457,7 +457,7 @@ export const commonStyles = {
         fontSize: dt.fontSize.xs,
     },
 
-    /* Modal */
+    /* 모달 */
     '.modal': {
         position: 'fixed',
         top: '0',
@@ -520,7 +520,7 @@ export const commonStyles = {
         },
     },
 
-    /* Toast Message */
+    /* 토스트 메시지 */
     '.toast': {
         position: 'fixed',
         top: '100px',
@@ -543,7 +543,7 @@ export const commonStyles = {
         opacity: '1',
     },
 
-    /* Links */
+    /* 링크 */
     '.link': {
         color: dt.colors.text.link,
         textDecoration: 'none',
@@ -559,7 +559,7 @@ export const commonStyles = {
         textAlign: 'center',
     },
 
-    /* Utility Classes */
+    /* 유틸리티 클래스 */
     '.mt-1': { marginTop: dt.spacing[2] },
     '.mt-2': { marginTop: dt.spacing[4] },
     '.mt-3': { marginTop: dt.spacing[6] },

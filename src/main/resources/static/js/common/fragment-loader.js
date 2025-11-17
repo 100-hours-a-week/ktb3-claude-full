@@ -2,7 +2,7 @@ import { PageRoutes } from './uris.js';
 import { bind as HeaderLinkManager } from './headerLink.js';
 import { checkAuth } from './event.js';
 
-// Fragment loader utility
+// 프래그먼트 로더 유틸리티
 async function loadFragment(url, targetId) {
     try {
         const response = await fetch(url);
@@ -13,7 +13,7 @@ async function loadFragment(url, targetId) {
         const target = document.getElementById(targetId);
         if (target) {
             target.innerHTML = html;
-            // Fragment 로드 후 URI 설정
+            // 프래그먼트 로드 후 URI 설정
             initFragmentUris(target);
             bindHeaderLinks(target);
         }
@@ -22,7 +22,7 @@ async function loadFragment(url, targetId) {
     }
 }
 
-// Fragment 내의 data-route 속성을 실제 href로 변환
+// 프래그먼트 내의 data-route 속성을 실제 href로 변환
 function initFragmentUris(container) {
     const elements = container.querySelectorAll('[data-route]');
     const routes = PageRoutes || {};
@@ -63,11 +63,11 @@ function bindHeaderLinks(container) {
 }
 
 
-// Load header fragment
+// 헤더 프래그먼트 로드
 export async function loadHeader(type = 'auto') {
     let headerType = type;
 
-    // Auto-detect if user is logged in
+    // 사용자 로그인 여부 자동 감지
     if (type === 'auto') {
         const isLoggedIn = await checkAuth();
         headerType = isLoggedIn ? 'with-user-menu' : 'public';

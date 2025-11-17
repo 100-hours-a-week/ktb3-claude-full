@@ -13,9 +13,9 @@ import { PageRoutes } from '/js/common/uris.js';
 import { DomElements, ElementIds } from '/js/common/domElements.js';
 
 /**
- * User Edit Handler
- * Handles user profile editing, password updates, account deletion, and auth header
- * Using closure pattern to encapsulate module state
+ * 사용자 편집 핸들러
+ * 사용자 프로필 편집, 비밀번호 수정, 계정 삭제 및 인증 헤더 처리
+ * 클로저 패턴을 사용하여 모듈 상태 캡슐화
  */
 
 const createUserEditHandlerModule = (() => {
@@ -51,7 +51,7 @@ const createUserEditHandlerModule = (() => {
             nicknameInput.value = user.nickname || user.user_nickname || user.nickName || '';
         }
 
-        // Support multiple field name variations for profile image path
+        // 프로필 이미지 경로의 다양한 필드명 지원
         const profileImageUrl = user.profile_image_path || user.profileImage || user.profileImagePath || user.profile_image || user.user_profile_image;
         if (profilePreviewImg && profileImageUrl) {
             profilePreviewImg.src = profileImageUrl;
@@ -70,7 +70,7 @@ const createUserEditHandlerModule = (() => {
         const nickname = DomElements.UserEdit.getNicknameValue();
         const profileImage = DomElements.UserEdit.getProfileImageInput()?.files?.[0];
 
-        // Validate nickname
+        // 닉네임 유효성 검사
         if (!nickname || nickname.trim().length === 0) {
             showError(ElementIds.USER_NICKNAME_ERROR, '*닉네임을 입력해주세요.');
             return;
@@ -86,7 +86,7 @@ const createUserEditHandlerModule = (() => {
             return;
         }
 
-        // Check nickname duplication
+        // 닉네임 중복 확인
         try {
             const exists = await UserApi.checkNicknameExists(nickname);
             if (exists) {
@@ -194,7 +194,7 @@ const createUserEditHandlerModule = (() => {
         if (profileImageClickArea && profileImageInput) {
             profileImageClickArea.style.cursor = 'pointer';
 
-            // Add hover effect
+            // 호버 효과 추가
             profileImageClickArea.addEventListener('mouseenter', () => {
                 profileImageClickArea.style.backgroundColor = '#E9E9E9';
             });
@@ -218,7 +218,7 @@ const createUserEditHandlerModule = (() => {
         passwordForm?.addEventListener('submit', handlePasswordUpdate);
     }
 
-    // Public API
+    // 공개 API
     return {
         initUserEditPage,
         initPasswordPage,
@@ -227,7 +227,7 @@ const createUserEditHandlerModule = (() => {
     };
 })();
 
-// Export the public functions
+// 공개 함수 내보내기
 export const {
     initUserEditPage,
     initPasswordPage,
