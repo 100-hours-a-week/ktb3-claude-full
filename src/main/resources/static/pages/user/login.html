@@ -9,8 +9,16 @@
     <div id="header-container"></div>
 
     <main class="main-content auth-main">
-        <div class="auth-container auth-card">
-            <h2 class="auth-title">로그인</h2>
+        <div class="auth-split-container">
+            <div class="auth-split-left">
+                <div class="auth-brand-image">
+                    <h1 class="brand-logo">Like IT</h1>
+                    <p class="brand-tagline">개발자를 위한 커뮤니티</p>
+                </div>
+            </div>
+            <div class="auth-split-right">
+                <div class="auth-container auth-card">
+                    <h2 class="auth-title">로그인</h2>
 
             <form class="auth-form" data-element-key="LOGIN_FORM">
                 <div class="form-group">
@@ -41,9 +49,10 @@
                     <button type="button" class="btn btn-primary btn-full" data-element-key="LOGIN_BTN" disabled>로그인</button>
                 </div>
             </form>
-
-            <div class="auth-links">
-                <button type="button" class="auth-link-btn" data-element-key="SIGNUP_LINK_BTN">회원가입</button>
+                    <div class="auth-links">
+                        <button type="button" class="auth-link-btn" data-element-key="SIGNUP_LINK_BTN">회원가입</button>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -57,7 +66,12 @@
         import '/js/common/uris.js';
 
         // domElements.js import하여 초기화
-        import '/js/common/domElements.js';
+        import { DomElements } from '/js/common/domElements.js';
+
+        // DOM이 로드되기 전에 먼저 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            DomElements.initialize();
+        });
     </script>
     <script type="module">
         import { initLoginPage } from '/js/handler/user/loginHandler.js';
@@ -65,9 +79,14 @@
         import { DomElements } from '/js/common/domElements.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadHeader('auth');
-            // Re-initialize DomElements after loading header to ensure all elements have IDs
+            // 먼저 페이지의 요소들 초기화
             DomElements.initialize();
+
+            await loadHeader('auth');
+
+            // 헤더 로드 후 다시 초기화하여 헤더의 요소들도 ID 할당
+            DomElements.initialize();
+
             initLoginPage();
         });
     </script>

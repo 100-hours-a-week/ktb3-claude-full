@@ -251,6 +251,11 @@ export const userStyles = {
     },
 
     /* 인증 분할 레이아웃 (로그인 페이지) */
+    '.auth-page--login .auth-main': {
+        padding: '0',
+        minHeight: 'calc(100vh - 80px)',
+    },
+
     '.auth-split-container': {
         display: 'flex',
         minHeight: 'calc(100vh - 80px)',
