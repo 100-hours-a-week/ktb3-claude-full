@@ -6,22 +6,23 @@
 import { designTokens as dt } from './theme.js';
 
 export const userStyles = {
-    /* Auth Container */
+    /* Auth Container - javascript.info style clean auth */
     '.auth-container': {
-        maxWidth: '400px',
+        maxWidth: '480px',  // Increased from 400px
         margin: '0 auto',
         background: 'transparent',
-        padding: `48px 40px`,
+        padding: `${dt.spacing[10]} ${dt.spacing[8]}`,  // More spacious
         borderRadius: dt.borderRadius.xl,
     },
 
     '.auth-title': {
         textAlign: 'center',
-        fontSize: dt.fontSize['5xl'],
+        fontSize: dt.fontSize['4xl'],  // Reduced from 5xl
         fontWeight: dt.fontWeight.bold,
-        letterSpacing: '-0.5px',
-        marginBottom: dt.spacing[9],
+        letterSpacing: '-0.02em',  // Adjusted from -0.5px
+        marginBottom: dt.spacing[10],  // Increased from 9
         color: dt.colors.text.primary,
+        lineHeight: dt.lineHeight.tight,
     },
 
     '.auth-form .form-group:last-of-type': {
@@ -112,24 +113,27 @@ export const userStyles = {
         display: 'none',
     },
 
-    /* User Edit */
+    /* User Edit - javascript.info style */
     '.user-edit-container': {
-        maxWidth: '600px',
+        maxWidth: '680px',  // Increased from 600px
         margin: '0 auto',
     },
 
     '.user-edit-title': {
         textAlign: 'center',
         fontSize: dt.fontSize['4xl'],
-        fontWeight: dt.fontWeight.semibold,
-        marginBottom: dt.spacing[8],
+        fontWeight: dt.fontWeight.bold,  // Changed from semibold
+        marginBottom: dt.spacing[10],    // Increased from 8
+        lineHeight: dt.lineHeight.tight,
+        color: dt.colors.text.primary,
     },
 
     '.user-edit-form': {
         background: dt.colors.white,
         padding: dt.spacing[8],
-        borderRadius: dt.borderRadius.lg,
-        boxShadow: dt.boxShadow.none,
+        borderRadius: dt.borderRadius.xl,  // Changed from lg
+        border: `1px solid ${dt.colors.border.default}`,  // Added border
+        boxShadow: dt.boxShadow.card,  // Changed from none
     },
 
     '.user-edit-profile': {
@@ -173,24 +177,27 @@ export const userStyles = {
         },
     },
 
-    /* Password Update */
+    /* Password Update - javascript.info style */
     '.password-update-container': {
-        maxWidth: '500px',
+        maxWidth: '560px',  // Increased from 500px
         margin: '0 auto',
     },
 
     '.password-update-title': {
         textAlign: 'center',
         fontSize: dt.fontSize['4xl'],
-        fontWeight: dt.fontWeight.semibold,
-        marginBottom: dt.spacing[8],
+        fontWeight: dt.fontWeight.bold,  // Changed from semibold
+        marginBottom: dt.spacing[10],    // Increased from 8
+        lineHeight: dt.lineHeight.tight,
+        color: dt.colors.text.primary,
     },
 
     '.password-update-form': {
         background: dt.colors.white,
         padding: dt.spacing[8],
-        borderRadius: dt.borderRadius.lg,
-        boxShadow: dt.boxShadow.none,
+        borderRadius: dt.borderRadius.xl,  // Changed from lg
+        border: `1px solid ${dt.colors.border.default}`,  // Added border
+        boxShadow: dt.boxShadow.card,  // Changed from none
     },
 
     /* Auth Links */
@@ -212,24 +219,27 @@ export const userStyles = {
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minWidth: '128px',
-        padding: `${dt.spacing[3]} ${dt.spacing[5]}`,
+        minWidth: '140px',  // Increased from 128px
+        padding: `${dt.spacing[3]} ${dt.spacing[6]}`,  // Increased padding
         marginTop: '0',
         backgroundColor: dt.colors.white,
         color: dt.colors.primary,
         border: `1px solid ${dt.colors.primary}`,
         borderRadius: dt.borderRadius.md,
-        fontSize: dt.fontSize.md,
-        fontWeight: dt.fontWeight.semibold,
+        fontSize: dt.fontSize.base,  // Changed from md
+        fontWeight: dt.fontWeight.medium,  // Changed from semibold
         cursor: 'pointer',
         textAlign: 'center',
         textDecoration: 'none',
-        transition: `all ${dt.transition.base}`,
+        transition: `all ${dt.transition.fast}`,  // Faster transition
+        lineHeight: '1.5',
 
         ':hover': {
             backgroundColor: dt.colors.bgTertiary,
             color: dt.colors.primaryDark,
             borderColor: dt.colors.primaryDark,
+            transform: 'translateY(-1px)',  // Subtle lift effect
+            boxShadow: dt.boxShadow.sm,
         },
     },
 

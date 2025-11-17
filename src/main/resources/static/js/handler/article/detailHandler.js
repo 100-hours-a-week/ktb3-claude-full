@@ -7,6 +7,7 @@ import {
 import { ArticleApi } from '/js/api/articleApi.js';
 import { PageRoutes, UriUtils } from '/js/common/uris.js';
 import { DomElements } from '/js/common/domElements.js';
+import { renderMarkdown } from '/js/common/markdownRenderer.js';
 
 /**
  * Article Detail Handler
@@ -97,6 +98,75 @@ const createDetailHandlerModule = (() => {
         }
     }
 
+    function generateTableOfContents() {
+        const tocNav = DomElements.ArticleDetail.getTocNav();
+        const tocContainer = DomElements.ArticleDetail.getToc();
+        const contentContainer = DomElements.ArticleDetail.getContent();
+
+        if (!tocNav || !tocContainer || !contentContainer) return;
+
+        // Find all h1, h2, h3 tags in the already-rendered content
+        const headings = contentContainer.querySelectorAll('h1, h2, h3');
+
+        if (headings.length === 0) {
+            tocContainer.style.display = 'none';
+            return;
+        }
+
+        tocContainer.style.display = 'block';
+        tocNav.innerHTML = '';
+
+        headings.forEach((heading, index) => {
+            const level = heading.tagName.toLowerCase();
+            const id = heading.id || `heading-${index}`;
+            const text = heading.textContent;
+
+            // Ensure heading has an ID
+            if (!heading.id) {
+                heading.id = id;
+            }
+
+            // Create TOC link
+            const link = document.createElement('a');
+            link.href = `#${id}`;
+            link.className = `toc-link toc-link-${level}`;
+            link.textContent = text;
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.getElementById(id);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Update active state
+                    document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                }
+            });
+
+            tocNav.appendChild(link);
+        });
+
+        // Scroll spy
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    document.querySelectorAll('.toc-link').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('href') === `#${id}`) {
+                            link.classList.add('active');
+                        }
+                    });
+                }
+            });
+        }, {
+            rootMargin: '-100px 0px -80% 0px'
+        });
+
+        headings.forEach(heading => {
+            observer.observe(heading);
+        });
+    }
+
     function renderArticleDetail(article) {
         if (!article) return;
 
@@ -152,16 +222,17 @@ const createDetailHandlerModule = (() => {
         }
 
         const contentContainer = DomElements.ArticleDetail.getContent();
+        const rawContent = article.content || '';
         if (contentContainer) {
-            contentContainer.innerHTML = escapeHtml(article.content || '').replace(/\n/g, '<br>');
+            // Render markdown content
+            contentContainer.innerHTML = renderMarkdown(rawContent);
+
+            // Generate TOC after content is rendered
+            generateTableOfContents();
         }
 
         const likeCount = parseNumber(article.like_cnt);
         const viewCount = parseNumber(article.view_cnt);
-        const commentCount = parseNumber(
-            article.comment_cnt ??
-            (Array.isArray(article.comment) ? article.comment.length : 0)
-        );
 
         const statsContainer = DomElements.ArticleDetail.getStats();
         if (statsContainer) {
@@ -179,10 +250,6 @@ const createDetailHandlerModule = (() => {
                 <div class="article-stat">
                     <span class="article-stat-number">${formatCompactNumber(viewCount)}</span>
                     <span class="article-stat-label">조회수</span>
-                </div>
-                <div class="article-stat">
-                    <span class="article-stat-number">${formatCompactNumber(commentCount)}</span>
-                    <span class="article-stat-label">댓글</span>
                 </div>
             `;
         }
@@ -204,6 +271,13 @@ const createDetailHandlerModule = (() => {
     function renderComments(comments = []) {
         const container = DomElements.Comment.getList();
         if (!container) return;
+
+        // Update comment count in title
+        const commentFormTitle = DomElements.Comment.getFormTitle();
+        if (commentFormTitle) {
+            const count = comments?.length || 0;
+            commentFormTitle.textContent = `댓글 ${count}개`;
+        }
 
         container.innerHTML = '';
 
@@ -297,11 +371,10 @@ const createDetailHandlerModule = (() => {
 
     function enterCommentEditMode(comment) {
         const textarea = DomElements.Comment.getContent();
-        const title = DomElements.Comment.getFormTitle();
         const submitBtn = DomElements.Comment.getSubmitBtn();
         const resetBtn = DomElements.Comment.getResetBtn();
 
-        if (!textarea || !submitBtn || !title || !resetBtn) return;
+        if (!textarea || !submitBtn || !resetBtn) return;
 
         commentEditState = {
             mode: 'edit',
@@ -309,7 +382,6 @@ const createDetailHandlerModule = (() => {
         };
 
         textarea.value = comment.content || '';
-        title.textContent = '댓글을 수정합니다';
         submitBtn.textContent = '댓글 수정';
         resetBtn.style.display = 'inline';
         updateCommentSubmitButtonState();
@@ -318,7 +390,6 @@ const createDetailHandlerModule = (() => {
 
     function resetCommentFormState() {
         const textarea = DomElements.Comment.getContent();
-        const title = DomElements.Comment.getFormTitle();
         const submitBtn = DomElements.Comment.getSubmitBtn();
         const resetBtn = DomElements.Comment.getResetBtn();
 
@@ -326,9 +397,6 @@ const createDetailHandlerModule = (() => {
 
         if (textarea) {
             textarea.value = '';
-        }
-        if (title) {
-            title.textContent = '댓글을 남겨주세요!';
         }
         if (submitBtn) {
             submitBtn.textContent = '댓글 등록';

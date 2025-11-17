@@ -86,21 +86,21 @@ export const designTokens = {
         },
     },
 
-    // Spacing
+    // Spacing - Increased for javascript.info style spacious layout
     spacing: {
         0: '0',
         1: '4px',
         2: '8px',
         3: '12px',
         4: '16px',
-        5: '20px',
-        6: '24px',
-        7: '28px',
-        8: '32px',
-        9: '36px',
-        10: '40px',
-        12: '48px',
-        16: '64px',
+        5: '24px',     // Increased from 20px
+        6: '32px',     // Increased from 24px
+        7: '36px',     // Increased from 28px
+        8: '40px',     // Increased from 32px
+        9: '48px',     // Increased from 36px
+        10: '56px',    // Increased from 40px
+        12: '64px',    // Increased from 48px
+        16: '80px',    // Increased from 64px
     },
 
     // Font family
@@ -109,18 +109,18 @@ export const designTokens = {
         heading: "'Sandoll GoGoRound', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     },
 
-    // Font sizes
+    // Font sizes - Adjusted for better readability (javascript.info style)
     fontSize: {
         xs: '12px',
-        sm: '13px',
-        base: '14px',
-        md: '15px',
-        lg: '16px',
-        xl: '18px',
-        '2xl': '20px',
-        '3xl': '24px',
-        '4xl': '28px',
-        '5xl': '32px',
+        sm: '14px',    // Increased from 13px
+        base: '16px',  // Increased from 14px
+        md: '17px',    // Increased from 15px
+        lg: '18px',    // Increased from 16px
+        xl: '20px',    // Increased from 18px
+        '2xl': '24px', // Increased from 20px
+        '3xl': '28px', // Increased from 24px
+        '4xl': '32px', // Increased from 28px
+        '5xl': '36px', // Increased from 32px
     },
 
     // Font weights
@@ -131,38 +131,38 @@ export const designTokens = {
         bold: '700',
     },
 
-    // Line heights
+    // Line heights - Increased for javascript.info style readability
     lineHeight: {
         tight: '1.5',
-        base: '1.6',
-        relaxed: '1.7',
-        loose: '1.8',
+        base: '1.7',   // Increased from 1.6
+        relaxed: '1.8', // Increased from 1.7
+        loose: '2.0',   // Increased from 1.8
     },
 
-    // Border radius - Spring style (less rounded)
+    // Border radius - Softer, more modern (javascript.info style)
     borderRadius: {
         none: '0',
-        sm: '4px',     // Spring uses subtle radius
-        md: '6px',
-        lg: '8px',
-        xl: '12px',
-        '2xl': '16px',
+        sm: '6px',     // Increased from 4px
+        md: '8px',     // Increased from 6px
+        lg: '12px',    // Increased from 8px
+        xl: '16px',    // Increased from 12px
+        '2xl': '20px', // Increased from 16px
         full: '9999px',
     },
 
-    // Shadows - Spring style (softer, more subtle)
+    // Shadows - Subtle and clean (javascript.info style)
     boxShadow: {
         none: 'none',
-        sm: '0 1px 2px rgba(0, 0, 0, 0.075)',
-        md: '0 2px 4px rgba(0, 0, 0, 0.1)',
-        lg: '0 4px 8px rgba(0, 0, 0, 0.125)',
-        xl: '0 8px 16px rgba(109, 179, 63, 0.2)',
-        '2xl': '0 12px 24px rgba(92, 166, 50, 0.25)',
-        card: '0 2px 8px rgba(0, 0, 0, 0.08)',
-        cardLight: '0 1px 4px rgba(0, 0, 0, 0.04)',
-        cardMedium: '0 2px 6px rgba(0, 0, 0, 0.06)',
-        green: '0 4px 12px rgba(109, 179, 63, 0.25)',
-        input: '0 0 0 3px rgba(109, 179, 63, 0.15)',
+        sm: '0 1px 3px rgba(0, 0, 0, 0.05)',           // Softer
+        md: '0 2px 8px rgba(0, 0, 0, 0.08)',           // Softer
+        lg: '0 4px 12px rgba(0, 0, 0, 0.1)',           // Softer
+        xl: '0 8px 20px rgba(0, 0, 0, 0.12)',          // Softer
+        '2xl': '0 12px 28px rgba(0, 0, 0, 0.15)',      // Softer
+        card: '0 2px 4px rgba(0, 0, 0, 0.04)',         // Very subtle
+        cardLight: '0 1px 2px rgba(0, 0, 0, 0.03)',    // Very subtle
+        cardMedium: '0 2px 6px rgba(0, 0, 0, 0.05)',   // Subtle
+        green: '0 4px 12px rgba(109, 179, 63, 0.15)',  // Softer green
+        input: '0 0 0 3px rgba(109, 179, 63, 0.1)',    // Softer input focus
         inset: 'inset 0 1px 0 rgba(255, 255, 255, 0.15)',
     },
 

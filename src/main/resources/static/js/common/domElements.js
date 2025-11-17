@@ -53,6 +53,9 @@ export const ElementIds = {
     // User - Header
     USER_MENU_BTN: 'userMenuBtn',
     LOGOUT_BTN: 'logoutBtn',
+    HEADER_USER_NAME: 'headerUserName',
+    HEADER_DROPDOWN_USER_NAME: 'headerDropdownUserName',
+    HEADER_CREATE_ARTICLE_BTN: 'headerCreateArticleBtn',
 
     // Article - List
     ARTICLE_LIST: 'articleList',
@@ -64,6 +67,8 @@ export const ElementIds = {
     ARTICLE_STATS: 'articleStats',
     ARTICLE_LIKE_BTN: 'articleLikeBtn',
     ARTICLE_LIKE_COUNT: 'articleLikeCount',
+    ARTICLE_TOC: 'articleToc',
+    ARTICLE_TOC_NAV: 'articleTocNav',
 
     // Article - Form
     ARTICLE_FORM: 'articleForm',
@@ -361,6 +366,9 @@ export const DomElements = {
     Header: {
         getUserMenuBtn: () => DomElements.manager.get(ElementIds.USER_MENU_BTN),
         getLogoutBtn: () => DomElements.manager.get(ElementIds.LOGOUT_BTN),
+        getUserName: () => DomElements.manager.get(ElementIds.HEADER_USER_NAME),
+        getDropdownUserName: () => DomElements.manager.get(ElementIds.HEADER_DROPDOWN_USER_NAME),
+        getCreateArticleBtn: () => DomElements.manager.get(ElementIds.HEADER_CREATE_ARTICLE_BTN),
     },
 
     /**
@@ -380,6 +388,8 @@ export const DomElements = {
         getStats: () => DomElements.manager.get(ElementIds.ARTICLE_STATS),
         getLikeBtn: () => DomElements.manager.get(ElementIds.ARTICLE_LIKE_BTN),
         getLikeCount: () => DomElements.manager.get(ElementIds.ARTICLE_LIKE_COUNT),
+        getToc: () => DomElements.manager.get(ElementIds.ARTICLE_TOC),
+        getTocNav: () => DomElements.manager.get(ElementIds.ARTICLE_TOC_NAV),
     },
 
     /**

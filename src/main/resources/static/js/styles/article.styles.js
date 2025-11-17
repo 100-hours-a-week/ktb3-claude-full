@@ -13,14 +13,22 @@ export const articleStyles = {
     },
 
     '.article-list-header': {
-        textAlign: 'center',
-        marginBottom: dt.spacing[8],
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: dt.spacing[10],
+    },
+
+    '.article-list-intro-wrapper': {
+        flex: '1',
     },
 
     '.article-list-intro': {
-        fontSize: dt.fontSize.xl,
+        fontSize: dt.fontSize['2xl'],
         color: dt.colors.text.secondary,
-        marginBottom: dt.spacing[1],
+        marginBottom: '0',
+        lineHeight: dt.lineHeight.relaxed,
+        textAlign: 'left',
 
         'strong': {
             color: dt.colors.text.primary,
@@ -29,32 +37,34 @@ export const articleStyles = {
     },
 
     '.article-create-btn': {
-        display: 'inline-block',
-        marginTop: dt.spacing[4],
+        display: 'inline-flex',
+        flexShrink: '0',
+        marginLeft: dt.spacing[4],
     },
 
     '.article-list': {
         display: 'flex',
         flexDirection: 'column',
-        gap: dt.spacing[4],
+        gap: dt.spacing[5],  // Increased from spacing[4]
     },
 
-    /* Article Card */
+    /* Article Card - javascript.info style clean cards */
     '.article-card': {
         background: dt.colors.white,
         borderRadius: dt.borderRadius.lg,
-        padding: dt.spacing[5],
-        boxShadow: dt.boxShadow.sm,
-        transition: `transform ${dt.transition.fast}, box-shadow ${dt.transition.fast}`,
+        padding: dt.spacing[6],  // Increased from spacing[5]
+        boxShadow: dt.boxShadow.card,  // Softer shadow
+        transition: `all ${dt.transition.fast}`,
         cursor: 'pointer',
         textDecoration: 'none',
         color: 'inherit',
         display: 'block',
-        border: `1px solid ${dt.colors.gray[200]}`,
+        border: `1px solid ${dt.colors.border.default}`,
 
         ':hover': {
-            transform: 'translateY(-2px)',
+            transform: 'translateY(-1px)',  // Reduced from -2px
             boxShadow: dt.boxShadow.md,
+            borderColor: dt.colors.border.dark,  // Subtle border change
         },
     },
 
@@ -68,8 +78,9 @@ export const articleStyles = {
     '.article-card-title': {
         fontSize: dt.fontSize['2xl'],
         fontWeight: dt.fontWeight.semibold,
-        marginBottom: dt.spacing[2],
+        marginBottom: dt.spacing[3],  // Increased spacing
         color: dt.colors.text.primary,
+        lineHeight: dt.lineHeight.tight,
     },
 
     '.article-card-date': {
@@ -120,19 +131,76 @@ export const articleStyles = {
         margin: '0 auto',
     },
 
+    '.article-toc': {
+        position: 'sticky',
+        top: '100px',
+        width: '240px',
+        height: 'fit-content',
+        maxHeight: 'calc(100vh - 120px)',
+        overflowY: 'auto',
+        flexShrink: '0',
+    },
+
+    '.article-toc-title': {
+        fontSize: dt.fontSize.sm,
+        fontWeight: dt.fontWeight.bold,
+        color: dt.colors.text.secondary,
+        marginBottom: dt.spacing[3],
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+    },
+
+    '.article-toc-nav': {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: dt.spacing[1],
+    },
+
+    '.toc-link': {
+        display: 'block',
+        fontSize: dt.fontSize.sm,
+        color: dt.colors.text.secondary,
+        textDecoration: 'none',
+        padding: `${dt.spacing[1]} ${dt.spacing[2]}`,
+        borderLeft: `2px solid transparent`,
+        transition: `all ${dt.transition.fast}`,
+
+        ':hover': {
+            color: dt.colors.primary,
+            borderLeftColor: dt.colors.primary,
+        },
+
+        '&.active': {
+            color: dt.colors.primary,
+            borderLeftColor: dt.colors.primary,
+            fontWeight: dt.fontWeight.semibold,
+        },
+    },
+
+    '.toc-link-h2': {
+        paddingLeft: dt.spacing[2],
+    },
+
+    '.toc-link-h3': {
+        paddingLeft: dt.spacing[4],
+        fontSize: dt.fontSize.xs,
+    },
+
     '.article-detail-header': {
         background: dt.colors.white,
-        padding: `${dt.spacing[8]} ${dt.spacing[9]}`,
-        borderRadius: dt.borderRadius['2xl'],
-        border: `1px solid ${dt.colors.border.light}`,
+        padding: `${dt.spacing[8]} ${dt.spacing[8]}`,  // More balanced padding
+        borderRadius: dt.borderRadius.xl,  // Changed from 2xl
+        border: `1px solid ${dt.colors.border.default}`,
         boxShadow: dt.boxShadow.card,
-        marginBottom: dt.spacing[7],
+        marginBottom: dt.spacing[6],  // Reduced from 7
     },
 
     '.article-detail-title': {
         fontSize: dt.fontSize['4xl'],
-        fontWeight: dt.fontWeight.semibold,
-        marginBottom: dt.spacing[4],
+        fontWeight: dt.fontWeight.bold,  // Changed from semibold
+        marginBottom: dt.spacing[5],     // Increased spacing
+        lineHeight: dt.lineHeight.tight,
+        color: dt.colors.text.primary,
     },
 
     '.article-detail-meta': {
@@ -184,11 +252,11 @@ export const articleStyles = {
 
     '.article-detail-content': {
         background: dt.colors.white,
-        padding: dt.spacing[9],
-        borderRadius: dt.borderRadius['2xl'],
-        border: `1px solid ${dt.colors.border.light}`,
-        boxShadow: dt.boxShadow.cardLight,
-        marginBottom: dt.spacing[7],
+        padding: dt.spacing[8],  // Reduced from 9
+        borderRadius: dt.borderRadius.xl,  // Changed from 2xl
+        border: `1px solid ${dt.colors.border.default}`,
+        boxShadow: dt.boxShadow.card,
+        marginBottom: dt.spacing[6],  // Reduced from 7
         lineHeight: dt.lineHeight.loose,
         fontSize: dt.fontSize.lg,
         color: dt.colors.text.primary,
@@ -223,6 +291,14 @@ export const articleStyles = {
     '.article-stat-label': {
         fontSize: dt.fontSize.sm,
         color: dt.colors.text.secondary,
+    },
+
+    '.meta-item': {
+        color: dt.colors.text.secondary,
+    },
+
+    '.meta-divider': {
+        color: dt.colors.text.tertiary,
     },
 
     '.article-like-section': {
@@ -272,34 +348,30 @@ export const articleStyles = {
         color: dt.colors.text.secondary,
     },
 
-    '.article-like-count': {
-        fontSize: dt.fontSize['2xl'],
-        fontWeight: dt.fontWeight.bold,
-        color: dt.colors.text.primary,
-    },
-
-    /* Comment Section */
+    /* Comment Section - javascript.info style */
     '.comment-section': {
         background: dt.colors.white,
         padding: dt.spacing[8],
-        borderRadius: dt.borderRadius['2xl'],
-        border: `1px solid ${dt.colors.border.light}`,
-        boxShadow: dt.boxShadow.cardLight,
+        borderRadius: dt.borderRadius.xl,
+        border: `1px solid ${dt.colors.border.default}`,
+        boxShadow: dt.boxShadow.card,
+    },
+
+    '.comment-section-title': {
+        fontSize: dt.fontSize['2xl'],
+        fontWeight: dt.fontWeight.bold,
+        color: dt.colors.text.primary,
+        lineHeight: dt.lineHeight.tight,
+        marginBottom: dt.spacing[6],
     },
 
     '.comment-form': {
         display: 'flex',
         flexDirection: 'column',
         gap: dt.spacing[4],
-        marginBottom: dt.spacing[7],
-        paddingBottom: dt.spacing[6],
-        borderBottom: `1px solid ${dt.colors.gray[200]}`,
-    },
-
-    '.comment-form-title': {
-        fontSize: dt.fontSize['2xl'],
-        fontWeight: dt.fontWeight.bold,
-        color: dt.colors.text.dark,
+        marginBottom: dt.spacing[8],
+        paddingBottom: dt.spacing[7],
+        borderBottom: `1px solid ${dt.colors.border.default}`,
     },
 
     '.comment-form-header': {
@@ -418,40 +490,42 @@ export const articleStyles = {
     },
 
     '.comment-content': {
-        fontSize: dt.fontSize.md,
-        color: '#444',
+        fontSize: dt.fontSize.base,  // Changed from md
+        color: dt.colors.text.primary,  // Changed from hardcoded #444
         lineHeight: dt.lineHeight.relaxed,
-        marginLeft: '46px',
+        marginLeft: '48px',  // Adjusted from 46px
         marginTop: dt.spacing[2],
     },
 
-    /* Article Form */
+    /* Article Form - javascript.info style clean forms */
     '.article-form-container': {
-        maxWidth: '720px',
+        maxWidth: '800px',  // Increased from 720px
         margin: '0 auto',
     },
 
     '.article-form-title': {
         textAlign: 'center',
-        fontSize: dt.fontSize['5xl'],
+        fontSize: dt.fontSize['4xl'],  // Reduced from 5xl
         fontWeight: dt.fontWeight.bold,
-        marginBottom: dt.spacing[9],
-        color: dt.colors.text.dark,
+        marginBottom: dt.spacing[10],  // Increased from 9
+        color: dt.colors.text.primary,
+        lineHeight: dt.lineHeight.tight,
     },
 
     '.article-form': {
         background: dt.colors.white,
-        padding: '40px 44px',
-        borderRadius: dt.borderRadius['2xl'],
-        border: `1px solid ${dt.colors.border.light}`,
-        boxShadow: dt.boxShadow.cardLight,
+        padding: `${dt.spacing[8]} ${dt.spacing[8]}`,  // More consistent
+        borderRadius: dt.borderRadius.xl,  // Changed from 2xl
+        border: `1px solid ${dt.colors.border.default}`,
+        boxShadow: dt.boxShadow.card,
         display: 'flex',
         flexDirection: 'column',
         gap: dt.spacing[6],
     },
 
     '.article-form .form-textarea': {
-        minHeight: '320px',
+        minHeight: '360px',  // Increased from 320px
+        lineHeight: dt.lineHeight.relaxed,
     },
 
     /* Responsive */

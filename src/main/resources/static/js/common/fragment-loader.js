@@ -1,5 +1,6 @@
 import { PageRoutes } from './uris.js';
 import { bind as HeaderLinkManager } from './headerLink.js';
+import { checkAuth } from './event.js';
 
 // Fragment loader utility
 async function loadFragment(url, targetId) {
@@ -63,17 +64,27 @@ function bindHeaderLinks(container) {
 
 
 // Load header fragment
-export async function loadHeader(type = 'with-user-menu') {
+export async function loadHeader(type = 'auto') {
+    let headerType = type;
+
+    // Auto-detect if user is logged in
+    if (type === 'auto') {
+        const isLoggedIn = await checkAuth();
+        headerType = isLoggedIn ? 'with-user-menu' : 'public';
+    }
+
+
     const headerMap = {
         'with-user-menu': '/fragments/header-with-user-menu.html',
         'with-back': '/fragments/header-with-back.html',
         'auth': '/fragments/header-auth.html',
-        'auth-with-back': '/fragments/header-auth-with-back.html'
+        'auth-with-back': '/fragments/header-auth-with-back.html',
+        'public': '/fragments/header-public.html'
     };
 
-    const url = headerMap[type];
+    const url = headerMap[headerType];
     if (!url) {
-        console.error('Unknown header type:', type);
+        console.error('Unknown header type:', headerType);
         return;
     }
 

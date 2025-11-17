@@ -24,24 +24,24 @@ export const commonStyles = {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        minHeight: 'calc(100vh - 104px)',
-        padding: `${dt.spacing[16]} ${dt.spacing[5]}`,
+        minHeight: 'calc(100vh - 80px)',  // Updated for new header height
+        padding: `${dt.spacing[12]} ${dt.spacing[6]}`,  // More spacious
     },
 
     '.auth-card': {
         width: '100%',
-        maxWidth: '420px',
+        maxWidth: '480px',  // Increased from 420px
         backgroundColor: dt.colors.white,
-        border: `1px solid ${dt.colors.gray[300]}`,
+        border: `1px solid ${dt.colors.border.default}`,
         borderRadius: dt.borderRadius.xl,
-        boxShadow: '0 18px 48px rgba(29, 25, 82, 0.08)',
+        boxShadow: dt.boxShadow.lg,  // Cleaner shadow
     },
 
-    /* Header */
+    /* Header - javascript.info style clean header */
     '.header': {
         backgroundColor: dt.colors.white,
         borderBottom: `1px solid ${dt.colors.border.default}`,
-        height: '104px',
+        height: '80px',      // Reduced from 104px for cleaner look
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -49,6 +49,7 @@ export const commonStyles = {
         top: '0',
         zIndex: dt.zIndex.sticky,
         width: '100%',
+        boxShadow: '0 1px 0 rgba(0,0,0,0.03)',  // Subtle shadow
     },
 
     '.header-container': {
@@ -71,17 +72,31 @@ export const commonStyles = {
     '.header-right': {
         display: 'flex',
         alignItems: 'center',
-        gap: dt.spacing[4],
+        gap: dt.spacing[3],
+    },
+
+    '.header-login-btn, .header-signup-btn': {
+        padding: `${dt.spacing[2]} ${dt.spacing[4]}`,
+        fontSize: dt.fontSize.base,
+        textDecoration: 'none',
+    },
+
+    '.header-create-btn': {
+        padding: `${dt.spacing[2]} ${dt.spacing[4]}`,
+        fontSize: dt.fontSize.base,
+        textDecoration: 'none',
+        marginRight: dt.spacing[3],
     },
 
     '.header-title': {
         fontFamily: dt.fontFamily.heading,
-        fontSize: dt.fontSize['5xl'],
-        fontWeight: dt.fontWeight.normal,
+        fontSize: dt.fontSize['3xl'],  // Reduced from 5xl for cleaner look
+        fontWeight: dt.fontWeight.semibold,  // Changed from normal
         lineHeight: '100%',
-        letterSpacing: '0',
+        letterSpacing: '-0.02em',  // Tighter letter spacing
         textAlign: 'center',
         flex: '1',
+        color: dt.colors.text.primary,
     },
 
     '.back-btn': {
@@ -97,29 +112,65 @@ export const commonStyles = {
         },
     },
 
+    /* Notification Button */
+    '.notification-btn': {
+        background: 'none',
+        border: 'none',
+        cursor: 'pointer',
+        padding: dt.spacing[2],
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: dt.colors.text.primary,
+        borderRadius: dt.borderRadius.sm,
+        transition: `all ${dt.transition.fast}`,
+
+        ':hover': {
+            backgroundColor: dt.colors.bgSecondary,
+        },
+    },
+
     /* User Menu */
     '.user-menu': {
         position: 'relative',
+        marginLeft: dt.spacing[2],
     },
 
     '.user-menu-btn': {
         background: 'none',
         border: 'none',
         cursor: 'pointer',
-        padding: '0',
+        padding: `${dt.spacing[2]} ${dt.spacing[3]}`,
         display: 'flex',
         alignItems: 'center',
-        width: '36px',
-        height: '36px',
-
-        'svg': {
-            width: '36px',
-            height: '36px',
-        },
+        gap: dt.spacing[2],
+        borderRadius: dt.borderRadius.sm,
+        transition: `all ${dt.transition.fast}`,
+        color: dt.colors.text.primary,
 
         ':hover': {
-            opacity: '0.7',
+            backgroundColor: dt.colors.bgSecondary,
         },
+    },
+
+    '.user-icon': {
+        width: '20px',
+        height: '20px',
+    },
+
+    '.user-name': {
+        fontSize: dt.fontSize.base,
+        fontWeight: dt.fontWeight.medium,
+    },
+
+    '.dropdown-arrow': {
+        width: '12px',
+        height: '12px',
+        transition: `transform ${dt.transition.fast}`,
+    },
+
+    '.user-menu-btn[aria-expanded="true"] .dropdown-arrow': {
+        transform: 'rotate(180deg)',
     },
 
     'body.auth-page .header-right': {
@@ -128,22 +179,56 @@ export const commonStyles = {
 
     '.user-menu-dropdown': {
         position: 'absolute',
-        top: '100%',
+        top: 'calc(100% + 8px)',
         right: '0',
-        marginTop: dt.spacing[2],
         background: dt.colors.white,
         border: `1px solid ${dt.colors.border.default}`,
-        borderRadius: dt.borderRadius.sm,
-        boxShadow: dt.boxShadow.lg,
-        minWidth: '160px',
+        borderRadius: dt.borderRadius.lg,
+        boxShadow: dt.boxShadow.xl,
+        minWidth: '240px',
         overflow: 'hidden',
+        zIndex: dt.zIndex.dropdown,
+    },
+
+    '.dropdown-header': {
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: dt.spacing[5],
+        gap: dt.spacing[2],
+    },
+
+    '.dropdown-user-avatar': {
+        width: '48px',
+        height: '48px',
+        borderRadius: dt.borderRadius.full,
+        backgroundColor: dt.colors.gray[300],
+        marginBottom: dt.spacing[1],
+    },
+
+    '.dropdown-user-name': {
+        fontSize: dt.fontSize.lg,
+        fontWeight: dt.fontWeight.semibold,
+        color: dt.colors.text.primary,
+    },
+
+    '.dropdown-user-subtitle': {
+        fontSize: dt.fontSize.sm,
+        color: dt.colors.text.secondary,
+    },
+
+    '.dropdown-divider': {
+        height: '1px',
+        backgroundColor: dt.colors.border.default,
+        margin: `${dt.spacing[2]} 0`,
     },
 
     '.user-menu-dropdown .menu-item': {
         display: 'block',
-        padding: `${dt.spacing[3]} ${dt.spacing[4]}`,
+        padding: `${dt.spacing[3]} ${dt.spacing[5]}`,
         textDecoration: 'none',
         color: dt.colors.text.primary,
+        fontSize: dt.fontSize.base,
         transition: `background-color ${dt.transition.fast}`,
 
         ':hover': {
@@ -151,27 +236,38 @@ export const commonStyles = {
         },
     },
 
-    /* Main Content */
-    '.main-content': {
-        maxWidth: '960px',
-        margin: '0 auto',
-        padding: `${dt.spacing[16]} ${dt.spacing[5]}`,
-        minHeight: 'calc(100vh - 65px)',
+    '.menu-item-logout': {
+        color: dt.colors.danger,
+
+        ':hover': {
+            backgroundColor: dt.colors.dangerLight + '20',
+        },
     },
 
-    /* Buttons */
+    /* Main Content - javascript.info style spacious layout */
+    '.main-content': {
+        maxWidth: '1080px',  // Increased from 960px
+        margin: '0 auto',
+        padding: `${dt.spacing[12]} ${dt.spacing[6]}`,  // More spacious
+        minHeight: 'calc(100vh - 80px)',  // Updated for new header height
+    },
+
+    /* Buttons - javascript.info style clean buttons */
     '.btn': {
-        padding: `${dt.spacing[3]} ${dt.spacing[6]}`,
+        padding: `${dt.spacing[3]} ${dt.spacing[5]}`,
         border: 'none',
-        borderRadius: dt.borderRadius.sm,
-        fontSize: dt.fontSize.lg,
+        borderRadius: dt.borderRadius.md,  // Changed from sm
+        fontSize: dt.fontSize.base,        // Changed from lg
         fontWeight: dt.fontWeight.medium,
         cursor: 'pointer',
-        transition: `all ${dt.transition.base}`,
+        transition: `all ${dt.transition.fast}`,  // Faster transition
         textDecoration: 'none',
-        display: 'inline-block',
+        display: 'inline-flex',  // Changed from inline-block
+        alignItems: 'center',
+        justifyContent: 'center',
         textAlign: 'center',
         boxShadow: dt.boxShadow.none,
+        lineHeight: '1.5',
     },
 
     '.btn-primary': {
@@ -256,12 +352,13 @@ export const commonStyles = {
 
     '.form-input, .form-textarea': {
         width: '100%',
-        padding: `14px 18px`,
-        border: `1px solid ${dt.colors.border.dark}`,
-        borderRadius: dt.borderRadius.lg,
+        padding: `${dt.spacing[3]} ${dt.spacing[4]}`,  // More consistent spacing
+        border: `1px solid ${dt.colors.border.default}`,  // Lighter border
+        borderRadius: dt.borderRadius.md,  // Changed from lg
         fontSize: dt.fontSize.base,
-        transition: `border-color ${dt.transition.base}`,
+        transition: `all ${dt.transition.fast}`,  // Changed from border-color only
         backgroundColor: dt.colors.white,
+        lineHeight: dt.lineHeight.base,
 
         ':focus': {
             outline: 'none',
@@ -275,9 +372,10 @@ export const commonStyles = {
     },
 
     '.form-textarea': {
-        minHeight: '120px',
+        minHeight: '140px',  // Increased from 120px
         resize: 'vertical',
         fontFamily: 'inherit',
+        lineHeight: dt.lineHeight.relaxed,  // Better readability
     },
 
     '.form-helper': {

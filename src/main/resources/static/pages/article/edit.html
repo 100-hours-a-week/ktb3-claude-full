@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>게시글 작성 - 아무 말 대잔치</title>
+    <title>게시글 작성 - Like IT</title>
 </head>
 <body>
     <div id="header-container"></div>
@@ -80,6 +80,7 @@
         import { initAuthHeader } from '/js/handler/user/userEditHandler.js';
         import { loadHeader } from '/js/common/fragment-loader.js';
         import { DomElements } from '/js/common/domElements.js';
+        import { eventManager } from '/js/common/event.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             const pathParts = window.location.pathname.split('/');
@@ -93,7 +94,9 @@
             await initArticleFormPage(articleIdForEdit);
 
             const backBtn = DomElements.Common.getBackBtn();
-            backBtn?.addEventListener('click', () => history.back());
+            if (backBtn) {
+                eventManager.add(backBtn, 'click', () => history.back());
+            }
         });
     </script>
 </body>
