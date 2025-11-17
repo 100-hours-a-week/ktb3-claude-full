@@ -47,6 +47,7 @@ export const designTokens = {
         bgPrimary: '#ffffff',
         bgSecondary: '#f8faf8',      // Very light green tint
         bgTertiary: '#f0f8f0',       // Light green background
+        bgQuartic: '#4a8c28',        // Dark green background
         bgGreenLight: '#f0f8f0',
         bgGrayLight: '#e9ecef',
 
@@ -206,6 +207,7 @@ export const lightTheme = {
         '--color-bg-primary': designTokens.colors.bgPrimary,
         '--color-bg-secondary': designTokens.colors.bgSecondary,
         '--color-bg-tertiary': designTokens.colors.bgTertiary,
+        '--color-bg-quartic': designTokens.colors.bgQuartic,
 
         '--color-text-primary': designTokens.colors.text.primary,
         '--color-text-secondary': designTokens.colors.text.secondary,
@@ -234,6 +236,7 @@ export const darkTheme = {
         '--color-bg-primary': designTokens.colors.gray[900],
         '--color-bg-secondary': designTokens.colors.gray[800],
         '--color-bg-tertiary': designTokens.colors.gray[700],
+        '--color-bg-quartic': designTokens.colors.gray[50],
 
         '--color-text-primary': designTokens.colors.white,
         '--color-text-secondary': designTokens.colors.gray[300],

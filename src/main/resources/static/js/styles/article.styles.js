@@ -278,6 +278,48 @@ export const articleStyles = {
         padding: `${dt.spacing[4]} ${dt.spacing[4]}`,
         textAlign: 'center',
         boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.3)',
+        transition: `all ${dt.transition.fast}`,
+    },
+
+    '.article-stat--like': {
+        cursor: 'pointer',
+        background: dt.colors.bgTertiary,
+        border: `1px solid ${dt.colors.border.light}`,
+
+        ':hover': {
+            background: dt.colors.border.green2,
+            borderColor: dt.colors.border.green,
+            transform: 'scale(1.02)',
+        },
+
+        ':active': {
+            transform: 'scale(0.98)',
+        },
+    },
+
+    '.article-stat--like[data-liked="true"]': {
+        background: dt.colors.primaryDark,
+        borderColor: dt.colors.primaryDark,
+        boxShadow: `0 2px 8px ${dt.colors.shadow.button}`,
+
+        ':hover': {
+            background: dt.colors.bgQuartic,
+            borderColor: dt.colors.bgQuartic,
+            transform: 'scale(1.02)',
+            boxShadow: `0 4px 12px ${dt.colors.shadow.buttonHover}`,
+        },
+
+        ':active': {
+            transform: 'scale(0.98)',
+        },
+    },
+
+    '.article-stat--like[data-liked="true"] .article-stat-number': {
+        color: dt.colors.white,
+    },
+
+    '.article-stat--like[data-liked="true"] .article-stat-label': {
+        color: 'rgba(255, 255, 255, 0.9)',
     },
 
     '.article-stat-number': {

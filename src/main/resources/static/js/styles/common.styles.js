@@ -238,6 +238,7 @@ export const commonStyles = {
 
     '.menu-item-logout': {
         color: dt.colors.danger,
+        fontWeight: dt.fontWeight.bold,
 
         ':hover': {
             backgroundColor: dt.colors.dangerLight + '20',
