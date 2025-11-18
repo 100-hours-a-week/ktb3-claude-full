@@ -6,9 +6,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 
-import ktb.annotation.Authorized;
 import ktb.constant.MessageConstant.Success;
 import ktb.dto.UserAccountDto;
+import ktb.dto.request.DuplicateEmailRequest;
+import ktb.dto.request.DuplicateNicknameRequest;
 import ktb.dto.request.NickNameUpdateRequest;
 import ktb.dto.request.PasswordUpdateRequest;
 import ktb.dto.request.SignupRequest;
@@ -27,7 +28,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -83,7 +83,6 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = NickNameUpdateRequest.class))),
             }
     )
-    @Authorized
     @PatchMapping("/me/nickName")
     public ResponseEntity<Void> patch(
             @RequestAttribute Long userId,
@@ -102,7 +101,6 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = PasswordUpdateRequest.class))),
             }
     )
-    @Authorized
     @PatchMapping("/me/password")
     public ResponseEntity<Void> patch(
             @RequestAttribute Long userId,
@@ -121,7 +119,6 @@ public class UserController {
                     @ApiResponse(responseCode = "200", description = "성공"),
             }
     )
-    @Authorized
     @DeleteMapping("/me")
     public ResponseEntity<Void> delete(
             @RequestAttribute Long userId
@@ -141,9 +138,9 @@ public class UserController {
     )
     @PostMapping("/exist/nickname")
     public ResponseEntity<CommonResponse<Boolean>> existsNickname(
-            @RequestBody String nickname
+            @RequestBody DuplicateNicknameRequest request
     ) {
-        boolean isExist = userService.existNickname(nickname);
+        boolean isExist = userService.existNickname(request.nickname());
 
         CommonResponse<Boolean> response = CommonResponse.of("", isExist);
 
@@ -160,9 +157,9 @@ public class UserController {
     )
     @PostMapping("/exist/email")
     public ResponseEntity<CommonResponse<Boolean>> existsEmail(
-            @RequestBody String email
+            @RequestBody DuplicateEmailRequest request
     ) {
-        boolean isExist = userService.existEmail(email);
+        boolean isExist = userService.existEmail(request.email());
 
         CommonResponse<Boolean> response = CommonResponse.of("", isExist);
 

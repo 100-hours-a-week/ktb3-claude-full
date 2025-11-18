@@ -2,6 +2,7 @@ import { PageRoutes } from './uris.js';
 import { DomElements } from './domElements.js';
 
 const routeHandlers = {
+    HOME: () => (window.location.href = PageRoutes.HOME),
     ARTICLES: () => (window.location.href = PageRoutes.ARTICLES),
     USER_EDIT: () => (window.location.href = PageRoutes.USER_EDIT),
     USER_PASSWORD: () => (window.location.href = PageRoutes.USER_PASSWORD),

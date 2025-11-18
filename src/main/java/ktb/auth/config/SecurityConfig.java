@@ -2,12 +2,21 @@ package ktb.auth.config;
 
 import java.util.List;
 
+import ktb.auth.filter.CsrfDebugFilter;
+import ktb.auth.filter.JwtAuthFilter;
+import ktb.auth.filter.JwtLoginFilter;
+import ktb.auth.service.CustomUserDetailService;
+import ktb.repository.UserRepository;
+import ktb.util.JwtKeyProvider;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -15,6 +24,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import org.springframework.web.cors.CorsConfiguration;
@@ -23,6 +33,10 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private final CustomUserDetailService customUserDetailService;
+    private final JwtAuthFilter jwtAuthFilter;
+    private final UserRepository userRepository;
+    private final JwtKeyProvider jwtKeyProvider;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -45,13 +59,20 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Home 경로는 모든 사용자 접근 가능 (내부에서 forward 처리)
+                        .requestMatchers("/").permitAll()
+                        // CSRF 토큰 엔드포인트는 모든 사용자 접근 가능
+                        .requestMatchers("/api/v1/csrf").permitAll()
+                        // 로그인/회원가입 페이지는 인증되지 않은 사용자만 접근 가능
                         .requestMatchers(
-                                "/",
                                 "/user/login",
                                 "/user/signup",
+                                "/pages/user/login.html",
+                                "/pages/user/signup.html",
                                 "/api/v1/auth/login",
                                 "/api/v1/users/signup",
                                 "/api/v1/users/exist/**").anonymous()
+                        // 정적 리소스는 모든 사용자 접근 가능
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/api-docs/**",
@@ -61,8 +82,14 @@ public class SecurityConfig {
                                 "/fragments/**",
                                 "/fonts/**",
                                 "/favicon.ico").permitAll()
+                        // 나머지는 인증 필요
                         .anyRequest().authenticated()
                 );
+
+        // Filter 등록
+        http
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(jwtLoginFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -70,5 +97,22 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(customUserDetailService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return new ProviderManager(provider);
+    }
+
+    @Bean
+    public JwtLoginFilter jwtLoginFilter() {
+        return new JwtLoginFilter(
+                authenticationManager(),
+                userRepository,
+                jwtKeyProvider
+        );
     }
 }

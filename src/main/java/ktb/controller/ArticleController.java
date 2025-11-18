@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import jakarta.validation.constraints.Min;
-import ktb.annotation.Authorized;
 import ktb.common.pagination.Slice;
 import ktb.constant.MessageConstant.Success;
 import ktb.dto.PageInfoDto;
@@ -80,7 +79,6 @@ public class ArticleController {
                     @ApiResponse(responseCode = "204", description = "성공", content = @Content(schema = @Schema(implementation = ArticleRequest.class))),
             }
     )
-    @Authorized
     @PostMapping("/article")
     public ResponseEntity<Void> insertArticle(
             @Valid @RequestBody ArticleRequest request,
@@ -116,7 +114,6 @@ public class ArticleController {
         return ResponseEntity.ok(CommonResponse.of(Success.RETRIEVAL_POST, response));
     }
 
-    @Authorized
     @Operation(
             summary = "Article like toggle",
             description = "게시글 좋아요 상태를 토글합니다.",
@@ -137,7 +134,6 @@ public class ArticleController {
         );
     }
 
-    @Authorized
     @Operation(
             summary = "Article update",
             description = "게시글 수정합니다.",
@@ -157,7 +153,6 @@ public class ArticleController {
         return ResponseEntity.noContent().build();
     }
 
-    @Authorized
     @Operation(
             summary = "Article Delete",
             description = "게시글 삭제합니다.",

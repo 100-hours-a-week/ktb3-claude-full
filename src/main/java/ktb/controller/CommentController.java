@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
-import ktb.annotation.Authorized;
 import ktb.dto.CommentDto;
 import ktb.dto.request.CommentDeleteRequest;
 import ktb.dto.request.CommentRequest;
@@ -45,7 +44,6 @@ public class CommentController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = CommentRequest.class))),
             }
     )
-    @Authorized
     @PostMapping("/{id}/comments")
     public ResponseEntity<CommonResponse<CommentDto>> addComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
@@ -73,7 +71,6 @@ public class CommentController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = CommentUpdateRequest.class))),
             }
     )
-    @Authorized
     @PutMapping("/{id}/comments")
     public ResponseEntity<Void> updateComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
@@ -96,7 +93,6 @@ public class CommentController {
                     @ApiResponse(responseCode = "200", description = "성공", content = @Content(schema = @Schema(implementation = CommentDeleteRequest.class))),
             }
     )
-    @Authorized
     @DeleteMapping("/{id}/comments")
     public ResponseEntity<Void> deleteComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,

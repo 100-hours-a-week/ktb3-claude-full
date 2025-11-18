@@ -1,11 +1,15 @@
 package ktb.util;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
@@ -19,10 +23,14 @@ import java.util.Date;
 import java.util.Optional;
 import ktb.config.JwtConfig;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtKeyProvider {
@@ -62,19 +70,53 @@ public class JwtKeyProvider {
                 .replaceAll("\\s", "");
     }
 
-
-    // ✅ JWT 생성 (userId, nickName 기반)
-    public String generateToken(Long userId, String nickName) {
+    // ✅ JWT 생성 (userId)
+    public String generateToken(Long userId) {
         Date now = new Date(System.currentTimeMillis());
         Date expireDate = new Date(now.getTime() + cfg.getAccessExpireMillis());
 
         return Jwts.builder()
                 .subject(String.valueOf(userId))
-                .claim("nickName", nickName)
                 .issuedAt(now)
                 .expiration(expireDate)
                 .signWith(privateKey, Jwts.SIG.RS256)
                 .compact();
+    }
+
+    public void addTokenCookie(HttpServletResponse response, String token) {
+        ResponseCookie cookie = ResponseCookie.from(cfg.getAccessTokenName(), token)
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge((int)cfg.getAccessExpireSeconds())
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    // ✅ JWT 유효성 검증
+    public boolean validateToken(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(publicKey)
+                    .build()
+                    .parseSignedClaims(token) // Throws if invalid
+                    .getPayload()
+                    .getExpiration()
+                    .after(new Date(System.currentTimeMillis()));
+
+        } catch (SecurityException | MalformedJwtException e) {
+            log.warn("Invalid JWT signature: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            log.warn("Expired JWT token: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.warn("Unsupported JWT token: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.warn("JWT claims string is empty: {}", e.getMessage());
+        }
+
+        return false;
     }
 
     // ✅ JWT 검증
@@ -124,18 +166,5 @@ public class JwtKeyProvider {
             return null;
         }
         return Long.valueOf(claims.getSubject());
-    }
-
-    // ✅ nickName 추출
-    public String getNickNameFromRequest(HttpServletRequest request) {
-        Claims claims = extractClaims(request);
-        if (claims == null) {
-            return null;
-        }
-        return claims.get("nickName", String.class);
-    }
-
-    public int getExpiredTime() {
-        return (int)cfg.getAccessExpireSeconds();
     }
 }

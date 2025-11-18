@@ -40,8 +40,12 @@
         import { DomElements } from '/js/common/domElements.js';
         import { loadHeader } from '/js/common/fragment-loader.js';
         import { initializeHeaderUserInfo } from '/js/common/headerInit.js';
+        import { initCsrf } from '/js/common/csrf.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
+            // CSRF 토큰 초기화
+            await initCsrf();
+
             await loadHeader('with-user-menu');
             // Re-initialize DomElements after loading header to ensure all elements have IDs
             DomElements.initialize();

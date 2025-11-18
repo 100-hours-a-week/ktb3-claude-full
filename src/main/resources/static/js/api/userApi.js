@@ -1,5 +1,6 @@
 // 사용자 API 모듈
 import { ApiEndpoints, PageRoutes } from '/js/common/uris.js';
+import { csrfFetch } from '/js/common/csrf.js';
 
 const DEFAULT_ERROR_MESSAGE = '요청 처리에 실패했습니다.';
 
@@ -44,7 +45,7 @@ async function handleResponse(response, fallbackRedirect) {
 export const UserApi = {
     // 로그인
     async login(email, password) {
-        const response = await fetch(ApiEndpoints.AUTH_LOGIN, {
+        const response = await csrfFetch(ApiEndpoints.AUTH_LOGIN, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ export const UserApi = {
 
     // 회원가입
     async signup(formData) {
-        const response = await fetch(ApiEndpoints.USER_SIGNUP, {
+        const response = await csrfFetch(ApiEndpoints.USER_SIGNUP, {
             method: 'POST',
             body: formData, // FormData에 파일 업로드 포함
         });
@@ -67,7 +68,7 @@ export const UserApi = {
 
     // 로그아웃
     async logout() {
-        const response = await fetch(ApiEndpoints.AUTH_LOGOUT, {
+        const response = await csrfFetch(ApiEndpoints.AUTH_LOGOUT, {
             method: 'POST',
         });
 
@@ -76,7 +77,7 @@ export const UserApi = {
 
     // 현재 사용자 조회
     async getCurrentUser() {
-        const response = await fetch(ApiEndpoints.USER_ME, {
+        const response = await csrfFetch(ApiEndpoints.USER_ME, {
             method: 'GET',
         });
 
@@ -85,7 +86,7 @@ export const UserApi = {
 
     // 사용자 프로필 수정
     async updateProfile(formData) {
-        const response = await fetch(ApiEndpoints.USER_ME, {
+        const response = await csrfFetch(ApiEndpoints.USER_ME, {
             method: 'PUT',
             body: formData,
         });
@@ -95,7 +96,7 @@ export const UserApi = {
 
     // 비밀번호 수정
     async updatePassword(currentPassword, newPassword) {
-        const response = await fetch(ApiEndpoints.USER_ME_PASSWORD, {
+        const response = await csrfFetch(ApiEndpoints.USER_ME_PASSWORD, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -108,7 +109,7 @@ export const UserApi = {
 
     // 사용자 계정 삭제
     async deleteAccount() {
-        const response = await fetch(ApiEndpoints.USER_ME, {
+        const response = await csrfFetch(ApiEndpoints.USER_ME, {
             method: 'DELETE',
         });
 
@@ -116,10 +117,10 @@ export const UserApi = {
     },
 
     async checkNicknameExists(nickname) {
-        const response = await fetch(ApiEndpoints.USER_EXIST_NICKNAME, {
+        const response = await csrfFetch(ApiEndpoints.USER_EXIST_NICKNAME, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain',
+                'Content-Type': 'application/json',
             },
             body: nickname,
         });
@@ -129,10 +130,10 @@ export const UserApi = {
     },
 
     async checkEmailExists(email) {
-        const response = await fetch(ApiEndpoints.USER_EXIST_EMAIL, {
+        const response = await csrfFetch(ApiEndpoints.USER_EXIST_EMAIL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain',
+                'Content-Type': 'application/json',
             },
             body: email,
         });
