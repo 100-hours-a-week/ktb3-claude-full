@@ -26,6 +26,8 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.orm.jdbc.bind: TRACE
+    org.springframework.security: TRACE
+    org.springframework.security.web.csrf: TRACE
 cookie:
   access-token-name: ACCESS_TOKEN
   refresh-token-name: REFRESH_TOKEN

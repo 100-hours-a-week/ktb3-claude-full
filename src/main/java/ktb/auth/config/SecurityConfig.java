@@ -1,7 +1,11 @@
 package ktb.auth.config;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.List;
 
+import java.util.Optional;
 import ktb.auth.filter.CsrfDebugFilter;
 import ktb.auth.filter.JwtAuthFilter;
 import ktb.auth.filter.JwtLoginFilter;
@@ -10,6 +14,7 @@ import ktb.repository.UserRepository;
 import ktb.util.JwtKeyProvider;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,8 +32,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import org.springframework.security.web.csrf.CsrfFilter;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -37,6 +46,7 @@ public class SecurityConfig {
     private final JwtAuthFilter jwtAuthFilter;
     private final UserRepository userRepository;
     private final JwtKeyProvider jwtKeyProvider;
+    private final CsrfDebugFilter csrfDebugFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -49,8 +59,22 @@ public class SecurityConfig {
                     cfg.setAllowCredentials(true); // 쿠키 전송
                     return cfg;
                 }))
-                .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+        http
+                .csrf(csrf -> csrf.csrfTokenRepository(csrfRepo()))
+                .exceptionHandling(ex -> ex.accessDeniedHandler((req, res, exn) -> {
+                    String header = req.getHeader("X-XSRF-TOKEN");
+                    String cookie = Arrays.stream(Optional.ofNullable(req.getCookies()).orElse(new Cookie[0]))
+                            .filter(c -> "XSRF-TOKEN".equals(c.getName()))
+                            .map(Cookie::getValue)
+                            .findFirst().orElse(null);
+                    CsrfToken repoToken = csrfRepo().loadToken(req);
+                    log.warn("[CSRF DENY] uri={}, header={}, cookie={}, repoToken={}",
+                            req.getRequestURI(), header, cookie,
+                            repoToken != null ? repoToken.getToken() : null);
+                    res.sendError(HttpServletResponse.SC_FORBIDDEN);
+                }));
 
         http
                 .formLogin(AbstractHttpConfigurer::disable)
@@ -91,7 +115,14 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAt(jwtLoginFilter(), UsernamePasswordAuthenticationFilter.class);
 
+        http.addFilterBefore(csrfDebugFilter, CsrfFilter.class);
+
         return http.build();
+    }
+
+    @Bean
+    CsrfTokenRepository csrfRepo() {
+        return CookieCsrfTokenRepository.withHttpOnlyFalse();
     }
 
     @Bean
