@@ -12,8 +12,8 @@ import ktb.handler.context.ContextData;
 import ktb.handler.context.SoftDeleteContext;
 import ktb.handler.context.payload.SoftDeletePayload;
 import ktb.repository.UserRepository;
-import ktb.util.BCryptEncoder;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +22,10 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final UserRepository userRepository;
     private final AbstractHandler<ContextData<?>> userDeleteHandlerChain;
+    private final PasswordEncoder encoder;
 
     public Long signUp(SignUpUserDto user) {
-        String encoded = BCryptEncoder.encode(user.password());
+        String encoded = encoder.encode(user.password());
         UserAccount saveUser = userRepository.save(user.toEntity(encoded));
 
         return saveUser.getId();
@@ -59,7 +60,7 @@ public class UserService {
                 userRepository.findById(id)
                         .orElseThrow(NonExistUserException::new);
 
-        String encodedPassword = BCryptEncoder.encode(request.password());
+        String encodedPassword = encoder.encode(request.password());
         existUser.changePassword(encodedPassword);
     }
 
