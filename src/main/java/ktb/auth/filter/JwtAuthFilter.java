@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
+import ktb.auth.adapter.SecurityUserAccount;
 import ktb.domain.UserAccount;
 import ktb.exception.user.NonExistUserException;
 import ktb.repository.UserRepository;
@@ -42,19 +43,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 UserAccount user = userRepository.findById(userId).orElseThrow(NonExistUserException::new);
 
                 // 4. Authentication 객체 생성 (권한 포함)
+                SecurityUserAccount principal = new SecurityUserAccount(user);
+
                 Authentication auth = new UsernamePasswordAuthenticationToken(
-                    user,  // principal: UserAccount 객체
+                    principal,  // principal: UserAccount Adapter 객체
                     null,  // credentials: 비밀번호는 null (이미 인증됨)
                     Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))  // authorities
                 );
 
                 // 5. SecurityContext에 저장
                 SecurityContextHolder.getContext().setAuthentication(auth);
-                log.debug("JWT authentication successful for user: {}", user.getEmail());
+                log.debug("JWT authentication successful for user: {}", principal.getAccount().getEmail());
             }
         } catch (Exception e) {
-            log.warn("JWT authentication failed: {}", e.getMessage());
-            // 인증 실패 시에도 필터 체인은 계속 진행 (다른 인증 방식 시도 가능)
+            log.info("JWT authentication failed: {}", e.getMessage());
+            SecurityContextHolder.clearContext();
         }
 
         filterChain.doFilter(request, response);

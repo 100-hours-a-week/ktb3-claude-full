@@ -2,19 +2,21 @@ package ktb.auth.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 import ktb.constant.MessageConstant;
-import ktb.constant.MessageConstant.User;
+import ktb.domain.UserAccount;
 import ktb.dto.request.LoginRequest;
 import ktb.dto.response.CommonResponse;
-import ktb.exception.user.NonExistUserException;
+import ktb.exception.AuthenticateException;
 import ktb.repository.UserRepository;
 import ktb.util.JwtKeyProvider;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -51,8 +53,12 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         log.debug("Login attempt for email: {}", requestBody.email());
 
+        Long userId = userRepository.findByEmail(requestBody.email())
+                .orElseThrow(AuthenticateException::new)
+                .getId();
+
         UsernamePasswordAuthenticationToken authRequest =
-                new UsernamePasswordAuthenticationToken(requestBody.email(), requestBody.password());
+                new UsernamePasswordAuthenticationToken(userId, requestBody.password());
 
         return this.getAuthenticationManager().authenticate(authRequest);
     }
@@ -63,16 +69,15 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
             HttpServletResponse response,
             FilterChain chain,
             Authentication authentication
-    ) throws IOException {
+    ) throws IOException, ServletException {
         // Authentication의 principal에서 email 추출
-        String email = authentication.getName();
+        Long id = Long.parseLong(authentication.getName());
 
-        Long userId = userRepository.findByEmail(email)
-                        .orElseThrow(NonExistUserException::new)
-                        .getId();
+        UserAccount user = userRepository.findById(id)
+                        .orElseThrow(AuthenticateException::new);
 
         // JWT Token 발급
-        String token = jwtProvider.generateToken(userId);
+        String token = jwtProvider.generateToken(user.getId());
 
         // JWT Cookie 설정
         jwtProvider.addTokenCookie(response, token);
@@ -80,12 +85,15 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
         // JSON 응답
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setCharacterEncoding("UTF-8");
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+        response.setHeader(HttpHeaders.LOCATION, "/articles");
 
         CommonResponse<Void> responseBody = CommonResponse.of(MessageConstant.Success.LOGIN);
         response.getWriter().write(objectMapper.writeValueAsString(responseBody));
 
-        log.info("Login successful for user: {} (userId: {})", email, userId);
+        log.info("Login successful for user: {} (userId: {})", user.getEmail(), user.getId());
+
+        super.successfulAuthentication(request, response, chain, authentication);
     }
 
     @Override
@@ -93,7 +101,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             AuthenticationException failed
-    ) throws IOException {
+    ) throws IOException, ServletException {
         log.warn("Login failed: {}", failed.getMessage());
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
@@ -102,5 +110,7 @@ public class JwtLoginFilter extends UsernamePasswordAuthenticationFilter {
 
         CommonResponse<Void> responseBody = CommonResponse.of(MessageConstant.User.LOGIN_FAILED);
         response.getWriter().write(objectMapper.writeValueAsString(responseBody));
+
+        super.unsuccessfulAuthentication(request, response, failed);
     }
 }

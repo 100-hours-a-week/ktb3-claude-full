@@ -17,6 +17,7 @@ import ktb.handler.context.payload.CommentDeletePayload;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,11 +60,11 @@ public class CommentCommandService {
      * @return 수정된 댓글 DTO
      * @throws NoExistArticleException 게시글이 존재하지 않을 경우
      */
+    @PreAuthorize("hasRole('ADMIN') or @commentService.findById(#dto.id()).get().getCreateBy().id.equals(#dto.createBy())")
     public CommentDto save(CommentDto dto) {
-        Article article = articleService.findById(dto.articleId())
-                .orElseThrow(NoExistArticleException::new);
+        boolean isDeleted = articleService.existsByIdAndIsDeleted(dto.articleId());
 
-        if (article.isDelete()) {
+        if (isDeleted) {
             throw new AlreadyDeletedArticle();
         }
 
@@ -75,7 +76,7 @@ public class CommentCommandService {
 
         comment.update(dto.content());
 
-        return dto;
+        return CommentDto.from(comment);
     }
 
     /**
@@ -91,12 +92,14 @@ public class CommentCommandService {
     /**
      * 댓글 삭제 (Soft Delete)
      *
-     * @param userId 요청 사용자 ID
      * @param request 삭제할 댓글 정보
      */
-    public void delete(Long userId, CommentDto request) {
-        CommentDeletePayload payload = new CommentDeletePayload(request.articleId(), request.id());
-        CommentDeleteContext context = new CommentDeleteContext(userId, payload);
+    @PreAuthorize("hasRole('ADMIN') or @commentService.findById(#request.id()).get().getCreateBy().id().equals(#request.createBy())")
+    public void delete(CommentDto request) {
+        CommentDeleteContext context = new CommentDeleteContext(
+                request.createBy(),
+                new CommentDeletePayload(request.articleId(), request.id())
+        );
 
         // Handler 체인을 통한 소프트 삭제 처리 (Authorization → Validation → Execution → Audit)
         // Execution 단계에서 SingleCommentDeleteStrategy가 실행

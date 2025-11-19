@@ -10,6 +10,7 @@ import ktb.handler.context.payload.SoftDeletePayload;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class ArticleCommandService {
      *
      * @param saveDto Article 저장 정보
      */
+    @PreAuthorize("hasRole('ADMIN') or @articleService.findById(#saveDto.id()).get().getCreateBy().id().equals(#saveDto.userId())")
     public void save(SaveArticleDto saveDto) {
         // Article 내용 변경
         if (saveDto.id() != null) {
@@ -50,19 +52,21 @@ public class ArticleCommandService {
         metaService.save(article.getMeta());
     }
 
+
     /**
      * Article 삭제 (Soft Delete)
      *
      * @param id Article ID
      */
-    public void delete(Long id) {
+    @PreAuthorize("hasRole('ADMIN') or @articleService.findById(#id).get().getCreateBy().id().equals(#userId)")
+    public void delete(Long userId, Long id) {
         // Article 단일 삭제: traceId는 null (권한은 AOP 로 확인), payload: articleId 설정
         SoftDeleteContext context = new SoftDeleteContext(
                 null,
                 new SoftDeletePayload(null, id)
         );
 
-        // Handler 체인을 통한 소프트 삭제 처리 (Authorization → Validation → Execution → Audit)
+        // Handler 체인을 통한 소프트 삭제 처리 (Execution → Audit)
         // Execution 단계에서 SingleArticleDeleteStrategy, ArticleCommentsDeleteStrategy 가 순서대로 실행
         articleDeleteHandlerChain.handle(context);
     }

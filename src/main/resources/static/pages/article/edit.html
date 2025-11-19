@@ -81,11 +81,11 @@
         import { loadHeader } from '/js/common/fragment-loader.js';
         import { DomElements } from '/js/common/domElements.js';
         import { eventManager } from '/js/common/event.js';
-        import { initCsrf } from '/js/common/csrf.js';
+        import { resetCsrfToken } from '/js/common/csrf.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             // CSRF 토큰 초기화
-            await initCsrf();
+            await resetCsrfToken();
 
             const pathParts = window.location.pathname.split('/');
             const isEditMode = pathParts.length > 3 && pathParts[3] === 'edit';

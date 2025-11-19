@@ -83,7 +83,7 @@ class ArticleCommandServiceTest {
     @DisplayName("Article 삭제 시 Article과 모든 댓글이 softDelete 됨")
     void testArticleDelete_SoftDeletesArticleAndComments() {
         // When: Article 삭제
-        articleCommandService.delete(testArticle.getId());
+        articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
 
         entityManager.flush();
         entityManager.clear();
@@ -105,7 +105,7 @@ class ArticleCommandServiceTest {
         long articleCountBefore = articleRepository.count();
 
         // When: Article 삭제
-        articleCommandService.delete(testArticle.getId());
+        articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
 
         entityManager.flush();
         entityManager.clear();
@@ -143,7 +143,7 @@ class ArticleCommandServiceTest {
         entityManager.clear();
 
         // When: 첫 번째 Article만 삭제
-        articleCommandService.delete(testArticle.getId());
+        articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
 
         entityManager.flush();
         entityManager.clear();
@@ -180,7 +180,7 @@ class ArticleCommandServiceTest {
         entityManager.clear();
 
         // When: 삭제
-        articleCommandService.delete(articleWithoutComments.getId());
+        articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
 
         entityManager.flush();
         entityManager.clear();
@@ -203,7 +203,7 @@ class ArticleCommandServiceTest {
 
         // When: 다시 삭제 시도
         try {
-            articleCommandService.delete(testArticle.getId());
+            articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
         } catch (Exception e) {
             // 이미 삭제된 Article이므로 예외 발생 가능
         }

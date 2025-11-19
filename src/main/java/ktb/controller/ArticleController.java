@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 import jakarta.validation.constraints.Min;
+import ktb.auth.adapter.SecurityUserAccount;
 import ktb.common.pagination.Slice;
 import ktb.constant.MessageConstant.Success;
 import ktb.dto.PageInfoDto;
@@ -27,12 +28,12 @@ import ktb.service.ArticleQueryService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -82,14 +83,14 @@ public class ArticleController {
     @PostMapping("/article")
     public ResponseEntity<Void> insertArticle(
             @Valid @RequestBody ArticleRequest request,
-            @RequestAttribute Long userId
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
         articleCommandService.save(
                 SaveArticleDto.builder()
                         .title(request.title())
                         .content(request.content())
                         .articleImagePath(request.articleImagePath())
-                        .userId(userId)
+                        .userId(principal.getAccount().getId())
                         .build()
         );
 
@@ -107,9 +108,9 @@ public class ArticleController {
     @GetMapping("/article/{id}")
     public ResponseEntity<CommonResponse<ArticleDetailDto>> getOne(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
-            @RequestAttribute(required = false) Long userId
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
-        ArticleDetailDto response = articleQueryService.findByIdDetail(id, userId);
+        ArticleDetailDto response = articleQueryService.findByIdDetail(id, principal.getAccount().getId());
 
         return ResponseEntity.ok(CommonResponse.of(Success.RETRIEVAL_POST, response));
     }
@@ -125,9 +126,9 @@ public class ArticleController {
     @PostMapping("/article/{id}/like")
     public ResponseEntity<CommonResponse<ArticleLikeResponse>> toggleLike(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
-            @RequestAttribute Long userId
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
-        boolean liked = articleLikeService.toggleLike(id, userId);
+        boolean liked = articleLikeService.toggleLike(id, principal.getAccount().getId());
 
         return ResponseEntity.ok(
                 CommonResponse.of(Success.ARTICLE_LIKE_UPDATED, ArticleLikeResponse.from(liked))
@@ -146,9 +147,9 @@ public class ArticleController {
     public ResponseEntity<Void> patchArticle(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
             @Valid @RequestBody ArticlePatchRequest request,
-            @RequestAttribute Long userId
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
-        articleCommandService.save(SaveArticleDto.of(id, request, userId));
+        articleCommandService.save(SaveArticleDto.of(id, request, principal.getAccount().getId()));
 
         return ResponseEntity.noContent().build();
     }
@@ -163,9 +164,11 @@ public class ArticleController {
     )
     @DeleteMapping("/article/{id}")
     public ResponseEntity<Void> deleteArticle(
-            @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id
+            @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
-        articleCommandService.delete(id);
+        Long userId = principal.getAccount().getId();
+        articleCommandService.delete(userId, id);
 
         return ResponseEntity.noContent().build();
     }

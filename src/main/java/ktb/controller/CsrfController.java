@@ -17,9 +17,10 @@ public class CsrfController {
             description = "CSRF 토큰을 생성하고 쿠키에 설정합니다. 프론트엔드에서 초기 로드 시 호출하여 토큰을 받을 수 있습니다."
     )
     @GetMapping
-    public void getCsrfToken(CsrfToken token) {
+    public CsrfToken getCsrfToken(CsrfToken token) {
         // Spring Security가 자동으로 CsrfToken을 파라미터로 주입
         // 이 엔드포인트 호출만으로 CSRF 토큰이 쿠키에 설정됨
         // 반환값 없이 200 OK만 반환
+        return token;
     }
 }

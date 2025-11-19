@@ -112,7 +112,7 @@ class CommentCommandServiceTest {
                 .build();
 
         // When: 댓글 삭제
-        commentCommandService.delete(testUser1.getId(), deleteRequest);
+        commentCommandService.delete(deleteRequest);
 
         entityManager.flush();
         entityManager.clear();
@@ -144,7 +144,7 @@ class CommentCommandServiceTest {
                 .build();
 
         // When: 댓글 삭제
-        commentCommandService.delete(testUser1.getId(), deleteRequest);
+        commentCommandService.delete(deleteRequest);
 
         entityManager.flush();
         entityManager.clear();
@@ -170,7 +170,7 @@ class CommentCommandServiceTest {
                 .build();
 
         // When: 댓글 삭제
-        commentCommandService.delete(testUser1.getId(), deleteRequest);
+        commentCommandService.delete(deleteRequest);
 
         entityManager.flush();
         entityManager.clear();
@@ -197,7 +197,7 @@ class CommentCommandServiceTest {
                 .build();
 
         // When: user1의 댓글 1개 삭제
-        commentCommandService.delete(testUser1.getId(), deleteRequest);
+        commentCommandService.delete(deleteRequest);
 
         entityManager.flush();
         entityManager.clear();
@@ -238,7 +238,7 @@ class CommentCommandServiceTest {
 
         // When & Then: 다시 삭제 시도하면 예외 발생
         try {
-            commentCommandService.delete(testUser1.getId(), deleteRequest);
+            commentCommandService.delete(deleteRequest);
             entityManager.flush();
         } catch (Exception e) {
             // 이미 삭제된 댓글이므로 예외 발생 가능
@@ -279,7 +279,7 @@ class CommentCommandServiceTest {
                 .build();
 
         // When: 첫 번째 Article의 댓글 삭제
-        commentCommandService.delete(testUser1.getId(), deleteRequest);
+        commentCommandService.delete(deleteRequest);
 
         entityManager.flush();
         entityManager.clear();

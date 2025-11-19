@@ -42,4 +42,6 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
     List<Article> findAllByOrderByIdAsc(Limit limit);
 
     void deleteById(Long id);
+
+    boolean existsByIdAndIsDeletedTrue(Long articleId);
 }

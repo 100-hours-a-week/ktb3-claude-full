@@ -53,4 +53,8 @@ public class ArticleService {
     public List<Article> findByCreateBy_Id(Long userId) {
         return articleRepository.findByCreateBy_Id(userId);
     }
+
+    public boolean existsByIdAndIsDeleted(Long articleId) {
+        return articleRepository.existsByIdAndIsDeletedTrue(articleId);
+    }
 }

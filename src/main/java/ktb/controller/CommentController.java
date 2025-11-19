@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+import ktb.auth.adapter.SecurityUserAccount;
 import ktb.dto.CommentDto;
 import ktb.dto.request.CommentDeleteRequest;
 import ktb.dto.request.CommentRequest;
@@ -19,11 +20,11 @@ import ktb.service.CommentQueryService;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,14 +49,13 @@ public class CommentController {
     public ResponseEntity<CommonResponse<CommentDto>> addComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
             @Valid @RequestBody CommentRequest request,
-            @RequestAttribute Long userId,
-            @RequestAttribute String userNickname
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
         CommentDto comment = CommentDto.builder()
                 .articleId(id)
                 .content(request.content())
-                .createBy(userId)
-                .createNickName(userNickname)
+                .createBy(principal.getAccount().getId())
+                .createNickName(principal.getAccount().getNickname())
                 .build();
 
         CommentDto added = commentCommandService.addComment(comment);
@@ -75,10 +75,15 @@ public class CommentController {
     public ResponseEntity<Void> updateComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
             @Valid @RequestBody CommentUpdateRequest request,
-            @RequestAttribute Long userId,
-            @RequestAttribute String userNickname
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
-        CommentDto comment = CommentDto.ofUpdate(request.commentId(), id, request.content(), userId, userNickname);
+        CommentDto comment = CommentDto.ofUpdate(
+                request.commentId(),
+                id,
+                request.content(),
+                principal.getAccount().getId(),
+                principal.getAccount().getNickname()
+        );
 
         commentCommandService.save(comment);
 
@@ -97,12 +102,17 @@ public class CommentController {
     public ResponseEntity<Void> deleteComment(
             @Parameter(name = "id", description = "게시글 ID", required = true) @PathVariable Long id,
             @Valid @RequestBody CommentDeleteRequest request,
-            @RequestAttribute Long userId,
-            @RequestAttribute String userNickname
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
-        CommentDto comment = new CommentDto(request.commentId(), id, null, userId, userNickname);
+        CommentDto comment = CommentDto.ofUpdate(
+                request.commentId(),
+                id,
+                null,
+                principal.getAccount().getId(),
+                null
+        );
 
-        commentCommandService.delete(userId, comment);
+        commentCommandService.delete(comment);
 
         return ResponseEntity.noContent().build();
     }

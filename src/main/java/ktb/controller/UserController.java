@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.validation.Valid;
 
+import ktb.auth.adapter.SecurityUserAccount;
 import ktb.constant.MessageConstant.Success;
 import ktb.dto.UserAccountDto;
 import ktb.dto.request.DuplicateEmailRequest;
@@ -21,11 +22,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -52,7 +53,7 @@ public class UserController {
 
         return ResponseEntity
                 .status(HttpStatus.SEE_OTHER)
-                .header(HttpHeaders.LOCATION, "/api/v1/auth/login")
+                .header(HttpHeaders.LOCATION, "/user/login")
                 .body(response);
     }
 
@@ -66,9 +67,9 @@ public class UserController {
     )
     @GetMapping("/me")
     public ResponseEntity<CommonResponse<UserAccountDto>> search(
-            @RequestAttribute Long userId
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
-        UserAccountDto user = userService.search(userId);
+        UserAccountDto user = userService.search(principal.getAccount().getId());
 
         CommonResponse<UserAccountDto> response = CommonResponse.of(Success.RETRIEVAL_USER, user);
 
@@ -85,10 +86,10 @@ public class UserController {
     )
     @PatchMapping("/me/nickName")
     public ResponseEntity<Void> patch(
-            @RequestAttribute Long userId,
+            @AuthenticationPrincipal SecurityUserAccount principal,
             @Valid @RequestBody NickNameUpdateRequest request
     ) {
-        userService.updateNickName(userId, request.nickName());
+        userService.updateNickName(principal.getAccount().getId(), request.nickName());
 
         return ResponseEntity.noContent().build();
     }
@@ -103,10 +104,10 @@ public class UserController {
     )
     @PatchMapping("/me/password")
     public ResponseEntity<Void> patch(
-            @RequestAttribute Long userId,
+            @AuthenticationPrincipal SecurityUserAccount principal,
             @Valid @RequestBody PasswordUpdateRequest request
     ) {
-        userService.updatePassword(userId, request);
+        userService.updatePassword(principal.getAccount().getId(), request);
 
         return ResponseEntity.noContent().build();
     }
@@ -121,9 +122,9 @@ public class UserController {
     )
     @DeleteMapping("/me")
     public ResponseEntity<Void> delete(
-            @RequestAttribute Long userId
+            @AuthenticationPrincipal SecurityUserAccount principal
     ) {
-        userService.delete(userId);
+        userService.delete(principal.getAccount().getId());
 
         return ResponseEntity.noContent().build();
     }
