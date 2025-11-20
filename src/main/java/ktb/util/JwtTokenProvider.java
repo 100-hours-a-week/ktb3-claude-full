@@ -2,7 +2,6 @@ package ktb.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
@@ -33,7 +32,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class JwtKeyProvider {
+public class JwtTokenProvider {
     private final JwtConfig cfg;
     private final ResourceLoader loader;
     private PrivateKey privateKey;
@@ -94,6 +93,18 @@ public class JwtKeyProvider {
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
+    
+    public void expireTokenCookie(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from(cfg.getAccessTokenName(), "")
+                .httpOnly(true)
+                .secure(false)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(0)  // 쿠키 즉시 만료
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
 
     // ✅ JWT 유효성 검증
     public boolean validateToken(String token) {
@@ -119,8 +130,7 @@ public class JwtKeyProvider {
         return false;
     }
 
-    // ✅ JWT 검증
-    public Long validateAndGetUserId(String token) {
+    public Long getUserIdFromToken(String token) {
         Claims claims = Jwts.parser()
                 .verifyWith(publicKey)
                 .build()
@@ -129,7 +139,6 @@ public class JwtKeyProvider {
         return Long.valueOf(claims.getSubject());
     }
 
-    // ✅ HTTP Request JWT 문자열 추출
     public Optional<String> extractTokenFromRequest(HttpServletRequest request) {
         if (request.getCookies() == null) {
             return Optional.empty();
@@ -139,32 +148,5 @@ public class JwtKeyProvider {
                 .filter(c -> cfg.getAccessTokenName().equals(c.getName()))
                 .map(Cookie::getValue)
                 .findFirst();
-    }
-
-    // ✅ Claims 추출
-    private Claims extractClaims(HttpServletRequest request) {
-        String token = extractTokenFromRequest(request).orElse(null);
-        if (token == null) {
-            return null;
-        }
-
-        try {
-            return Jwts.parser()
-                    .verifyWith(publicKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-        } catch (JwtException e) {
-            return null; // 만료 or 위조된 토큰
-        }
-    }
-
-    // ✅ userId 추출
-    public Long getUserIdFromRequest(HttpServletRequest request) {
-        Claims claims = extractClaims(request);
-        if (claims == null) {
-            return null;
-        }
-        return Long.valueOf(claims.getSubject());
     }
 }

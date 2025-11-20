@@ -21,11 +21,20 @@ public class CustomUserDetailService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         UserAccount userAccount = userRepository
-                .findById(Long.valueOf(username))
+                .findByEmail(email)
                 .orElseThrow(AuthenticateException::new);
+        return new SecurityUserAccount(userAccount);
+    }
 
+    /**
+     * userId로 사용자 조회 (JWT 인증 시 JwtAuthenticationFilter 호출)
+     */
+    public UserDetails loadUserById(Long userId) {
+        UserAccount userAccount = userRepository
+                .findById(userId)
+                .orElseThrow(AuthenticateException::new);
         return new SecurityUserAccount(userAccount);
     }
 }

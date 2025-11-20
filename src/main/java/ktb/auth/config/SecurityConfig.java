@@ -2,11 +2,8 @@ package ktb.auth.config;
 
 import java.util.List;
 
-import ktb.auth.filter.JwtAuthFilter;
-import ktb.auth.filter.JwtLoginFilter;
+import ktb.auth.filter.JwtAuthenticationFilter;
 import ktb.auth.service.CustomUserDetailService;
-import ktb.repository.UserRepository;
-import ktb.util.JwtKeyProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,9 +33,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final CustomUserDetailService customUserDetailService;
-    private final JwtAuthFilter jwtAuthFilter;
-    private final UserRepository userRepository;
-    private final JwtKeyProvider jwtKeyProvider;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -90,8 +85,7 @@ public class SecurityConfig {
 
         // Filter 등록
         http
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAt(jwtLoginFilter(), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -112,14 +106,5 @@ public class SecurityConfig {
         provider.setUserDetailsService(customUserDetailService);
         provider.setPasswordEncoder(passwordEncoder());
         return new ProviderManager(provider);
-    }
-
-    @Bean
-    public JwtLoginFilter jwtLoginFilter() {
-        return new JwtLoginFilter(
-                authenticationManager(),
-                userRepository,
-                jwtKeyProvider
-        );
     }
 }
