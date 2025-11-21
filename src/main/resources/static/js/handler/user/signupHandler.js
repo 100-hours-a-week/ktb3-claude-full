@@ -289,15 +289,8 @@ const createSignupHandlerModule = (() => {
             }
         }
 
-        const requestBody = {
-            email,
-            password,
-            nickname,
-            profile_image_path: profileImageBase64
-        };
-
         try {
-            const result = await UserApi.signup(requestBody);
+            const result = await UserApi.signup(email, password, nickname, profileImageBase64);
             const redirectUrl = result?.redirectUrl || result?.location;
             showSuccess('회원가입이 완료되었습니다.');
             window.location.href = redirectUrl || PageRoutes.USER_LOGIN;
