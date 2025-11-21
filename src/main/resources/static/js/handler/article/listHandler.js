@@ -96,7 +96,6 @@ const createListHandlerModule = (() => {
             state.isLoading = true;
 
             const response = await ArticleApi.getArticles(state.endCursor, state.pageSize);
-            console.log('Article API response:', response);
 
             // 응답에서 데이터와 페이지 정보 추출
             const articles = response?.data || [];
@@ -119,6 +118,17 @@ const createListHandlerModule = (() => {
         const container = DomElements.ArticleList.getContainer();
         if (!container) return;
 
+        // 초기 로드 시에만 이벤트 위임 리스너 등록 (1회만)
+        if (!append && !container.dataset.delegated) {
+            container.addEventListener('click', (e) => {
+                const card = e.target.closest('.article-card');
+                if (card && card.dataset.articleId) {
+                    location.href = PageRoutes.articleDetail(card.dataset.articleId);
+                }
+            });
+            container.dataset.delegated = 'true';
+        }
+
         // 초기 로드 시에만 컨테이너 초기화 (append 모드가 아닐 때)
         if (!append) {
             container.innerHTML = '';
@@ -134,7 +144,7 @@ const createListHandlerModule = (() => {
         articles.forEach(article => {
             const card = document.createElement('div');
             card.className = 'article-card';
-            card.addEventListener('click', () => location.href = PageRoutes.articleDetail(article.id));
+            card.dataset.articleId = article.id;
 
             const likeCount = formatCompactNumber(article.like_cnt);
             const commentCount = formatCompactNumber(article.comment_cnt);
@@ -187,7 +197,6 @@ const createListHandlerModule = (() => {
      */
     const handleScroll = throttle(async () => {
         if (isNearBottom() && state.hasNext && !state.isLoading) {
-            console.log('Loading more articles... (cursor:', state.endCursor, ')');
             await loadArticleList(true);
         }
     }, 200); // 200ms마다 최대 1회 실행으로 제한
@@ -197,7 +206,6 @@ const createListHandlerModule = (() => {
      */
     function initInfiniteScroll() {
         window.addEventListener('scroll', handleScroll);
-        console.log('Infinite scroll initialized');
     }
 
     /**
@@ -205,7 +213,6 @@ const createListHandlerModule = (() => {
      */
     function cleanupInfiniteScroll() {
         window.removeEventListener('scroll', handleScroll);
-        console.log('Infinite scroll cleaned up');
     }
 
     /* -------------------------------------------------------------------------- */
