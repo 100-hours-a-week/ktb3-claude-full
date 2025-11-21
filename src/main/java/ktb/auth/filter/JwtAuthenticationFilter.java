@@ -9,6 +9,7 @@ import java.io.IOException;
 
 import ktb.auth.adapter.SecurityUserAccount;
 import ktb.auth.service.CustomUserDetailService;
+import ktb.config.SecurityProperties;
 import ktb.util.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final SecurityProperties securityProperties;
     private final JwtTokenProvider jwtProvider;
     private final CustomUserDetailService userDetailsService;
 
@@ -72,10 +74,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        // 로그인 엔드포인트는 이 필터를 거치지 않음
-        String path = request.getRequestURI();
+        // public 경로 (permitAll + anonymous)는 JWT 필터를 거치지 않음
+        boolean isPublic = securityProperties.isPublicEndpoint(request);
 
-        return path.startsWith("/api/v1/auth/login") ||
-                path.startsWith("/api/v1/users/signup");
+        if (isPublic && log.isDebugEnabled()) {
+            String type = securityProperties.isPermitAllEndpoint(request)
+                    ? "permitAll"
+                    : "anonymous";
+            log.debug("Skipping JWT filter for {} endpoint: {}",
+                    type, request.getRequestURI());
+        }
+
+        return isPublic;
     }
 }

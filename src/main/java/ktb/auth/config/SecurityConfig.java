@@ -2,9 +2,11 @@ package ktb.auth.config;
 
 import java.util.List;
 
+import ktb.auth.filter.CsrfDebugFilter;
 import ktb.auth.filter.JwtAuthenticationFilter;
 import ktb.auth.service.CustomUserDetailService;
 
+import ktb.config.SecurityProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -32,8 +35,10 @@ import org.springframework.web.cors.CorsConfiguration;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private final SecurityProperties securityProperties;
     private final CustomUserDetailService customUserDetailService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CsrfDebugFilter csrfDebugFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -56,36 +61,30 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // Home 경로는 모든 사용자 접근 가능 (내부에서 forward 처리)
-                        .requestMatchers("/").permitAll()
-                        // CSRF 토큰 엔드포인트는 모든 사용자 접근 가능
-                        .requestMatchers("/api/v1/csrf").permitAll()
-                        // 로그인/회원가입 페이지는 인증되지 않은 사용자만 접근 가능
-                        .requestMatchers(
-                                "/user/login",
-                                "/user/signup",
-                                "/pages/user/login.html",
-                                "/pages/user/signup.html",
-                                "/api/v1/auth/login",
-                                "/api/v1/users/signup",
-                                "/api/v1/users/exist/**").anonymous()
-                        // 정적 리소스는 모든 사용자 접근 가능
-                        .requestMatchers(
-                                "/swagger-ui/**",
-                                "/api-docs/**",
-                                "/css/**",
-                                "/js/**",
-                                "/images/**",
-                                "/fragments/**",
-                                "/fonts/**",
-                                "/favicon.ico").permitAll()
-                        // 나머지는 인증 필요
-                        .anyRequest().authenticated()
                 );
+
+        // SecurityProperties 패턴 가져와서 설정
+        http
+                .authorizeHttpRequests(auth -> {
+                    // permitAll: 모든 사용자 접근 가능
+                    auth.requestMatchers(securityProperties.getPermitAllPatterns())
+                            .permitAll();
+
+                    // anonymous: 미인증 사용자만 접근 가능
+                    auth.requestMatchers(securityProperties.getAnonymousOnlyPatterns())
+                            .anonymous();
+
+                    // 나머지는 인증 필요
+                    auth.anyRequest()
+                            .authenticated();
+                });
 
         // Filter 등록
         http
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // csrf Debug Logging
+        http.addFilterBefore(csrfDebugFilter, CsrfFilter.class);
 
         return http.build();
     }

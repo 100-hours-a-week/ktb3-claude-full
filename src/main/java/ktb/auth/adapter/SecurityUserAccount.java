@@ -11,7 +11,7 @@ public class SecurityUserAccount extends User {
     private final UserAccount account;
     public SecurityUserAccount(UserAccount account) {
         super(
-                account.getId().toString(),
+                account.getEmail(),
                 account.getPassword(),
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
