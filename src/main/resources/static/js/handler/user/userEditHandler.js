@@ -7,7 +7,7 @@ import {
     toggleUserMenu,
     previewProfileImage,
     showToast,
-} from '/js/common/event.js';
+} from '/js/common/event/event.js';
 import { UserApi } from '/js/api/userApi.js';
 import { PageRoutes } from '/js/common/uris.js';
 import { DomElements, ElementIds } from '/js/common/domElements.js';
@@ -104,8 +104,7 @@ const createUserEditHandlerModule = (() => {
 
         if (profileImage) {
             try {
-                const base64Image = await convertImageToBase64(profileImage);
-                requestBody.profile_image_path = base64Image;
+                requestBody.profile_image_path = await convertImageToBase64(profileImage);
             } catch (error) {
                 showError(ElementIds.USER_NICKNAME_ERROR, '프로필 이미지 처리 중 오류가 발생했습니다.');
                 return;

@@ -1,4 +1,4 @@
-import { clearAllErrors, showError } from '/js/common/event.js';
+import { clearAllErrors, showError } from '/js/common/event/event.js';
 import { UserApi } from '/js/api/userApi.js';
 import { PageRoutes } from '/js/common/uris.js';
 import { DomElements, ElementIds } from '/js/common/domElements.js';

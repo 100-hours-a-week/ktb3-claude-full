@@ -4,7 +4,7 @@ import {
     showError,
     showErrorAlert,
     showToast,
-} from '/js/common/event.js';
+} from '/js/common/event/event.js';
 import { ArticleApi } from '/js/api/articleApi.js';
 import { PageRoutes } from '/js/common/uris.js';
 import { DomElements, ElementIds } from '/js/common/domElements.js';

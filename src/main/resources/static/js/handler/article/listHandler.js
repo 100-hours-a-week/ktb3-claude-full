@@ -1,8 +1,8 @@
-import { formatDate, showErrorAlert, eventManager } from '/js/common/event.js';
+import { formatDate, showErrorAlert, eventManager } from '/js/common/event/event.js';
 import { ArticleApi } from '/js/api/articleApi.js';
 import { PageRoutes } from '/js/common/uris.js';
 import { DomElements } from '/js/common/domElements.js';
-import { throttle } from '/js/common/utils.js';
+import { throttle } from '/js/common/util/utils.js';
 
 /**
  * Article List Handler

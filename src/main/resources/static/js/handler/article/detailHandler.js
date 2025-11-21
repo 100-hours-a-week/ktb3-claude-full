@@ -3,7 +3,7 @@ import {
     showErrorAlert,
     showModal,
     showToast,
-} from '/js/common/event.js';
+} from '/js/common/event/event.js';
 import { ArticleApi } from '/js/api/articleApi.js';
 import { PageRoutes, UriUtils } from '/js/common/uris.js';
 import { DomElements } from '/js/common/domElements.js';
