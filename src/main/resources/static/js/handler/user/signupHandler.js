@@ -8,6 +8,7 @@ import {
 import { UserApi } from '/js/api/userApi.js';
 import { PageRoutes } from '/js/common/uris.js';
 import { DomElements, ElementIds } from '/js/common/domElements.js';
+import { debounce } from '/js/common/utils.js';
 
 /**
  * 회원가입 핸들러
@@ -32,14 +33,6 @@ const createSignupHandlerModule = (() => {
     /* -------------------------------------------------------------------------- */
     /* 헬퍼 함수                                                                    */
     /* -------------------------------------------------------------------------- */
-
-    function debounce(func, delay) {
-        let timeoutId;
-        return function (...args) {
-            clearTimeout(timeoutId);
-            timeoutId = setTimeout(() => func.apply(this, args), delay);
-        };
-    }
 
     function convertImageToBase64(file) {
         return new Promise((resolve, reject) => {

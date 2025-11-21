@@ -2,6 +2,7 @@ import { formatDate, showErrorAlert, eventManager } from '/js/common/event.js';
 import { ArticleApi } from '/js/api/articleApi.js';
 import { PageRoutes } from '/js/common/uris.js';
 import { DomElements } from '/js/common/domElements.js';
+import { throttle } from '/js/common/utils.js';
 
 /**
  * Article List Handler
@@ -51,34 +52,6 @@ const createListHandlerModule = (() => {
             return `${Math.floor(num / 1000)}k`;
         }
         return num.toString();
-    }
-
-    /**
-     * 스로틀 함수 - 지정된 시간 간격당 최대 한 번만 실행되도록 제한
-     * @param {Function} func - 스로틀을 적용할 함수
-     * @param {number} delay - 지연 시간 (밀리초)
-     * @returns {Function} 스로틀이 적용된 함수
-     */
-    function throttle(func, delay) {
-        let lastCall = 0;
-        let timeoutId = null;
-
-        return function throttled(...args) {
-            const now = Date.now();
-            const timeSinceLastCall = now - lastCall;
-
-            if (timeSinceLastCall >= delay) {
-                lastCall = now;
-                func.apply(this, args);
-            } else {
-                // 남은 지연 시간 후 함수가 호출되도록 예약
-                clearTimeout(timeoutId);
-                timeoutId = setTimeout(() => {
-                    lastCall = Date.now();
-                    func.apply(this, args);
-                }, delay - timeSinceLastCall);
-            }
-        };
     }
 
     /* -------------------------------------------------------------------------- */
