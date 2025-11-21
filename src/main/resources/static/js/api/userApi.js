@@ -1,46 +1,7 @@
 // 사용자 API 모듈
 import { ApiEndpoints, PageRoutes } from '/js/common/uris.js';
 import { csrfFetch } from '/js/common/csrf.js';
-
-const DEFAULT_ERROR_MESSAGE = '요청 처리에 실패했습니다.';
-
-async function parseJsonSafe(response) {
-    const contentType = response.headers.get('Content-Type') || '';
-    if (response.status === 204 || !contentType.includes('application/json')) {
-        return null;
-    }
-    return await response.json();
-}
-
-async function extractErrorMessage(response) {
-    try {
-        const data = await parseJsonSafe(response);
-        if (!data) return DEFAULT_ERROR_MESSAGE;
-        if (typeof data === 'string') return data;
-        if (data.message) return data.message;
-        if (data.error) return data.error;
-        return DEFAULT_ERROR_MESSAGE;
-    } catch (e) {
-        return DEFAULT_ERROR_MESSAGE;
-    }
-}
-
-async function handleResponse(response, fallbackRedirect) {
-    const redirectUrl =
-        response.redirected || (response.status >= 300 && response.status < 400)
-            ? response.headers.get('Location') || response.url || fallbackRedirect
-            : null;
-
-    if (redirectUrl) {
-        return { redirectUrl };
-    }
-
-    if (!response.ok) {
-        throw new Error(await extractErrorMessage(response));
-    }
-
-    return await parseJsonSafe(response);
-}
+import { handleResponse } from '/js/api/apiUtils.js';
 
 export const UserApi = {
     // 로그인
@@ -57,10 +18,18 @@ export const UserApi = {
     },
 
     // 회원가입
-    async signup(formData) {
+    async signup(email, password, nickname, profileImageBase64) {
         const response = await csrfFetch(ApiEndpoints.USER_SIGNUP, {
             method: 'POST',
-            body: formData, // FormData에 파일 업로드 포함
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                email: email,
+                password: password,
+                nickname: nickname,
+                profile_image_path: profileImageBase64
+            })
         });
 
         return await handleResponse(response, PageRoutes.USER_LOGIN);
@@ -81,7 +50,7 @@ export const UserApi = {
             method: 'GET',
         });
 
-        return await handleResponse(response);
+        return await handleResponse(response, undefined);
     },
 
     // 사용자 프로필 수정
@@ -91,7 +60,7 @@ export const UserApi = {
             body: formData,
         });
 
-        return await handleResponse(response);
+        return await handleResponse(response, undefined);
     },
 
     // 비밀번호 수정
@@ -104,7 +73,7 @@ export const UserApi = {
             body: JSON.stringify({ currentPassword, newPassword }),
         });
 
-        return await handleResponse(response);
+        return await handleResponse(response, undefined);
     },
 
     // 사용자 계정 삭제
@@ -113,7 +82,7 @@ export const UserApi = {
             method: 'DELETE',
         });
 
-        return await handleResponse(response);
+        return await handleResponse(response, undefined);
     },
 
     async checkNicknameExists(nickname) {
@@ -122,11 +91,11 @@ export const UserApi = {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: nickname,
+            body: JSON.stringify({ nickname: nickname }),
         });
 
-        const result = await handleResponse(response);
-        return result?.data ?? false;
+        const exist = await handleResponse(response, undefined);
+        return exist?.data ?? false;
     },
 
     async checkEmailExists(email) {
@@ -135,10 +104,10 @@ export const UserApi = {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: email,
+            body: JSON.stringify({ email: email }),
         });
 
-        const result = await handleResponse(response);
-        return result?.data ?? false;
+        const exist = await handleResponse(response, undefined);
+        return exist?.data ?? false;
     }
 };
