@@ -1,13 +1,16 @@
 # Spring Boot Article Management REST API
 
 ### 주요 기능
-- 사용자 인증 및 회원가입
-- 사용자 정보 수정
+- Spring Security + JWT 기반 인증/인가
+- 사용자 회원가입 및 로그인/로그아웃
+- 사용자 정보 수정 (닉네임, 비밀번호)
 - 게시글 CRUD (생성, 조회, 수정, 삭제)
 - 댓글 CRUD
 - 커서 기반 페이지네이션
-- 게시글 조회수 및 좋아요 기능
-- Thread-safe 동시성 처리
+- 게시글 좋아요 토글 기능
+- Soft Delete 패턴 적용
+- Chain of Responsibility + Strategy 패턴을 통한 CASCADE 삭제 처리
+- Event-driven 조회수/좋아요 처리
 
 ---
 
@@ -15,76 +18,238 @@
 
 ### 계층 구조
 
-```
-┌─────────────────────────────────────┐
-│     Controller Layer (REST API)     │
-│   ArticleController, AuthController │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│         Service Layer               │
-│  ArticleService, UserService, etc.  │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│       Repository Layer              │
-│  ArticleRepository, UserRepository  │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│    Data Store Layer (Static)        │
-│   ArticleData (ConcurrentSkipListMap)│
-│   UserData (ConcurrentHashMap)      │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│         Domain Layer                │
-│  Article, UserAccount, Comment      │
-└─────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Controller["Controller Layer (REST API)"]
+        AC[ArticleController]
+        AuthC[AuthController]
+        UC[UserController]
+        CC[CommentController]
+    end
+
+    subgraph Service["Service Layer (CQS Pattern)"]
+        AQS[ArticleQueryService]
+        ACS[ArticleCommandService]
+        CQS[CommentQueryService]
+        US[UserService]
+    end
+
+    subgraph Handler["Handler Layer (CoR + Strategy)"]
+        AH[AbstractHandler]
+        VH[ValidationHandler]
+        AuthH[AuthorizationHandler]
+        EH[ExecutionHandler]
+        AH --> VH --> AuthH --> EH
+    end
+
+    subgraph Repository["Repository Layer (JPA)"]
+        AR[ArticleRepository]
+        UR[UserRepository]
+        ACR[ArticleCommentRepository]
+    end
+
+    subgraph Domain["Domain Layer (Entity)"]
+        Article
+        UserAccount
+        ArticleMeta
+        ArticleComment
+        ArticleLike
+    end
+
+    Controller --> Service
+    Service --> Handler
+    Service --> Repository
+    Repository --> Domain
 ```
 
 ### 패키지 구조
 
 ```
 ktb
-├── controller          # REST API 엔드포인트
+├── auth                   # Spring Security 인증/인가
+│   ├── adapter/
+│   │   └── SecurityUserAccount     # UserDetails 구현체
+│   ├── config/
+│   │   └── SecurityConfig          # Security 설정
+│   ├── filter/
+│   │   ├── JwtAuthenticationFilter # JWT 인증 필터
+│   │   └── CsrfDebugFilter         # CSRF 디버그 필터
+│   └── service/
+│       └── CustomUserDetailService # UserDetailsService 구현
+├── controller             # REST API 엔드포인트
 │   ├── ArticleController
 │   ├── CommentController
 │   ├── UserController
-│   └── AuthController
-├── service            # 비즈니스 로직
-│   ├── ArticleService
-│   ├── CommentService
-│   ├── UserService
-│   └── AuthService
-├── repository         # 데이터 접근 인터페이스
+│   ├── AuthController
+│   ├── CsrfController
+│   └── ViewController
+├── service                # 비즈니스 로직 (CQS 패턴)
+│   ├── ArticleQueryService     # 게시글 조회 (Query)
+│   ├── ArticleCommandService   # 게시글 변경 (Command)
+│   ├── ArticleService          # 게시글 기본 CRUD
+│   ├── ArticleLikeService      # 좋아요 처리
+│   ├── ArticleMetaService      # 메타데이터 관리
+│   ├── CommentQueryService     # 댓글 조회
+│   ├── CommentCommandService   # 댓글 변경
+│   ├── CommentService          # 댓글 기본 CRUD
+│   ├── UserService             # 사용자 관리
+│   └── AuthService             # 인증 서비스
+├── handler                # Chain of Responsibility + Strategy 패턴
+│   ├── AbstractHandler         # 추상 핸들러 (체인 구성)
+│   ├── chain/
+│   │   ├── ValidationHandler   # 유효성 검사
+│   │   ├── AuthorizationHandler # 권한 검사
+│   │   ├── AuditHandler        # 감사 로그
+│   │   └── execution/          # 실행 핸들러
+│   │       ├── BaseExecutionHandler
+│   │       ├── ArticleDeleteExecutionHandler
+│   │       ├── CommentDeleteExecutionHandler
+│   │       └── UserDeleteExecutionHandler
+│   ├── config/
+│   │   └── HandlerChainConfig  # 핸들러 체인 설정
+│   ├── context/
+│   │   ├── ContextData         # 컨텍스트 인터페이스
+│   │   ├── SoftDeleteContext   # 소프트 삭제 컨텍스트
+│   │   ├── CommentDeleteContext
+│   │   └── payload/
+│   │       ├── SoftDeletePayload
+│   │       └── CommentDeletePayload
+│   └── strategy/              # 삭제 전략
+│       ├── DeleteExecutionStrategy
+│       ├── DeleteStrategyOrder
+│       ├── ValidationStrategy
+│       ├── AuditStrategy
+│       └── impl/
+│           ├── SingleArticleDeleteStrategy
+│           ├── ArticleCommentsDeleteStrategy
+│           ├── SingleCommentDeleteStrategy
+│           ├── UserDeleteStrategy
+│           ├── UserArticlesDeleteStrategy
+│           └── UserCommentsDeleteStrategy
+├── repository             # JPA Repository
 │   ├── ArticleRepository
-│   ├── UserRepository
-│   └── impl/          # 구현체
-├── db                 # Static In-Memory 데이터 저장소
-│   ├── article/
-│   │   └── ArticleData
-│   └── user/
-│       └── UserData
-├── domain             # 도메인 엔티티
+│   ├── ArticleCommentRepository
+│   ├── ArticleLikeRepository
+│   ├── ArticleMetaRepository
+│   └── UserRepository
+├── domain                 # JPA 엔티티
 │   ├── Article
 │   ├── ArticleComment
 │   ├── ArticleMeta
+│   ├── ArticleLike
+│   ├── LikeTargetType
 │   └── UserAccount
-├── dto                # 데이터 전송 객체
-│   ├── request/       # API 요청 값, Request에서 데이터 검증 진행
-│   └── response/      # API 응답 값
-├── exception          # 예외 처리
-│   └── GlobalExceptionHandler
-├── common             # 공통 유틸리티
+├── dto                    # 데이터 전송 객체
+│   ├── request/           # API 요청 DTO
+│   │   ├── LoginRequest
+│   │   ├── SignupRequest
+│   │   ├── ArticleRequest
+│   │   ├── ArticlePatchRequest
+│   │   ├── CommentRequest
+│   │   └── ...
+│   └── response/          # API 응답 DTO
+│       ├── ArticleDetailDto
+│       ├── ArticleSimpleDto
+│       ├── ArticlesResponse
+│       ├── CommonResponse
+│       └── ...
+├── event                  # 이벤트 기반 처리
+│   ├── article/
+│   │   ├── ArticleEventPublisher
+│   │   ├── ArticleViewEventListener
+│   │   └── ArticleLikeEventListener
+│   └── context/
+│       ├── ArticleViewEvent
+│       └── ArticleLikeEvent
+├── exception              # 예외 처리
+│   ├── GlobalExceptionHandler
+│   ├── AuthenticateException
+│   ├── AuthorizationException
+│   ├── ConflictDuplicationException
+│   ├── article/
+│   │   ├── NoExistArticleException
+│   │   ├── AlreadyDeletedArticle
+│   │   ├── AlreadyDeletedComment
+│   │   └── AlreadyDeletedUser
+│   ├── user/
+│   │   ├── NonExistUserException
+│   │   └── MisMatchPasswordException
+│   └── filter/
+│       └── JsonDeserializationException
+├── common                 # 공통 유틸리티
 │   └── pagination/
 │       ├── Slice
 │       └── PageInfo
-├── constant           # 상수 관리
+├── constant               # 상수 관리
 │   ├── MessageConstant
 │   └── RegexpConstant
-└── config             # 설정
-    └── TestDataInitializer
+├── config                 # 설정
+│   ├── JwtConfig
+│   └── SecurityProperties    # URL 인증 설정 (permitAll, anonymous)
+└── util
+    └── JwtTokenProvider   # JWT 토큰 생성/검증
+```
+
+### Frontend 구조 (Static Resources)
+
+```
+src/main/resources/static
+├── fragments/                    # 재사용 HTML 컴포넌트
+│   ├── common-meta.html          # 공통 메타 태그
+│   ├── header-auth.html          # 인증된 사용자 헤더
+│   ├── header-auth-with-back.html
+│   ├── header-public.html        # 비인증 사용자 헤더
+│   ├── header-with-back.html
+│   └── header-with-user-menu.html
+├── pages/                        # HTML 페이지
+│   ├── article/
+│   │   ├── list.html             # 게시글 목록
+│   │   ├── detail.html           # 게시글 상세
+│   │   └── edit.html             # 게시글 작성/수정
+│   └── user/
+│       ├── login.html            # 로그인
+│       ├── signup.html           # 회원가입
+│       ├── edit.html             # 프로필 수정
+│       └── password.html         # 비밀번호 변경
+└── js/                           # JavaScript 모듈
+    ├── api/                      # API 통신 모듈
+    │   ├── apiUtils.js           # 공통 API 유틸 (응답 처리)
+    │   ├── articleApi.js         # 게시글 API
+    │   └── userApi.js            # 사용자 API
+    ├── common/                   # 공통 모듈
+    │   ├── uris.js               # URI 상수
+    │   ├── auth/                 # 인증 관련
+    │   │   └── csrf.js           # CSRF 토큰 처리
+    │   ├── event/                # 이벤트 관리
+    │   │   ├── event.js          # 이벤트 re-export (하위 호환)
+    │   │   └── eventManager.js   # 이벤트 리스너 관리
+    │   ├── ui/                   # UI 컴포넌트
+    │   │   ├── domElements.js    # DOM 요소 관리
+    │   │   ├── fragment-loader.js # HTML Fragment 로더
+    │   │   ├── headerInit.js     # 헤더 초기화
+    │   │   ├── headerLink.js     # 헤더 링크 관리
+    │   │   ├── imagePreview.js   # 이미지 미리보기
+    │   │   ├── markdownRenderer.js # 마크다운 렌더링
+    │   │   ├── modalManager.js   # 모달 관리
+    │   │   └── toastManager.js   # 토스트 메시지
+    │   └── util/                 # 유틸리티
+    │       └── utils.js          # debounce, throttle, formatDate
+    ├── handler/                  # 페이지별 핸들러
+    │   ├── article/
+    │   │   ├── listHandler.js    # 목록 페이지 핸들러
+    │   │   ├── detailHandler.js  # 상세 페이지 핸들러
+    │   │   └── formHandler.js    # 폼 핸들러
+    │   └── user/
+    │       ├── loginHandler.js   # 로그인 핸들러
+    │       ├── signupHandler.js  # 회원가입 핸들러
+    │       └── userEditHandler.js # 프로필 수정 핸들러
+    └── styles/                   # CSS-in-JS 스타일
+        ├── styleLoader.js        # 스타일 로더
+        ├── styleManager.js       # 스타일 매니저
+        ├── theme.js              # 테마 설정
+        ├── common.styles.js      # 공통 스타일
+        ├── article.styles.js     # 게시글 스타일
+        └── user.styles.js        # 사용자 스타일
 ```
 
 ---
@@ -97,143 +262,122 @@ ktb
 classDiagram
     %% Controller
     class ArticleController {
-        -ArticleService articleService
-        +getAll(request) ArticlesResponse
-        +insertArticle(request) ResponseEntity
-        +getOne(id) CommonResponse
-        +patchArticle(id, request) ResponseEntity
-        +deleteArticle(id) ResponseEntity
+        -ArticleQueryService articleQueryService
+        -ArticleCommandService articleCommandService
+        -ArticleLikeService articleLikeService
+        +getAll(after, limit) ResponseEntity
+        +insertArticle(request, principal) ResponseEntity
+        +getOne(id, principal) ResponseEntity
+        +toggleLike(id, principal) ResponseEntity
+        +patchArticle(id, request, principal) ResponseEntity
+        +deleteArticle(id, principal) ResponseEntity
     }
 
-    %% Service
+    %% Service (CQS Pattern)
+    class ArticleQueryService {
+        -ArticleService articleService
+        -ArticleLikeService articleLikeService
+        -ArticleEventPublisher articleEventPublisher
+        +findByIdAndCursorPagination(pageInfo) Slice~ArticleSimpleDto~
+        +findByIdDetail(articleId, userId) ArticleDetailDto
+    }
+
+    class ArticleCommandService {
+        -ArticleService articleService
+        -ArticleMetaService metaService
+        -AbstractHandler articleDeleteHandlerChain
+        +save(saveDto) void
+        +delete(userId, id) void
+    }
+
     class ArticleService {
         -ArticleRepository articleRepository
-        -UserService userService
-        +findAll(pageInfo) Slice~ArticleSimpleDto~
-        +findById(articleId) ArticleDto
-        +findByIdDetail(articleId) ArticleDetailDto
-        +save(updated) void
-        +delete(id) void
+        +findById(id) Optional~Article~
+        +findDetail(id) Optional~Article~
+        +findAllByOrderByIdAsc(limit) List~Article~
+        +findAllByIdGreaterThan(cursorId, limit) List~Article~
+        +save(article) void
     }
 
-    %% Repository
+    %% Repository (JPA)
     class ArticleRepository {
         <<interface>>
         +findById(id) Optional~Article~
-        +findByTitle(title) Optional~Article~
-        +findAll(cursorId, size) Slice~Article~
-        +getNextCursor(lastId) Optional~Long~
-        +like(id) void
-        +save(article) void
+        +findDetail(id) Optional~Article~
+        +findForDelete(id) Optional~Article~
+        +findByCreateBy_Id(userId) List~Article~
+        +findAllByIdGreaterThanOrderByIdAsc(cursorId, limit) List~Article~
+        +findAllByOrderByIdAsc(limit) List~Article~
+        +save(article) Article
         +deleteById(id) void
-        +addComment(articleId, content, user) ArticleComment
-        +updateComment(articleId, commentId, content) void
-        +deleteComment(articleId, commentId) void
     }
 
-    class ArticleRepositoryImpl {
-        +findById(id) Optional~Article~
-        +findByTitle(title) Optional~Article~
-        +findAll(cursorId, size) Slice~Article~
-        +save(article) void
-        +deleteById(id) void
-        +addComment(articleId, content, user) ArticleComment
-    }
-
-    %% Data Store
-    class ArticleData {
-        -NavigableMap~Long, Article~ store$
-        -Map~String, Article~ titleIndex$
-        -AtomicLong articleSeq$
-        -ReadWriteLock lock$
-        +findById(id)$ Optional~Article~
-        +findByTitle(title)$ Optional~Article~
-        +findAll(cursorId, size)$ Slice~Article~
-        +save(article)$ void
-        +deleteById(id)$ void
-        +addComment(articleId, content, user)$ ArticleComment
-        +updateComment(articleId, commentId, content)$ void
-        +deleteComment(articleId, commentId)$ void
-    }
-
-    %% Domain
+    %% Domain (JPA Entity)
     class Article {
         -Long id
-        -String title
-        -String content
         -UserAccount createBy
         -ArticleMeta meta
-        -AtomicLong commentSeq
-        -ConcurrentLinkedDeque~ArticleComment~ comments
+        -List~ArticleComment~ comments
+        -String title
+        -String content
         -String imagePath
-        +create(id, title, content, user, imagePath)$ Article
-        +addComment(content, user) ArticleComment
-        +updateComment(contentId, content) void
-        +deleteComment(commentId) void
-        +incrementLike() void
-        +incrementView() void
+        -boolean isDeleted
+        -LocalDateTime deleteAt
+        +create(id, title, content, userId, imagePath)$ Article
         +update(title, content) void
-        +getAllComments() List~ArticleComment~
+        +softDelete() void
+        +softRestore() void
+        +isDelete() boolean
+        +refreshActiveComments() void
     }
 
     class ArticleMeta {
-        -Long articleId
-        -AtomicInteger likeCnt
-        -AtomicInteger viewCnt
-        -AtomicInteger commentCnt
+        -Long id
+        -int likeCnt
+        -int viewCnt
+        -int commentCnt
         -LocalDateTime createAt
         -LocalDateTime updateAt
-        +init(articleId)$ ArticleMeta
+        +init()$ ArticleMeta
         +incrementViewCnt() void
         +incrementLikeCnt() void
+        +decrementLikeCnt() void
         +incrementCommentCnt() void
         +decrementCommentCnt() void
         +updateTimestamp() void
     }
 
-    class UserAccount {
-        -Long id
-        -String email
-        -String nickName
-        -String password
-        -String profileImagePath
+    %% Handler (CoR Pattern)
+    class AbstractHandler~C~ {
+        #AbstractHandler next
+        +handle(context) boolean
+        +chainOf(handlers)$ AbstractHandler
     }
 
-    %% Common
-    class Slice~T~ {
-        -List~T~ content
-        -boolean hasNext
-        -Long nextCursor
-        +of(content, hasNext, nextCursor)$ Slice~T~
-        +getData() List~T~
-        +getPageInfo() PageInfo
+    class ArticleDeleteExecutionHandler {
+        -List~DeleteExecutionStrategy~ strategies
+        +handle(context) boolean
     }
 
-    class PageInfo {
-        -Long cursor
-        -boolean hasNext
-        +of(cursor, hasNext)$ PageInfo
-    }
-
-    %% Exception Handler
-    class GlobalExceptionHandler {
-        +handleMethodArgumentNotValid(ex) ResponseEntity
-        +handleAuthenticateException(ex, request) ResponseEntity
-        +handleAuthorizationException(ex, request) ResponseEntity
-        +handleConflictDuplicationException(ex) ResponseEntity
-        +handleNonExistUserException(ex) ResponseEntity
+    %% Event
+    class ArticleEventPublisher {
+        -ApplicationEventPublisher publisher
+        +publishView(articleId) void
+        +publishLike(articleId) void
     }
 
     %% Relationships
-    ArticleController --> ArticleService
+    ArticleController --> ArticleQueryService
+    ArticleController --> ArticleCommandService
+    ArticleController --> ArticleLikeService
+    ArticleQueryService --> ArticleService
+    ArticleQueryService --> ArticleEventPublisher
+    ArticleCommandService --> ArticleService
+    ArticleCommandService --> AbstractHandler : uses chain
     ArticleService --> ArticleRepository
-    ArticleRepository <|.. ArticleRepositoryImpl : implements
-    ArticleRepositoryImpl --> ArticleData : delegates to
-    ArticleData ..> Article : manages
+    AbstractHandler <|-- ArticleDeleteExecutionHandler
     Article *-- ArticleMeta : contains
     Article o-- UserAccount : created by
-    ArticleService ..> Slice : returns
-    ArticleRepository ..> Slice : returns
 ```
 
 ### Comment Flow Diagram
@@ -242,97 +386,66 @@ classDiagram
 classDiagram
     %% Controller
     class CommentController {
+        -CommentQueryService commentQueryService
+        -CommentCommandService commentCommandService
+        +addComment(id, request, principal) ResponseEntity
+        +updateComment(id, request, principal) ResponseEntity
+        +deleteComment(id, request, principal) ResponseEntity
+    }
+
+    %% Service (CQS Pattern)
+    class CommentCommandService {
         -CommentService commentService
-        +addComment(articleId, request) ResponseEntity
-        +updateComment(articleId, commentId, request) ResponseEntity
-        +deleteComment(articleId, commentId, request) ResponseEntity
+        -ArticleMetaService metaService
+        -AbstractHandler commentDeleteHandlerChain
+        +addComment(commentDto) CommentDto
+        +save(commentDto) void
+        +delete(commentDto) void
     }
 
-    %% Service
     class CommentService {
-        -ArticleRepository articleRepository
-        -UserService userService
-        +addComment(articleId, dto) void
-        +updateComment(articleId, commentId, dto) void
-        +deleteComment(articleId, commentId, dto) void
+        -ArticleCommentRepository repository
+        +findById(id) Optional~ArticleComment~
+        +save(comment) ArticleComment
     }
 
-    %% Repository (Article Repository handles comments)
-    class ArticleRepository {
+    %% Repository
+    class ArticleCommentRepository {
         <<interface>>
-        +findById(id) Optional~Article~
-        +addComment(articleId, content, user) ArticleComment
-        +updateComment(articleId, commentId, content) void
-        +deleteComment(articleId, commentId) void
-    }
-
-    class ArticleRepositoryImpl {
-        +findById(id) Optional~Article~
-        +addComment(articleId, content, user) ArticleComment
-        +updateComment(articleId, commentId, content) void
-        +deleteComment(articleId, commentId) void
-    }
-
-    %% Data Store
-    class ArticleData {
-        -NavigableMap~Long, Article~ store$
-        -ReadWriteLock lock$
-        +findById(id)$ Optional~Article~
-        +addComment(articleId, content, user)$ ArticleComment
-        +updateComment(articleId, commentId, content)$ void
-        +deleteComment(articleId, commentId)$ void
+        +findById(id) Optional~ArticleComment~
+        +findByArticle_Id(articleId) List~ArticleComment~
+        +findByCreateBy_Id(userId) List~ArticleComment~
+        +save(comment) ArticleComment
     }
 
     %% Domain
-    class Article {
-        -Long id
-        -AtomicLong commentSeq
-        -ConcurrentLinkedDeque~ArticleComment~ comments
-        -ArticleMeta meta
-        +addComment(content, user) ArticleComment
-        +updateComment(contentId, content) void
-        +deleteComment(commentId) void
-        +getAllComments() List~ArticleComment~
-    }
-
     class ArticleComment {
         -Long id
-        -Long articleId
-        -String content
+        -Article article
         -UserAccount createBy
+        -String content
+        -boolean isDeleted
+        -LocalDateTime deleteAt
         -LocalDateTime createAt
         -LocalDateTime updateAt
-        +init(articleId, commentId, content, user)$ ArticleComment
-        +update(newContent) void
+        +create(article, content, user)$ ArticleComment
+        +update(content) void
+        +softDelete() void
+        +isDelete() boolean
     }
 
-    class ArticleMeta {
-        -AtomicInteger commentCnt
-        +incrementCommentCnt() void
-        +decrementCommentCnt() void
-    }
-
-    class UserAccount {
-        -Long id
-        -String email
-        -String nickName
-    }
-
-    %% Exception Handler
-    class GlobalExceptionHandler {
-        +handleMethodArgumentNotValid(ex) ResponseEntity
-        +handleAuthenticateException(ex, request) ResponseEntity
-        +handleAuthorizationException(ex, request) ResponseEntity
+    %% Handler
+    class CommentDeleteExecutionHandler {
+        -List~DeleteExecutionStrategy~ strategies
+        +handle(context) boolean
     }
 
     %% Relationships
-    CommentController --> CommentService
-    CommentService --> ArticleRepository
-    ArticleRepository <|.. ArticleRepositoryImpl : implements
-    ArticleRepositoryImpl --> ArticleData : delegates to
-    ArticleData ..> Article : manages
-    Article *-- ArticleComment : contains many
-    Article *-- ArticleMeta : contains
+    CommentController --> CommentCommandService
+    CommentCommandService --> CommentService
+    CommentCommandService --> AbstractHandler : uses chain
+    CommentService --> ArticleCommentRepository
+    ArticleComment o-- Article : belongs to
     ArticleComment o-- UserAccount : created by
 ```
 
@@ -343,31 +456,58 @@ classDiagram
     %% Controllers
     class UserController {
         -UserService userService
-        +updateNickname(request) ResponseEntity
-        +updatePassword(request) ResponseEntity
-        +deleteUser(request) ResponseEntity
+        +signUp(request) ResponseEntity
+        +search(principal) ResponseEntity
+        +patch(principal, nicknameRequest) ResponseEntity
+        +patch(principal, passwordRequest) ResponseEntity
+        +delete(principal) ResponseEntity
+        +existsNickname(request) ResponseEntity
+        +existsEmail(request) ResponseEntity
     }
 
     class AuthController {
-        -AuthService authService
-        +login(request) ResponseEntity
-        +signup(request) ResponseEntity
+        -AuthenticationManager authenticationManager
+        -JwtTokenProvider jwtTokenProvider
+        +login(request, response) ResponseEntity
+        +logout(response) ResponseEntity
     }
 
-    %% Services
+    %% Service
     class UserService {
         -UserRepository userRepository
-        +getUserInfo(userId) UserAccountDto
-        +save(user) void
-        +delete(userId) void
-        +updateNickname(userId, nickname) void
-        +updatePassword(userId, password) void
+        -AbstractHandler userDeleteHandlerChain
+        -PasswordEncoder encoder
+        +signUp(user) Long
+        +search(id) UserAccountDto
+        +updateNickName(id, nickName) void
+        +updatePassword(id, request) void
+        +delete(id) void
+        +existNickname(nickname) boolean
+        +existEmail(email) boolean
     }
 
-    class AuthService {
+    %% Auth
+    class JwtTokenProvider {
+        -JwtConfig jwtConfig
+        +generateToken(userId) String
+        +validateToken(token) boolean
+        +getUserIdFromToken(token) Long
+        +addTokenCookie(response, token) void
+        +expireTokenCookie(response) void
+        +extractTokenFromRequest(request) Optional~String~
+    }
+
+    class JwtAuthenticationFilter {
+        -JwtTokenProvider jwtProvider
+        -CustomUserDetailService userDetailsService
+        #doFilterInternal(request, response, chain) void
+        -authenticateWithJwt(jwt) void
+    }
+
+    class CustomUserDetailService {
         -UserRepository userRepository
-        +authenticate(email, password) UserAccountDto
-        +register(signupDto) void
+        +loadUserByUsername(email) UserDetails
+        +loadUserById(id) UserDetails
     }
 
     %% Repository
@@ -375,134 +515,216 @@ classDiagram
         <<interface>>
         +findById(id) Optional~UserAccount~
         +findByEmail(email) Optional~UserAccount~
-        +save(user) void
-        +deleteById(id) void
-    }
-
-    class UserRepositoryImpl {
-        +findById(id) Optional~UserAccount~
-        +findByEmail(email) Optional~UserAccount~
-        +save(user) void
-        +deleteById(id) void
-    }
-
-    %% Data Store
-    class UserData {
-        -Map~Long, UserAccount~ store$
-        -Map~String, UserAccount~ emailIndex$
-        -AtomicLong userSeq$
-        -ReadWriteLock lock$
-        +findById(id)$ Optional~UserAccount~
-        +findByEmail(email)$ Optional~UserAccount~
-        +save(user)$ void
-        +deleteById(id)$ void
+        +existsByNickname(nickname) boolean
+        +existsByEmail(email) boolean
+        +save(user) UserAccount
     }
 
     %% Domain
     class UserAccount {
         -Long id
         -String email
-        -String nickName
+        -String nickname
         -String password
         -String profileImagePath
-        +initId(id) void
+        -boolean isDeleted
+        -LocalDateTime deleteAt
         +changeNickName(nickName) void
         +changePassword(password) void
+        +softDelete() void
+        +softRestore() void
+        +isDelete() boolean
     }
 
-    %% Exception Handler
-    class GlobalExceptionHandler {
-        +handleMethodArgumentNotValid(ex) ResponseEntity
-        +handleAuthenticateException(ex, request) ResponseEntity
-        +handleAuthorizationException(ex, request) ResponseEntity
-        +handleConflictDuplicationException(ex) ResponseEntity
-        +handleNonExistUserException(ex) ResponseEntity
+    %% Handler
+    class UserDeleteExecutionHandler {
+        -List~DeleteExecutionStrategy~ strategies
+        +handle(context) boolean
     }
 
     %% Relationships
     UserController --> UserService
-    AuthController --> AuthService
+    AuthController --> JwtTokenProvider
     UserService --> UserRepository
-    AuthService --> UserRepository
-    UserRepository <|.. UserRepositoryImpl : implements
-    UserRepositoryImpl --> UserData : delegates to
-    UserData ..> UserAccount : manages
+    UserService --> AbstractHandler : uses chain
+    JwtAuthenticationFilter --> JwtTokenProvider
+    JwtAuthenticationFilter --> CustomUserDetailService
+    CustomUserDetailService --> UserRepository
 ```
 
----
+### Authentication Flow Diagram
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Controller as AuthController
+    participant AuthManager as AuthenticationManager
+    participant Provider as DaoAuthenticationProvider
+    participant CustomUDS as CustomUserDetailsService
+    participant UserRepo as UserRepository
+    participant JwtProvider as JwtTokenProvider
+
+    rect rgb(240, 248, 255)
+    Note over Client: 로그인 플로우 (Email/Password)
+
+    Client->>Controller: POST /api/v1/auth/login<br/>{email, password}
+    Controller->>AuthManager: authenticate(UsernamePasswordToken)
+
+    AuthManager->>Provider: authenticate()
+    Provider->>CustomUDS: loadUserByUsername(email)
+
+    CustomUDS->>UserRepo: findByEmail(email)
+    UserRepo->>CustomUDS: UserAccount 엔티티
+
+    CustomUDS->>CustomUDS: UserAccount → SecurityUserAccount 변환
+    CustomUDS->>Provider: SecurityUserAccount
+
+    Provider->>Provider: password 검증
+    Provider->>AuthManager: Authentication (인증됨)
+    AuthManager->>Controller: Authentication
+
+    Controller->>JwtProvider: generateToken(userId)
+    JwtProvider->>Controller: JWT Token
+    Controller->>Controller: Set-Cookie: jwt=xxx
+
+    Controller->>Client: 303 See Other → /articles
+    end
+
+    rect rgb(240, 255, 240)
+    Note over Client,JwtProvider: 인증된 요청 플로우 (JWT)
+
+    Client->>JwtAuthFilter: GET /api/v1/article/{id}<br/>Cookie: jwt=xxx
+    JwtAuthFilter->>JwtProvider: validateToken(jwt)
+    JwtProvider->>JwtAuthFilter: valid
+
+    JwtAuthFilter->>JwtProvider: getUserIdFromToken(jwt)
+    JwtProvider->>JwtAuthFilter: userId
+
+    JwtAuthFilter->>CustomUDS: loadUserById(userId)
+    CustomUDS->>UserRepo: findById(userId)
+    UserRepo->>CustomUDS: UserAccount 엔티티
+    CustomUDS->>CustomUDS: UserAccount → SecurityUserAccount 변환
+    CustomUDS->>JwtAuthFilter: SecurityUserAccount
+
+    JwtAuthFilter->>JwtAuthFilter: UsernamePasswordToken 생성
+    JwtAuthFilter->>SecurityContext: setAuthentication()
+    JwtAuthFilter->>Client: 요청 처리 계속
+    end
+```
+
+**JwtTokenProvider** (`ktb.util.JwtTokenProvider`)
+- JWT 토큰 생성, 검증, 파싱
+- 쿠키 설정/만료 처리
 
 ## 핵심 설계 특징
 
-### 1. In-Memory 동시성 데이터 저장소
+### 1. Spring Security + JWT 인증
 
-데이터베이스 대신 정적 자료구조를 사용하여 데이터를 관리합니다:
+Cookie 기반 JWT 인증을 사용합니다:
 
-- **ConcurrentSkipListMap**: 정렬된 순서를 유지하면서 동시성 접근 지원
-- **ReadWriteLock**: 다중 읽기 또는 단일 쓰기 락 패턴 적용
-- **AtomicLong**: ID 자동 생성 및 카운터 관리
-- **보조 인덱스**: 제목 기반 조회를 위한 `titleIndex` 관리
+- **JwtAuthenticationFilter**: 요청마다 JWT 토큰 검증
+- **JwtTokenProvider**: 토큰 생성, 검증, 파싱
+- **CustomUserDetailService**: UserDetailsService 구현
+- **SecurityUserAccount**: UserDetails 어댑터
 
-**예시: ArticleData.java**
-```java
-private static final NavigableMap<Long, Article> store = new ConcurrentSkipListMap<>();
-private static final Map<String, Article> titleIndex = new ConcurrentHashMap<>();
-private static final AtomicLong articleSeq = new AtomicLong(0);
-private static final ReadWriteLock lock = new ReentrantReadWriteLock();
+**인증 흐름**:
+1. 로그인 시 AuthenticationManager를 통해 인증
+2. 인증 성공 시 JWT 생성 후 쿠키에 설정
+3. 이후 요청은 JwtAuthenticationFilter에서 토큰 검증
+
+### 2. CQS (Command Query Separation) 패턴
+
+서비스 계층에서 읽기와 쓰기 작업을 분리합니다:
+
+- **Query Service**: 조회 전용 (`@Transactional(readOnly = true)`)
+  - `ArticleQueryService`, `CommentQueryService`
+- **Command Service**: 변경 전용 (`@Transactional`)
+  - `ArticleCommandService`, `CommentCommandService`
+
+### 3. Chain of Responsibility + Strategy 패턴
+
+삭제 처리를 위한 유연한 핸들러 체인:
+
+```mermaid
+flowchart LR
+    VH[ValidationHandler] --> AuthH[AuthorizationHandler] --> EH[ExecutionHandler] --> AuditH[AuditHandler]
 ```
 
-### 2. 커서 기반 페이지네이션
+**삭제 전략 (Strategy)**:
+- `SingleArticleDeleteStrategy`: 게시글 단일 삭제
+- `ArticleCommentsDeleteStrategy`: 게시글의 댓글 일괄 삭제
+- `UserDeleteStrategy`: 사용자 삭제
+- `UserArticlesDeleteStrategy`: 사용자의 게시글 일괄 삭제
+- `UserCommentsDeleteStrategy`: 사용자의 댓글 일괄 삭제
 
-오프셋 방식 대신 커서 기반 페이지네이션을 구현하여 안정적인 페이징을 제공합니다:
+**참고**: `ktb.handler.AbstractHandler`, `ktb.handler.config.HandlerChainConfig`
 
-- `Slice<T>`: 페이징된 결과와 메타데이터 포함
-- `PageInfo`: 커서 ID, 크기, 다음 페이지 존재 여부 관리
-- 대규모 데이터셋에서도 일관된 성능 보장
+### 4. Event-driven 조회수/좋아요 처리
 
-**참고**: `ktb.common.pagination.Slice`, `ArticleData.java:61-84`
+Spring Event를 사용하여 조회수, 좋아요 처리를 비동기로 분리:
 
-### 3. 전역 예외 처리
+- `ArticleEventPublisher`: 이벤트 발행
+- `ArticleViewEventListener`: 조회수 증가 처리
+- `ArticleLikeEventListener`: 좋아요 처리
 
-`GlobalExceptionHandler`를 통해 일관된 에러 응답 제공:
+### 5. Soft Delete 패턴
 
-- `AuthenticateException` → 401 Unauthorized
-- `AuthorizationException` → 403 Forbidden
-- `ConflictDuplicationException` → 409 Conflict
-- `NonExistUserException` → 404 Not Found
-- 보안 관련 예외 발생 시 클라이언트 IP 및 요청 URI 로깅
+모든 엔티티에 Soft Delete 적용:
 
-**참고**: `ktb.exception.GlobalExceptionHandler`
+- `isDeleted`: 삭제 여부 플래그
+- `deleteAt`: 삭제 시간
+- `softDelete()`, `softRestore()` 메서드
+
+### 6. 커서 기반 페이지네이션
+
+오프셋 방식 대신 커서 기반 페이지네이션:
+
+- `Slice<T>`: 페이징된 결과와 메타데이터
+- `PageInfo`: 커서 ID, 다음 페이지 존재 여부
+
+**참고**: `ktb.common.pagination.Slice`
 
 ---
 
 ## API 엔드포인트
 
-### 게시글 관리
+### 인증
 
-| Method | Endpoint        | Description           |
-|--------|-----------------|-----------------------|
-| GET    | `/articles`     | 게시글 목록 조회 (커서 페이지네이션) |
-| POST   | `/article`      | 게시글 작성                |
-| GET    | `/article/{id}` | 게시글 상세 조회             |
-| PATCH  | `/article/{id}` | 게시글 수정                |
-| DELETE | `/article/{id}` | 게시글 삭제                |
+| Method | Endpoint             | Description      |
+|--------|----------------------|------------------|
+| POST   | `/api/v1/auth/login` | 로그인 (JWT 쿠키 발급) |
+| POST   | `/api/v1/auth/logout`| 로그아웃 (쿠키 만료)   |
 
-### 댓글 관리
+### 사용자
 
-| Method | Endpoint                                   | Description |
-|--------|--------------------------------------------|-------------|
-| POST   | `/article/{articleId}/comment`             | 댓글 작성       |
-| PUT    | `/article/{articleId}/comment/{commentId}` | 댓글 수정       |
-| DELETE | `/article/{articleId}/comment/{commentId}` | 댓글 삭제       |
+| Method | Endpoint                     | Description     |
+|--------|------------------------------|-----------------|
+| POST   | `/api/v1/users/signup`       | 회원가입          |
+| GET    | `/api/v1/users/me`           | 내 정보 조회       |
+| PATCH  | `/api/v1/users/me/nickName`  | 닉네임 변경        |
+| PATCH  | `/api/v1/users/me/password`  | 비밀번호 변경       |
+| DELETE | `/api/v1/users/me`           | 회원 탈퇴          |
+| POST   | `/api/v1/users/exist/nickname` | 닉네임 중복 확인  |
+| POST   | `/api/v1/users/exist/email`  | 이메일 중복 확인    |
 
-### 인증 및 사용자
+### 게시글
 
-| Method | Endpoint          | Description |
-|--------|-------------------|-------------|
-| POST   | `/login`          | 로그인         |
-| POST   | `/users/signup`   | 회원가입        |
-| PATCH  | `/users/nickname` | 닉네임 변경      |
-| PATCH  | `/users/password` | 비밀번호 변경     |
-| DELETE | `/users/password` | 유저 삭제       |
+| Method | Endpoint               | Description              |
+|--------|------------------------|--------------------------|
+| GET    | `/api/v1/articles`     | 게시글 목록 조회 (커서 페이지네이션) |
+| POST   | `/api/v1/article`      | 게시글 작성                 |
+| GET    | `/api/v1/article/{id}` | 게시글 상세 조회             |
+| PATCH  | `/api/v1/article/{id}` | 게시글 수정                 |
+| DELETE | `/api/v1/article/{id}` | 게시글 삭제 (Soft Delete)   |
+| POST   | `/api/v1/article/{id}/like` | 좋아요 토글            |
+
+### 댓글
+
+| Method | Endpoint                         | Description |
+|--------|----------------------------------|-------------|
+| POST   | `/api/v1/article/{id}/comments`  | 댓글 작성     |
+| PUT    | `/api/v1/article/{id}/comments`  | 댓글 수정     |
+| DELETE | `/api/v1/article/{id}/comments`  | 댓글 삭제     |
 
 ---
 
@@ -511,54 +733,52 @@ private static final ReadWriteLock lock = new ReentrantReadWriteLock();
 ### Domain Layer
 
 **Article** (`ktb.domain.Article`)
-- 게시글 엔티티
-- 댓글 관리 (`ConcurrentLinkedDeque`)
-- 메타데이터 관리 (조회수, 좋아요, 댓글 수)
-- Thread-safe 댓글 추가/수정/삭제 메서드 제공
+- JPA 엔티티, 게시글 정보
+- `@ManyToOne` UserAccount (작성자)
+- `@OneToOne` ArticleMeta (메타데이터)
+- `@OneToMany` ArticleComment (댓글)
+- Soft Delete 지원 (`softDelete()`, `isDelete()`)
 
 **ArticleMeta** (`ktb.domain.ArticleMeta`)
 - 게시글 메타데이터 (조회수, 좋아요, 댓글 수)
-- `AtomicLong` 사용으로 동시성 보장
+- 생성/수정 시간 관리
 
 **UserAccount** (`ktb.domain.UserAccount`)
-- 사용자 계정 정보 관리
+- 사용자 계정 정보
+- BCrypt 암호화된 비밀번호
+- Soft Delete 지원
 
-### Data Store Layer
+### Handler Layer
 
-**ArticleData** (`ktb.db.article.ArticleData`)
-- 정적 In-Memory 게시글 저장소
-- `ReadWriteLock`을 통한 동시성 제어
-- 커서 기반 페이지네이션 구현
-- 제목 기반 보조 인덱스 관리
+**AbstractHandler** (`ktb.handler.AbstractHandler`)
+- Chain of Responsibility 패턴 구현
+- `chainOf()` 메서드로 체인 구성
+- 제네릭 컨텍스트 지원
 
-**UserData** (`ktb.db.user.UserData`)
-- 정적 In-Memory 사용자 저장소
-- ID 및 이메일 기반 조회 지원
+**DeleteExecutionStrategy** (`ktb.handler.strategy.DeleteExecutionStrategy`)
+- Strategy 패턴 인터페이스
+- 다양한 삭제 전략 구현체 제공
 
-### Common Utilities
+### Auth Layer
 
-**Slice** (`ktb.common.pagination.Slice`)
-- 커서 기반 페이지네이션 결과 래퍼
-- 데이터, 다음 커서, 페이지 존재 여부 포함
+**JwtTokenProvider** (`ktb.util.JwtTokenProvider`)
+- JWT 토큰 생성, 검증, 파싱
+- 쿠키 설정/만료 처리
+
+**JwtAuthenticationFilter** (`ktb.auth.filter.JwtAuthenticationFilter`)
+- OncePerRequestFilter 확장
+- 요청마다 JWT 검증 및 SecurityContext 설정
 
 ---
 
-## 동시성 처리
+## 기술 스택
 
-### Lock 전략
-
-- **ReadLock**: 조회 작업 시 여러 스레드 동시 접근 허용
-- **WriteLock**: 생성/수정/삭제 작업 시 단일 스레드만 접근
-
-### Atomic 연산
-
-
-각 엔티티의 Sequential ID 는 `AtomicLong` 사용:
- - 생성/삭제의 경우 Lock 으로 동시성 처리하여 Atomic 만 적용
-
-```java
-private static final AtomicLong articleSeq = new AtomicLong(0);
-Long newId = articleSeq.incrementAndGet();
-```
+- **Java**: 17
+- **Spring Boot**: 3.2.5
+- **Spring Security**: JWT + Cookie 기반 인증
+- **Spring Data JPA**: Hibernate ORM
+- **Swagger/OpenAPI**: API 문서화
+- **Lombok**: 보일러플레이트 코드 감소
+- **Gradle**: 빌드 도구
 
 ---
