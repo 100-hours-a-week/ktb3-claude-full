@@ -3,8 +3,8 @@
  * 사용자 정보 로드 및 헤더 요소 업데이트
  */
 
-import { DomElements } from './domElements.js';
-import { PageRoutes } from './uris.js';
+import { DomElements } from '/js/common/ui/domElements.js';
+import { PageRoutes } from '/js/common/uris.js';
 
 /**
  * 헤더에 사용자 정보 로드 및 표시

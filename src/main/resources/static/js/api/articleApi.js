@@ -1,6 +1,6 @@
 // 게시글 API 모듈
 import { ApiEndpoints, PageRoutes, UriUtils } from '/js/common/uris.js';
-import { csrfFetch } from '/js/common/csrf.js';
+import { csrfFetch } from '/js/common/auth/csrf.js';
 import { handleResponse } from '/js/api/apiUtils.js';
 
 const DEFAULT_ARTICLE_ERROR_MESSAGE = '게시글 요청 처리 중 문제가 발생했습니다.';

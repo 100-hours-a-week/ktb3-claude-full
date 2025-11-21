@@ -10,7 +10,7 @@ import {
 } from '/js/common/event/event.js';
 import { UserApi } from '/js/api/userApi.js';
 import { PageRoutes } from '/js/common/uris.js';
-import { DomElements, ElementIds } from '/js/common/domElements.js';
+import { DomElements, ElementIds } from '/js/common/ui/domElements.js';
 
 /**
  * 사용자 편집 핸들러

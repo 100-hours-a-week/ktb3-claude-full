@@ -1,6 +1,6 @@
 // 이미지 미리보기 유틸리티
 
-import { DomElements } from '/js/common/domElements.js';
+import { DomElements } from '/js/common/ui/domElements.js';
 
 /**
  * 프로필 이미지 미리보기

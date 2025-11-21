@@ -7,7 +7,7 @@ import {
 } from '/js/common/event/event.js';
 import { ArticleApi } from '/js/api/articleApi.js';
 import { PageRoutes } from '/js/common/uris.js';
-import { DomElements, ElementIds } from '/js/common/domElements.js';
+import { DomElements, ElementIds } from '/js/common/ui/domElements.js';
 
 /**
  * 게시글 폼 핸들러

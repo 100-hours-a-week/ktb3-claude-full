@@ -1,6 +1,6 @@
 // 사용자 API 모듈
 import { ApiEndpoints, PageRoutes } from '/js/common/uris.js';
-import { csrfFetch } from '/js/common/csrf.js';
+import { csrfFetch } from '/js/common/auth/csrf.js';
 import { handleResponse } from '/js/api/apiUtils.js';
 
 export const UserApi = {

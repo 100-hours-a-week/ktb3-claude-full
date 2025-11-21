@@ -1,5 +1,5 @@
-import { PageRoutes } from './uris.js';
-import { DomElements } from './domElements.js';
+import { PageRoutes } from '/js/common/uris.js';
+import { DomElements } from '/js/common/ui/domElements.js';
 
 const routeHandlers = {
     HOME: () => (window.location.href = PageRoutes.HOME),

@@ -6,8 +6,8 @@ import {
 } from '/js/common/event/event.js';
 import { ArticleApi } from '/js/api/articleApi.js';
 import { PageRoutes, UriUtils } from '/js/common/uris.js';
-import { DomElements } from '/js/common/domElements.js';
-import { renderMarkdown } from '/js/common/markdownRenderer.js';
+import { DomElements } from '/js/common/ui/domElements.js';
+import { renderMarkdown } from '/js/common/ui/markdownRenderer.js';
 
 /**
  * 게시글 상세 핸들러

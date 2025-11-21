@@ -1,6 +1,6 @@
-import { PageRoutes } from './uris.js';
-import { bind as HeaderLinkManager } from './headerLink.js';
-import { checkAuth } from './event.js';
+import { PageRoutes } from '/js/common/uris.js';
+import { bind as HeaderLinkManager } from '/js/common/ui/headerLink.js';
+import { checkAuth } from '/js/common/event/event.js';
 
 // 프래그먼트 로더 유틸리티
 async function loadFragment(url, targetId) {

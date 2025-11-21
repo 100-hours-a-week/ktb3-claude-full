@@ -1,13 +1,13 @@
 // 공통 이벤트 핸들러 및 유틸리티 함수
 // 하위 호환성을 위해 분리된 모듈들을 re-export
 
-import { DomElements } from '/js/common/domElements.js';
+import { DomElements } from '/js/common/ui/domElements.js';
 
 // 분리된 모듈들 re-export
 export { eventManager } from '/js/common/event/eventManager.js';
-export { showModal, hideModal } from '/js/common/event/modalManager.js';
-export { showToast } from '/js/common/event/toastManager.js';
-export { previewProfileImage, previewArticleImage } from '/js/common/event/imagePreview.js';
+export { showModal, hideModal } from '/js/common/ui/modalManager.js';
+export { showToast } from '/js/common/ui/toastManager.js';
+export { previewProfileImage, previewArticleImage } from '/js/common/ui/imagePreview.js';
 export { formatDate } from '/js/common/util/utils.js';
 
 /* -------------------------------------------------------------------------- */

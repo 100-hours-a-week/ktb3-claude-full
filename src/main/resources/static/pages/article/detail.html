@@ -60,15 +60,15 @@
         import { loadStylesForPage } from '/js/styles/styleLoader.js';
         loadStylesForPage('article');
         import '/js/common/uris.js';
-        import '/js/common/domElements.js';
+        import '/js/common/ui/domElements.js';
     </script>
     <script type="module">
         import { initArticleDetailPage } from '/js/handler/article/detailHandler.js';
         import { initAuthHeader } from '/js/handler/user/userEditHandler.js';
-        import { loadHeader } from '/js/common/fragment-loader.js';
-        import { DomElements } from '/js/common/domElements.js';
-        import { initializeHeaderUserInfo } from '/js/common/headerInit.js';
-        import { resetCsrfToken } from '/js/common/csrf.js';
+        import { loadHeader } from '/js/common/ui/fragment-loader.js';
+        import { DomElements } from '/js/common/ui/domElements.js';
+        import { initializeHeaderUserInfo } from '/js/common/ui/headerInit.js';
+        import { resetCsrfToken } from '/js/common/auth/csrf.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
             // CSRF 토큰 초기화

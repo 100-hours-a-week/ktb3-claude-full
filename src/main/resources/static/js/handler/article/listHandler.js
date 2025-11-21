@@ -1,7 +1,7 @@
 import { formatDate, showErrorAlert, eventManager } from '/js/common/event/event.js';
 import { ArticleApi } from '/js/api/articleApi.js';
 import { PageRoutes } from '/js/common/uris.js';
-import { DomElements } from '/js/common/domElements.js';
+import { DomElements } from '/js/common/ui/domElements.js';
 import { throttle } from '/js/common/util/utils.js';
 
 /**
