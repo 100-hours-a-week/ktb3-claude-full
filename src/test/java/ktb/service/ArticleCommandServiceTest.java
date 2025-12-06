@@ -1,218 +1,191 @@
 package ktb.service;
 
-import jakarta.persistence.EntityManager;
 import ktb.domain.Article;
-import ktb.domain.ArticleComment;
-import ktb.domain.UserAccount;
-import ktb.repository.ArticleCommentRepository;
-import ktb.repository.ArticleRepository;
-import ktb.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
+import ktb.domain.ArticleMeta;
+import ktb.dto.SaveArticleDto;
+import ktb.exception.article.NoExistArticleException;
+import ktb.fixture.ArticleFixture;
+import ktb.handler.AbstractHandler;
+import ktb.handler.context.ContextData;
+import ktb.handler.context.SoftDeleteContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@Transactional
-@DisplayName("ArticleCommandService delete 테스트")
+@ExtendWith(MockitoExtension.class)
+@DisplayName("ArticleCommandService 단위 테스트")
 class ArticleCommandServiceTest {
 
-    @Autowired
+    @InjectMocks
     private ArticleCommandService articleCommandService;
 
-    @Autowired
-    private ArticleRepository articleRepository;
+    @Mock
+    private ArticleService articleService;
 
-    @Autowired
-    private ArticleCommentRepository commentRepository;
+    @Mock
+    private ArticleMetaService metaService;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Mock
+    private AbstractHandler<ContextData<?>> articleDeleteHandlerChain;
 
-    @Autowired
-    private EntityManager entityManager;
-
-    private UserAccount testUser;
-    private Article testArticle;
-
-    @BeforeEach
-    void setUp() {
-        // Given: 테스트 데이터 생성
-        testUser = UserAccount.builder()
-                .email("test@test.com")
-                .nickname("testUser")
-                .password("password")
-                .isDeleted(false)
+    @Test
+    @DisplayName("새 Article 저장 - Article과 Meta 모두 저장")
+    void 게시글_등록_게시글_메타_저장() {
+        // Given
+        SaveArticleDto saveDto = SaveArticleDto.builder()
+                .title("New Article")
+                .content("New Content")
+                .userId(1L)
+                .articleImagePath(null)
                 .build();
-        userRepository.save(testUser);
 
-        // Article 생성
-        testArticle = Article.create(
-                null,
-                "Test Article",
-                "Test Content",
-                testUser.getId(),
-                null
-        );
-        articleRepository.save(testArticle);
+        // When
+        articleCommandService.save(saveDto);
 
-        // 댓글 3개 추가
-        for (int i = 0; i < 3; i++) {
-            ArticleComment comment = ArticleComment.init(
-                    testArticle,
-                    null,
-                    "Comment " + i,
-                    testUser.getId()
-            );
-            commentRepository.save(comment);
-        }
-
-        entityManager.flush();
-        entityManager.clear();
+        // Then
+        verify(articleService).save(any(Article.class));
+        verify(metaService).save(any(ArticleMeta.class));
     }
 
     @Test
-    @DisplayName("Article 삭제 시 Article과 모든 댓글이 softDelete 됨")
-    void testArticleDelete_SoftDeletesArticleAndComments() {
-        // When: Article 삭제
-        articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
+    @DisplayName("기존 Article 수정 - 존재하는 Article 업데이트")
+    void 게시글_수정_제목_내용_반영_여부() {
+        // Given
+        Article testArticle = ArticleFixture.createWithId(1L);
 
-        entityManager.flush();
-        entityManager.clear();
+        SaveArticleDto saveDto = SaveArticleDto.builder()
+                .id(1L)
+                .title("Updated Title")
+                .content("Updated Content")
+                .userId(1L)
+                .build();
 
-        // Then: Article이 softDelete 됨
-        Article deletedArticle = articleRepository.findById(testArticle.getId()).orElseThrow();
-        assertThat(deletedArticle.isDelete()).isTrue();
+        when(articleService.findById(1L)).thenReturn(Optional.of(testArticle));
 
-        // 모든 댓글도 softDelete 됨
-        List<ArticleComment> comments = commentRepository.findAllByArticle(testArticle);
-        assertThat(comments).allMatch(ArticleComment::isDelete);
+        // When
+        articleCommandService.save(saveDto);
+
+        // Then
+        verify(articleService).findById(1L);
+        verify(articleService).save(testArticle);
+        verify(metaService, never()).save(any());
+
+        // Article이 업데이트 되었는지 확인
+        assertThat(testArticle.getTitle()).isEqualTo("Updated Title");
+        assertThat(testArticle.getContent()).isEqualTo("Updated Content");
     }
 
     @Test
-    @DisplayName("Article 삭제 후에도 데이터베이스에는 레코드가 남아있음")
-    void testArticleDelete_RecordsRemainsInDatabase() {
-        // Given: 댓글 개수 확인
-        long commentCountBefore = commentRepository.count();
-        long articleCountBefore = articleRepository.count();
+    @DisplayName("존재하지 않는 Article 수정 시도 - 예외 발생")
+    void 미존재_게시글_수정_예외_발생() {
+        // Given
+        SaveArticleDto saveDto = SaveArticleDto.builder()
+                .id(999L)
+                .title("Updated Title")
+                .content("Updated Content")
+                .userId(1L)
+                .build();
 
-        // When: Article 삭제
-        articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
+        when(articleService.findById(999L)).thenReturn(Optional.empty());
 
-        entityManager.flush();
-        entityManager.clear();
+        // When & Then
+        assertThatThrownBy(() -> articleCommandService.save(saveDto))
+                .isInstanceOf(NoExistArticleException.class);
 
-        // Then: 레코드 개수는 변하지 않음 (물리적 삭제 아님)
-        long commentCountAfter = commentRepository.count();
-        long articleCountAfter = articleRepository.count();
-
-        assertThat(articleCountAfter).isEqualTo(articleCountBefore);
-        assertThat(commentCountAfter).isEqualTo(commentCountBefore);
+        verify(articleService, never()).save(any());
     }
 
     @Test
-    @DisplayName("여러 Article 중 하나만 삭제 시 다른 Article은 영향 없음")
-    void testArticleDelete_OnlyTargetArticleIsDeleted() {
-        // Given: 추가 Article 생성
-        Article anotherArticle = Article.create(
-                null,
-                "Another Article",
-                "Another Content",
-                testUser.getId(),
-                null
-        );
-        articleRepository.save(anotherArticle);
+    @DisplayName("Article 삭제 - Handler 체인 호출 확인")
+    void 게시글_삭제_핸들러_호출_여부() {
+        // Given
+        Long userId = 1L;
+        Long articleId = 1L;
 
-        ArticleComment anotherComment = ArticleComment.init(
-                anotherArticle,
-                null,
-                "Another Comment",
-                testUser.getId()
-        );
-        commentRepository.save(anotherComment);
+        when(articleDeleteHandlerChain.handle(any(SoftDeleteContext.class)))
+                .thenReturn(true);
 
-        entityManager.flush();
-        entityManager.clear();
+        // When
+        articleCommandService.delete(userId, articleId);
 
-        // When: 첫 번째 Article만 삭제
-        articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
-
-        entityManager.flush();
-        entityManager.clear();
-
-        // Then: 첫 번째 Article과 댓글만 삭제됨
-        Article deletedArticle = articleRepository.findById(testArticle.getId()).orElseThrow();
-        assertThat(deletedArticle.isDelete()).isTrue();
-
-        List<ArticleComment> deletedComments = commentRepository.findAllByArticle(testArticle);
-        assertThat(deletedComments).allMatch(ArticleComment::isDelete);
-
-        // 두 번째 Article과 댓글은 영향 없음
-        Article notDeletedArticle = articleRepository.findById(anotherArticle.getId()).orElseThrow();
-        assertThat(notDeletedArticle.isDelete()).isFalse();
-
-        List<ArticleComment> notDeletedComments = commentRepository.findAllByArticle(anotherArticle);
-        assertThat(notDeletedComments).allMatch(comment -> !comment.isDelete());
+        // Then
+        verify(articleDeleteHandlerChain).handle(any(SoftDeleteContext.class));
     }
 
     @Test
-    @DisplayName("댓글이 없는 Article도 정상적으로 삭제됨")
-    void testArticleDelete_ArticleWithoutComments() {
-        // Given: 댓글 없는 Article 생성
-        Article articleWithoutComments = Article.create(
-                null,
-                "No Comments Article",
-                "Content",
-                testUser.getId(),
-                null
-        );
-        articleRepository.save(articleWithoutComments);
+    @DisplayName("Article 수정 시 title만 변경")
+    void 게시글_수정_제목만_반영() {
+        // Given
+        Article testArticle = ArticleFixture.createWithId(1L);
 
-        entityManager.flush();
-        entityManager.clear();
+        SaveArticleDto saveDto = SaveArticleDto.builder()
+                .id(1L)
+                .title("New Title Only")
+                .content(null)  // content는 변경하지 않음
+                .userId(1L)
+                .build();
 
-        // When: 삭제
-        articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
+        when(articleService.findById(1L)).thenReturn(Optional.of(testArticle));
 
-        entityManager.flush();
-        entityManager.clear();
+        // When
+        articleCommandService.save(saveDto);
 
-        // Then: Article이 softDelete 됨
-        Article deletedArticle = articleRepository.findById(articleWithoutComments.getId()).orElseThrow();
-        assertThat(deletedArticle.isDelete()).isTrue();
+        // Then
+        verify(articleService).save(testArticle);
+        assertThat(testArticle.getTitle()).isEqualTo("New Title Only");
+        assertThat(testArticle.getContent()).isEqualTo(testArticle.getContent());  // 기존 값 유지
     }
 
     @Test
-    @DisplayName("이미 삭제된 Article의 댓글도 모두 삭제됨")
-    void testArticleDelete_AlreadyDeletedArticleComments() {
-        // Given: Article을 먼저 softDelete
-        Article article = articleRepository.findById(testArticle.getId()).orElseThrow();
-        article.softDelete();
-        articleRepository.save(article);
+    @DisplayName("Article 수정 시 content만 변경")
+    void 게시글_수정_내용만_반영() {
+        // Given
+        Article testArticle = ArticleFixture.createWithId(1L);
 
-        entityManager.flush();
-        entityManager.clear();
+        SaveArticleDto saveDto = SaveArticleDto.builder()
+                .id(1L)
+                .title(null)  // title은 변경하지 않음
+                .content("New Content Only")
+                .userId(1L)
+                .build();
 
-        // When: 다시 삭제 시도
-        try {
-            articleCommandService.delete(testArticle.getCreateBy().getId(), testArticle.getId());
-        } catch (Exception e) {
-            // 이미 삭제된 Article이므로 예외 발생 가능
-        }
+        when(articleService.findById(1L)).thenReturn(Optional.of(testArticle));
 
-        entityManager.flush();
-        entityManager.clear();
+        // When
+        articleCommandService.save(saveDto);
 
-        // Then: Article은 여전히 삭제 상태
-        Article deletedArticle = articleRepository.findById(testArticle.getId()).orElseThrow();
-        assertThat(deletedArticle.isDelete()).isTrue();
+        // Then
+        verify(articleService).save(testArticle);
+        assertThat(testArticle.getTitle()).isEqualTo(testArticle.getTitle());  // 기존 값 유지
+        assertThat(testArticle.getContent()).isEqualTo("New Content Only");
+    }
+
+    @Test
+    @DisplayName("새 Article 저장 시 imagePath 포함")
+    void 게시글_저장_이미지_포함_여부() {
+        // Given
+        SaveArticleDto saveDto = SaveArticleDto.builder()
+                .title("Article with Image")
+                .content("Content")
+                .userId(1L)
+                .articleImagePath("/images/test.jpg")
+                .build();
+
+        // When
+        articleCommandService.save(saveDto);
+
+        // Then
+        verify(articleService).save(any(Article.class));
+        verify(metaService).save(any(ArticleMeta.class));
     }
 }
