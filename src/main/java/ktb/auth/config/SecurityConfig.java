@@ -4,6 +4,7 @@ import java.util.List;
 
 import ktb.auth.filter.CsrfDebugFilter;
 import ktb.auth.filter.JwtAuthenticationFilter;
+import ktb.auth.handler.CustomAuthenticationEntryPoint;
 import ktb.auth.service.CustomUserDetailService;
 
 import ktb.config.SecurityProperties;
@@ -39,6 +40,7 @@ public class SecurityConfig {
     private final CustomUserDetailService customUserDetailService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CsrfDebugFilter csrfDebugFilter;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -78,6 +80,12 @@ public class SecurityConfig {
                     auth.anyRequest()
                             .authenticated();
                 });
+
+        // Custom AuthenticationExceptionHandler
+        http
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                );
 
         // Filter 등록
         http
