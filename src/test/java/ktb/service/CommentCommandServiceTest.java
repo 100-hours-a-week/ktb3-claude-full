@@ -1,295 +1,217 @@
 package ktb.service;
 
-import jakarta.persistence.EntityManager;
+import java.util.List;
+import java.util.Optional;
+
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
-import ktb.domain.UserAccount;
 import ktb.dto.CommentDto;
-import ktb.repository.ArticleCommentRepository;
-import ktb.repository.ArticleRepository;
-import ktb.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
+import ktb.exception.article.AlreadyDeletedArticle;
+import ktb.exception.article.AlreadyDeletedComment;
+import ktb.exception.article.NoExistArticleException;
+import ktb.fixture.ArticleCommentFixture;
+import ktb.fixture.ArticleFixture;
+import ktb.handler.AbstractHandler;
+import ktb.handler.context.CommentDeleteContext;
+import ktb.handler.context.ContextData;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@Transactional
-@DisplayName("CommentCommandService delete 테스트")
+@ExtendWith(MockitoExtension.class)
 class CommentCommandServiceTest {
-
-    @Autowired
+    @InjectMocks
     private CommentCommandService commentCommandService;
 
-    @Autowired
-    private ArticleRepository articleRepository;
+    @Mock
+    private ArticleService articleService;
 
-    @Autowired
-    private ArticleCommentRepository commentRepository;
+    @Mock
+    private CommentService commentService;
 
-    @Autowired
-    private UserRepository userRepository;
+    @Mock
+    private AbstractHandler<ContextData<?>> commentDeleteHandlerChain;
 
-    @Autowired
-    private EntityManager entityManager;
+    @Test
+    @DisplayName("댓글 추가 시 게시글 존재하면 저장")
+    void 댓글_추가() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        ArticleComment requestComment = ArticleCommentFixture.create(article, "hello", 10L);
+        CommentDto request = CommentDto.from(requestComment);
+        ArticleComment expectedComment = ArticleCommentFixture.create(article, "hello", 10L);
 
-    private UserAccount testUser1;
-    private UserAccount testUser2;
-    private Article testArticle;
-    private ArticleComment testComment;
+        when(articleService.findById(1L)).thenReturn(Optional.of(article));
+        when(commentService.save(any(ArticleComment.class))).thenReturn(expectedComment);
 
-    @BeforeEach
-    void setUp() {
-        // Given: 테스트 데이터 생성
-        testUser1 = UserAccount.builder()
-                .email("user1@test.com")
-                .nickname("user1")
-                .password("password")
-                .isDeleted(false)
-                .build();
-        userRepository.save(testUser1);
+        // when
+        CommentDto response = commentCommandService.addComment(request);
 
-        testUser2 = UserAccount.builder()
-                .email("user2@test.com")
-                .nickname("user2")
-                .password("password")
-                .isDeleted(false)
-                .build();
-        userRepository.save(testUser2);
-
-        // Article 생성
-        testArticle = Article.create(
-                null,
-                "Test Article",
-                "Test Content",
-                testUser1.getId(),
-                null
-        );
-        articleRepository.save(testArticle);
-
-        // 댓글 생성
-        testComment = ArticleComment.init(
-                testArticle,
-                null,
-                "Test Comment",
-                testUser1.getId()
-        );
-        commentRepository.save(testComment);
-
-        // 추가 댓글 생성 (다른 사용자)
-        for (int i = 0; i < 2; i++) {
-            ArticleComment comment = ArticleComment.init(
-                    testArticle,
-                    null,
-                    "Comment by user2 - " + i,
-                    testUser2.getId()
-            );
-            commentRepository.save(comment);
-        }
-
-        entityManager.flush();
-        entityManager.clear();
+        // then
+        assertThat(response).isEqualTo(request);
+        ArgumentCaptor<ArticleComment> captor = ArgumentCaptor.forClass(ArticleComment.class);
+        verify(commentService).save(captor.capture());
+        assertThat(captor.getValue().getContent()).isEqualTo(expectedComment.getContent());
     }
 
     @Test
-    @DisplayName("댓글 삭제 시 해당 댓글만 softDelete 됨")
-    void testCommentDelete_OnlyTargetCommentIsDeleted() {
-        // Given: 삭제할 댓글 정보
-        CommentDto deleteRequest = CommentDto.builder()
-                .id(testComment.getId())
-                .articleId(testArticle.getId())
-                .content(testComment.getContent())
-                .createBy(testUser1.getId())
-                .createNickName(testUser1.getNickname())
-                .build();
+    @DisplayName("댓글 추가 시 게시글 없으면 예외")
+    void 댓글_추가_게시글없음() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        ArticleComment requestComment = ArticleCommentFixture.create(article, "hello", 10L);
+        CommentDto request = CommentDto.from(requestComment);
 
-        // When: 댓글 삭제
-        commentCommandService.delete(deleteRequest);
+        when(articleService.findById(1L)).thenReturn(Optional.empty());
 
-        entityManager.flush();
-        entityManager.clear();
-
-        // Then: 해당 댓글만 softDelete 됨
-        ArticleComment deletedComment = commentRepository.findById(testComment.getId()).orElseThrow();
-        assertThat(deletedComment.isDelete()).isTrue();
-
-        // 다른 댓글들은 영향 없음
-        List<ArticleComment> allComments = commentRepository.findAllByArticle(testArticle);
-        long notDeletedCount = allComments.stream()
-                .filter(comment -> !comment.isDelete())
-                .count();
-        assertThat(notDeletedCount).isEqualTo(2); // user2의 댓글 2개
+        // when & then
+        assertThatThrownBy(() -> commentCommandService.addComment(request))
+                .isInstanceOf(NoExistArticleException.class);
     }
 
     @Test
-    @DisplayName("댓글 삭제 후에도 데이터베이스에는 레코드가 남아있음")
-    void testCommentDelete_RecordRemainsInDatabase() {
-        // Given: 댓글 개수 확인
-        long commentCountBefore = commentRepository.count();
+    @DisplayName("댓글 추가 시 게시글이 삭제 상태면 예외")
+    void 댓글_추가_삭제된_게시글() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        article.softDelete();
+        ArticleComment requestComment = ArticleCommentFixture.create(article, "hello", 10L);
+        CommentDto request = CommentDto.from(requestComment);
+        when(articleService.findById(1L)).thenReturn(Optional.of(article));
 
-        CommentDto deleteRequest = CommentDto.builder()
-                .id(testComment.getId())
-                .articleId(testArticle.getId())
-                .content(testComment.getContent())
-                .createBy(testUser1.getId())
-                .createNickName(testUser1.getNickname())
-                .build();
-
-        // When: 댓글 삭제
-        commentCommandService.delete(deleteRequest);
-
-        entityManager.flush();
-        entityManager.clear();
-
-        // Then: 레코드 개수는 변하지 않음 (물리적 삭제 아님)
-        long commentCountAfter = commentRepository.count();
-        assertThat(commentCountAfter).isEqualTo(commentCountBefore);
+        // when & then
+        assertThatThrownBy(() -> commentCommandService.addComment(request))
+                .isInstanceOf(AlreadyDeletedArticle.class);
     }
 
     @Test
-    @DisplayName("댓글 삭제 시 Article은 영향 받지 않음")
-    void testCommentDelete_ArticleIsNotAffected() {
-        // Given: 삭제 전 Article 상태 확인
-        Article articleBefore = articleRepository.findById(testArticle.getId()).orElseThrow();
-        assertThat(articleBefore.isDelete()).isFalse();
+    @DisplayName("댓글 저장 시 삭제된 게시글이면 예외")
+    void 댓글_수정_삭제된_게시글() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        ArticleComment requestComment = ArticleCommentFixture.create(article, 2L, "update", 10L);
+        CommentDto dto = CommentDto.from(requestComment);
 
-        CommentDto deleteRequest = CommentDto.builder()
-                .id(testComment.getId())
-                .articleId(testArticle.getId())
-                .content(testComment.getContent())
-                .createBy(testUser1.getId())
-                .createNickName(testUser1.getNickname())
-                .build();
+        when(articleService.existsByIdAndIsDeleted(1L)).thenReturn(true);
 
-        // When: 댓글 삭제
-        commentCommandService.delete(deleteRequest);
-
-        entityManager.flush();
-        entityManager.clear();
-
-        // Then: Article은 여전히 삭제되지 않은 상태
-        Article articleAfter = articleRepository.findById(testArticle.getId()).orElseThrow();
-        assertThat(articleAfter.isDelete()).isFalse();
+        // when & then
+        assertThatThrownBy(() -> commentCommandService.save(dto))
+                .isInstanceOf(AlreadyDeletedArticle.class);
     }
 
     @Test
-    @DisplayName("여러 댓글 중 하나만 삭제")
-    void testCommentDelete_OnlyOneCommentDeleted() {
-        // Given: 총 3개 댓글 존재 (user1: 1개, user2: 2개)
-        List<ArticleComment> commentsBefore = commentRepository.findAllByArticle(testArticle);
-        assertThat(commentsBefore).hasSize(3);
-        assertThat(commentsBefore).noneMatch(ArticleComment::isDelete);
+    @DisplayName("댓글 저장 시 댓글이 없으면 예외")
+    void 댓글_수정_댓글없음() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        ArticleComment requestComment = ArticleCommentFixture.create(article, 2L, "update", 10L);
+        CommentDto dto = CommentDto.from(requestComment);
 
-        CommentDto deleteRequest = CommentDto.builder()
-                .id(testComment.getId())
-                .articleId(testArticle.getId())
-                .content(testComment.getContent())
-                .createBy(testUser1.getId())
-                .createNickName(testUser1.getNickname())
-                .build();
+        when(articleService.existsByIdAndIsDeleted(1L)).thenReturn(false);
+        when(commentService.findById(2L)).thenReturn(Optional.empty());
 
-        // When: user1의 댓글 1개 삭제
-        commentCommandService.delete(deleteRequest);
-
-        entityManager.flush();
-        entityManager.clear();
-
-        // Then: 1개만 삭제, 2개는 유지
-        List<ArticleComment> commentsAfter = commentRepository.findAllByArticle(testArticle);
-        assertThat(commentsAfter).hasSize(3); // 레코드 개수는 동일
-
-        long deletedCount = commentsAfter.stream()
-                .filter(ArticleComment::isDelete)
-                .count();
-        assertThat(deletedCount).isEqualTo(1);
-
-        long notDeletedCount = commentsAfter.stream()
-                .filter(comment -> !comment.isDelete())
-                .count();
-        assertThat(notDeletedCount).isEqualTo(2);
+        // when & then
+        assertThatThrownBy(() -> commentCommandService.save(dto))
+                .isInstanceOf(NoExistArticleException.class);
     }
 
     @Test
-    @DisplayName("이미 삭제된 댓글 재삭제 시 예외 발생")
-    void testCommentDelete_AlreadyDeletedComment() {
-        // Given: 댓글을 먼저 softDelete
-        ArticleComment comment = commentRepository.findById(testComment.getId()).orElseThrow();
+    @DisplayName("댓글 저장 시 삭제된 댓글이면 예외")
+    void 댓글_수정_삭제된_댓글() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        ArticleComment comment = ArticleCommentFixture.create(article, 2L, "old", 10L);
         comment.softDelete();
-        commentRepository.save(comment);
+        ArticleComment requestComment = ArticleCommentFixture.create(article, 2L, "update", 10L);
+        CommentDto dto = CommentDto.from(requestComment);
 
-        entityManager.flush();
-        entityManager.clear();
+        when(articleService.existsByIdAndIsDeleted(1L)).thenReturn(false);
+        when(commentService.findById(2L)).thenReturn(Optional.of(comment));
 
-        CommentDto deleteRequest = CommentDto.builder()
-                .id(testComment.getId())
-                .articleId(testArticle.getId())
-                .content(testComment.getContent())
-                .createBy(testUser1.getId())
-                .createNickName(testUser1.getNickname())
-                .build();
-
-        // When & Then: 다시 삭제 시도하면 예외 발생
-        try {
-            commentCommandService.delete(deleteRequest);
-            entityManager.flush();
-        } catch (Exception e) {
-            // 이미 삭제된 댓글이므로 예외 발생 가능
-            assertThat(e).isNotNull();
-        }
+        // when & then
+        assertThatThrownBy(() -> commentCommandService.save(dto))
+                .isInstanceOf(AlreadyDeletedComment.class);
     }
 
     @Test
-    @DisplayName("다른 Article의 댓글은 영향 받지 않음")
-    void testCommentDelete_OtherArticleCommentsNotAffected() {
-        // Given: 다른 Article과 댓글 생성
-        Article anotherArticle = Article.create(
-                null,
-                "Another Article",
-                "Content",
-                testUser1.getId(),
-                null
+    @DisplayName("댓글 저장 성공 시 내용 업데이트")
+    void 댓글_수정_성공() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        ArticleComment comment = ArticleCommentFixture.create(article, 2L, "old", 10L);
+        ArticleComment requestComment = ArticleCommentFixture.create(article, 2L, "update", 10L);
+        CommentDto dto = CommentDto.from(requestComment);
+
+        when(articleService.existsByIdAndIsDeleted(1L)).thenReturn(false);
+        when(commentService.findById(2L)).thenReturn(Optional.of(comment));
+
+        // when
+        CommentDto result = commentCommandService.save(dto);
+
+        // then
+        assertThat(comment.getContent()).isEqualTo("update");
+        assertThat(result.content()).isEqualTo("update");
+    }
+
+    @Test
+    @DisplayName("엔티티 기반 저장은 CommentService에 위임")
+    void 댓글_엔티티_저장() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        ArticleComment comment = ArticleCommentFixture.create(article, 2L, "old", 10L);
+        when(commentService.save(comment)).thenReturn(comment);
+
+        // when
+        CommentDto result = commentCommandService.save(comment);
+
+        // then
+        assertThat(result.id()).isEqualTo(comment.getId());
+        verify(commentService).save(comment);
+    }
+
+    @Test
+    @DisplayName("댓글 삭제 시 핸들러 체인은 반드시 호출")
+    void 댓글_삭제() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        ArticleComment requestComment = ArticleCommentFixture.create(article, 1L, "content", 10L);
+        CommentDto dto = CommentDto.from(requestComment);
+
+        // when
+        commentCommandService.delete(dto);
+
+        // then
+        verify(commentDeleteHandlerChain).handle(any(CommentDeleteContext.class));
+    }
+
+    @Test
+    @DisplayName("사용자 댓글 조회는 DTO로 변환")
+    void 사용자_댓글_조회() {
+        // given
+        Article article = ArticleFixture.createWithId(1L);
+        List<ArticleComment> comments = List.of(
+                ArticleCommentFixture.create(article, 1L, "first", 10L),
+                ArticleCommentFixture.create(article, 2L, "second", 10L)
         );
-        articleRepository.save(anotherArticle);
+        when(commentService.findAllByUserId(10L)).thenReturn(comments);
 
-        ArticleComment anotherComment = ArticleComment.init(
-                anotherArticle,
-                null,
-                "Another Comment",
-                testUser1.getId()
-        );
-        commentRepository.save(anotherComment);
+        // when
+        List<CommentDto> result = commentCommandService.findAllByUserId(10L);
 
-        entityManager.flush();
-        entityManager.clear();
-
-        CommentDto deleteRequest = CommentDto.builder()
-                .id(testComment.getId())
-                .articleId(testArticle.getId())
-                .content(testComment.getContent())
-                .createBy(testUser1.getId())
-                .createNickName(testUser1.getNickname())
-                .build();
-
-        // When: 첫 번째 Article의 댓글 삭제
-        commentCommandService.delete(deleteRequest);
-
-        entityManager.flush();
-        entityManager.clear();
-
-        // Then: 첫 번째 Article의 댓글만 삭제됨
-        ArticleComment deletedComment = commentRepository.findById(testComment.getId()).orElseThrow();
-        assertThat(deletedComment.isDelete()).isTrue();
-
-        // 다른 Article의 댓글은 영향 없음
-        ArticleComment notDeletedComment = commentRepository.findById(anotherComment.getId()).orElseThrow();
-        assertThat(notDeletedComment.isDelete()).isFalse();
+        // then
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(CommentDto::content).containsExactly("first", "second");
+        verify(commentService).findAllByUserId(10L);
     }
 }
