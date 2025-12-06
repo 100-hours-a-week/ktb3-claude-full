@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ktb.domain.Article;
+import ktb.domain.ArticleMeta;
 import ktb.domain.UserAccount;
 
 /**
@@ -229,6 +230,16 @@ public class ArticleFixture {
                 DEFAULT_USER_ID,
                 null
         );
+    }
+
+    /**
+     * ArticleMeta만 필요한 경우 Article을 생성해 Meta를 반환
+     *
+     * @param id Article ID
+     * @return ArticleMeta
+     */
+    public static ArticleMeta createMeta(Long id) {
+        return createWithId(id).getMeta();
     }
 
     /**
