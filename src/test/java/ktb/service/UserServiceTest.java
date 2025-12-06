@@ -1,296 +1,273 @@
 package ktb.service;
 
-import java.util.stream.Collectors;
-import ktb.domain.Article;
-import ktb.domain.ArticleComment;
 import ktb.domain.UserAccount;
-import ktb.repository.ArticleCommentRepository;
-import ktb.repository.ArticleRepository;
+import ktb.dto.SignUpUserDto;
+import ktb.dto.UserAccountDto;
+import ktb.dto.request.PasswordUpdateRequest;
+import ktb.exception.article.AlreadyDeletedUser;
+import ktb.exception.user.MisMatchPasswordException;
+import ktb.exception.user.NonExistUserException;
+import ktb.fixture.UserAccountFixture;
+import ktb.handler.AbstractHandler;
+import ktb.handler.context.ContextData;
+import ktb.handler.context.SoftDeleteContext;
 import ktb.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@Transactional
-@DisplayName("UserService delete 테스트")
+@ExtendWith(MockitoExtension.class)
+@DisplayName("UserService 단위 테스트")
 class UserServiceTest {
 
-    @Autowired
+    @InjectMocks
     private UserService userService;
 
-    @Autowired
+    @Mock
     private UserRepository userRepository;
 
-    @Autowired
-    private ArticleRepository articleRepository;
+    @Mock
+    private AbstractHandler<ContextData<?>> userDeleteHandlerChain;
 
-    @Autowired
-    private ArticleCommentRepository commentRepository;
+    @Mock
+    private PasswordEncoder encoder;
 
-    private UserAccount testUser1;
-    private UserAccount testUser2;
-    private Article testArticle1;
-    private Article testArticle2;
+    @Test
+    @DisplayName("사용자_삭제_시_핸들러_체인_호출됨")
+    void 사용자_삭제_시_핸들러_체인_호출됨() {
+        // Given
+        Long userId = 1L;
+        when(userDeleteHandlerChain.handle(any(SoftDeleteContext.class))).thenReturn(true);
 
-    @BeforeEach
-    void setUp() {
-        // Given: 2명의 사용자 생성
-        testUser1 = UserAccount.builder()
-                .email("user1@test.com")
-                .nickname("user1")
-                .password("password")
-                .isDeleted(false)
-                .build();
-        userRepository.save(testUser1);
+        // When
+        userService.delete(userId);
 
-        testUser2 = UserAccount.builder()
-                .email("user2@test.com")
-                .nickname("user2")
-                .password("password")
-                .isDeleted(false)
-                .build();
-        userRepository.save(testUser2);
+        // Then
+        verify(userDeleteHandlerChain).handle(any(SoftDeleteContext.class));
+    }
 
-        // User1의 Article 2개 생성
-        testArticle1 = Article.create(
-                null,
-                "User1 Article 1",
-                "Content 1",
-                testUser1.getId(),
-                null
+    @Test
+    @DisplayName("사용자_삭제_시_올바른_컨텍스트로_핸들러_호출됨")
+    void 사용자_삭제_시_올바른_컨텍스트로_핸들러_호출됨() {
+        // Given
+        Long userId = 5L;
+        ArgumentCaptor<SoftDeleteContext> contextCaptor = ArgumentCaptor.forClass(SoftDeleteContext.class);
+        when(userDeleteHandlerChain.handle(any(SoftDeleteContext.class))).thenReturn(true);
+
+        // When
+        userService.delete(userId);
+
+        // Then
+        verify(userDeleteHandlerChain).handle(contextCaptor.capture());
+        SoftDeleteContext capturedContext = contextCaptor.getValue();
+        assertThat(capturedContext.traceId()).isEqualTo(userId);
+        assertThat(capturedContext.payload().userId()).isEqualTo(userId);
+        assertThat(capturedContext.payload().articleId()).isNull();
+    }
+
+    @Test
+    @DisplayName("사용자_ID_존재_여부_확인_성공")
+    void 사용자_ID_존재_여부_확인_성공() {
+        // Given
+        Long userId = 1L;
+        when(userRepository.existsById(userId)).thenReturn(true);
+
+        // When
+        boolean exists = userService.existId(userId);
+
+        // Then
+        assertThat(exists).isTrue();
+        verify(userRepository).existsById(userId);
+    }
+
+    @Test
+    @DisplayName("사용자_닉네임_존재_여부_확인_성공")
+    void 사용자_닉네임_존재_여부_확인_성공() {
+        // Given
+        String nickname = "testUser";
+        when(userRepository.existsByNickname(nickname)).thenReturn(true);
+
+        // When
+        boolean exists = userService.existNickname(nickname);
+
+        // Then
+        assertThat(exists).isTrue();
+        verify(userRepository).existsByNickname(nickname);
+    }
+
+    @Test
+    @DisplayName("사용자_이메일_존재_여부_확인_성공")
+    void 사용자_이메일_존재_여부_확인_성공() {
+        // Given
+        String email = "test@test.com";
+        when(userRepository.existsByEmail(email)).thenReturn(true);
+
+        // When
+        boolean exists = userService.existEmail(email);
+
+        // Then
+        assertThat(exists).isTrue();
+        verify(userRepository).existsByEmail(email);
+    }
+
+    @Test
+    @DisplayName("사용자_회원가입_성공")
+    void 사용자_회원가입_성공() {
+        // Given
+        SignUpUserDto signUpDto = new SignUpUserDto(
+                "test@test.com",
+                "password",
+                "testUser",
+                "profileImage"
         );
-        articleRepository.save(testArticle1);
+        UserAccount savedUser = UserAccountFixture.createWithId(1L);
 
-        testArticle2 = Article.create(
-                null,
-                "User1 Article 2",
-                "Content 2",
-                testUser1.getId(),
-                null
-        );
-        articleRepository.save(testArticle2);
+        when(encoder.encode(anyString())).thenReturn("encodedPassword");
+        when(userRepository.save(any(UserAccount.class))).thenReturn(savedUser);
 
-        // User2의 Article 1개 생성
-        Article user2Article = Article.create(
-                null,
-                "User2 Article",
-                "Content",
-                testUser2.getId(),
-                null
-        );
-        articleRepository.save(user2Article);
+        // When
+        Long savedId = userService.signUp(signUpDto);
 
-        // User1이 작성한 댓글 3개 (testArticle1에 2개, user2Article에 1개)
-        for (int i = 0; i < 2; i++) {
-            ArticleComment comment = ArticleComment.init(
-                    testArticle1,
-                    null,
-                    "User1 Comment on Article1 - " + i,
-                    testUser1.getId()
-            );
-            commentRepository.save(comment);
-        }
-
-        ArticleComment commentOnUser2Article = ArticleComment.init(
-                user2Article,
-                null,
-                "User1 Comment on User2 Article",
-                testUser1.getId()
-        );
-        commentRepository.save(commentOnUser2Article);
-
-        // User2가 작성한 댓글 2개 (testArticle1에)
-        for (int i = 0; i < 2; i++) {
-            ArticleComment comment = ArticleComment.init(
-                    testArticle1,
-                    null,
-                    "User2 Comment - " + i,
-                    testUser2.getId()
-            );
-            commentRepository.save(comment);
-        }
+        // Then
+        assertThat(savedId).isEqualTo(1L);
+        verify(encoder).encode("password");
+        verify(userRepository).save(any(UserAccount.class));
     }
 
     @Test
-    @DisplayName("User 삭제 시 User가 softDelete 됨")
-    void testUserDelete_UserIsSoftDeleted() {
-        // When: User1 삭제
-        userService.delete(testUser1.getId());
+    @DisplayName("사용자_조회_성공")
+    void 사용자_조회_성공() {
+        // Given
+        Long userId = 1L;
+        UserAccount user = UserAccountFixture.create(userId, "test@test.com", "testUser");
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        // Then: User1이 softDelete 됨
-        UserAccount deletedUser = userRepository.findById(testUser1.getId()).orElseThrow();
-        assertThat(deletedUser.isDelete()).isTrue();
+        // When
+        UserAccountDto result = userService.search(userId);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.email()).isEqualTo("test@test.com");
+        assertThat(result.nickName()).isEqualTo("testUser");
+        verify(userRepository).findById(userId);
     }
 
     @Test
-    @DisplayName("User 삭제 시 User가 작성한 모든 Article도 softDelete 됨")
-    void testUserDelete_AllUserArticlesAreSoftDeleted() {
-        // When: User1 삭제
-        userService.delete(testUser1.getId());
+    @DisplayName("사용자_조회_실패_존재하지_않는_사용자")
+    void 사용자_조회_실패_존재하지_않는_사용자() {
+        // Given
+        Long userId = 999L;
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        // Then: User1의 모든 Article이 softDelete 됨
-        List<Article> user1Articles = articleRepository.findByCreateBy_Id(testUser1.getId());
-        assertThat(user1Articles).hasSize(2);
-        assertThat(user1Articles).allMatch(Article::isDelete);
+        // When & Then
+        assertThatThrownBy(() -> userService.search(userId))
+                .isInstanceOf(NonExistUserException.class);
+        verify(userRepository).findById(userId);
     }
 
     @Test
-    @DisplayName("User 삭제 시 User가 작성한 모든 Comment도 softDelete 됨")
-    void testUserDelete_AllUserCommentsAreSoftDeleted() {
-        // When: User1 삭제
-        userService.delete(testUser1.getId());
+    @DisplayName("사용자_조회_실패_삭제된_사용자")
+    void 사용자_조회_실패_삭제된_사용자() {
+        // Given
+        Long userId = 1L;
+        UserAccount deletedUser = UserAccountFixture.createDeleted();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(deletedUser));
 
-        // Then: User1의 모든 Comment가 softDelete 됨
-        List<ArticleComment> user1Comments = commentRepository.findAllByCreateBy_Id(testUser1.getId());
-        assertThat(user1Comments).hasSize(3);
-        assertThat(user1Comments).allMatch(ArticleComment::isDelete);
+        // When & Then
+        assertThatThrownBy(() -> userService.search(userId))
+                .isInstanceOf(AlreadyDeletedUser.class);
+        verify(userRepository).findById(userId);
     }
 
     @Test
-    @DisplayName("User 삭제 시 User의 Article에 달린 다른 User의 Comment도 softDelete 됨")
-    void testUserDelete_CommentsOnUserArticlesAreSoftDeleted() {
-        // Given: testArticle1(User1 작성)에 User2의 댓글 2개 존재
-        List<ArticleComment> commentsOnArticle1Before = commentRepository.findAllByArticle(testArticle1);
-        long user2CommentCount = commentsOnArticle1Before.stream()
-                .filter(c -> c.getCreateBy().getId().equals(testUser2.getId()))
-                .count();
-        assertThat(user2CommentCount).isEqualTo(2);
+    @DisplayName("사용자_닉네임_수정_성공")
+    void 사용자_닉네임_수정_성공() {
+        // Given
+        Long userId = 1L;
+        String newNickname = "newNickname";
+        UserAccount user = UserAccountFixture.createWithId(userId);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        // When: User1 삭제
-        userService.delete(testUser1.getId());
+        // When
+        userService.updateNickName(userId, newNickname);
 
-        // 변경사항을 데이터베이스에 반영
-        commentRepository.flush();
-
-        // Then: User1의 Article에 달린 모든 댓글이 softDelete 됨 (User2 댓글 포함)
-        List<ArticleComment> commentsOnArticle1After =
-                commentRepository.findAllByArticle(testArticle1)
-                        .stream()
-                        .filter(ArticleComment::isDelete)
-                        .collect(Collectors.toList());
-        assertThat(commentsOnArticle1After).allMatch(ArticleComment::isDelete);
+        // Then
+        assertThat(user.getNickname()).isEqualTo(newNickname);
+        verify(userRepository).findById(userId);
     }
 
     @Test
-    @DisplayName("User 삭제 후에도 데이터베이스에는 모든 레코드가 남아있음")
-    void testUserDelete_RecordsRemainInDatabase() {
-        // Given: 삭제 전 레코드 개수 확인
-        long userCountBefore = userRepository.count();
-        long articleCountBefore = articleRepository.count();
-        long commentCountBefore = commentRepository.count();
+    @DisplayName("사용자_닉네임_수정_실패_존재하지_않는_사용자")
+    void 사용자_닉네임_수정_실패_존재하지_않는_사용자() {
+        // Given
+        Long userId = 999L;
+        String newNickname = "newNickname";
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        // When: User1 삭제
-        userService.delete(testUser1.getId());
-
-        // Then: 레코드 개수는 변하지 않음 (물리적 삭제 아님)
-        long userCountAfter = userRepository.count();
-        long articleCountAfter = articleRepository.count();
-        long commentCountAfter = commentRepository.count();
-
-        assertThat(userCountAfter).isEqualTo(userCountBefore);
-        assertThat(articleCountAfter).isEqualTo(articleCountBefore);
-        assertThat(commentCountAfter).isEqualTo(commentCountBefore);
+        // When & Then
+        assertThatThrownBy(() -> userService.updateNickName(userId, newNickname))
+                .isInstanceOf(NonExistUserException.class);
+        verify(userRepository).findById(userId);
     }
 
     @Test
-    @DisplayName("다른 User는 영향 받지 않음")
-    void testUserDelete_OtherUsersNotAffected() {
-        // When: User1 삭제
-        userService.delete(testUser1.getId());
+    @DisplayName("사용자_비밀번호_수정_성공")
+    void 사용자_비밀번호_수정_성공() {
+        // Given
+        Long userId = 1L;
+        PasswordUpdateRequest request = new PasswordUpdateRequest("newPassword", "newPassword");
+        UserAccount user = UserAccountFixture.createWithId(userId);
 
-        // Then: User2는 영향 없음
-        UserAccount user2 = userRepository.findById(testUser2.getId()).orElseThrow();
-        assertThat(user2.isDelete()).isFalse();
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(encoder.encode("newPassword")).thenReturn("encodedNewPassword");
 
-        // User2의 Article도 영향 없음
-        List<Article> user2Articles = articleRepository.findByCreateBy_Id(testUser2.getId());
-        assertThat(user2Articles).hasSize(1);
-        assertThat(user2Articles).allMatch(article -> !article.isDelete());
+        // When
+        userService.updatePassword(userId, request);
+
+        // Then
+        assertThat(user.getPassword()).isEqualTo("encodedNewPassword");
+        verify(userRepository).findById(userId);
+        verify(encoder).encode("newPassword");
     }
 
     @Test
-    @DisplayName("User 삭제 시 cascade 효과 - User의 모든 데이터가 함께 삭제됨")
-    void testUserDelete_CascadeEffect() {
-        // When: User1 삭제
-        userService.delete(testUser1.getId());
+    @DisplayName("사용자_비밀번호_수정_실패_비밀번호_불일치")
+    void 사용자_비밀번호_수정_실패_비밀번호_불일치() {
+        // Given
+        Long userId = 1L;
+        PasswordUpdateRequest request = new PasswordUpdateRequest("newPassword", "differentPassword");
 
-        // 변경사항을 데이터베이스에 반영
-        userRepository.flush();
-        articleRepository.flush();
-        commentRepository.flush();
-
-        // Then: User1과 관련된 모든 데이터가 softDelete 됨
-        // 1. User 자체
-        UserAccount deletedUser = userRepository.findById(testUser1.getId()).orElseThrow();
-        assertThat(deletedUser.isDelete()).isTrue();
-
-        // 2. User의 모든 Article
-        List<Article> userArticles = articleRepository.findByCreateBy_Id(testUser1.getId());
-        assertThat(userArticles).allMatch(Article::isDelete);
-
-        // 3. User의 모든 Comment
-        List<ArticleComment> userComments = commentRepository.findAllByCreateBy_Id(testUser1.getId());
-        assertThat(userComments).allMatch(ArticleComment::isDelete);
-
-        // 4. User의 Article에 달린 모든 Comment (다른 User가 작성한 것도 포함)
-        List<ArticleComment> commentsOnUserArticles =
-                commentRepository.findAllByArticle(testArticle1)
-                        .stream()
-                        .filter(ArticleComment::isDelete)
-                        .collect(Collectors.toList());
-        assertThat(commentsOnUserArticles).allMatch(ArticleComment::isDelete);
+        // When & Then
+        assertThatThrownBy(() -> userService.updatePassword(userId, request))
+                .isInstanceOf(MisMatchPasswordException.class);
+        verify(userRepository, never()).findById(any());
     }
 
     @Test
-    @DisplayName("User 삭제 후 다른 User의 Article에 작성한 Comment만 삭제됨")
-    void testUserDelete_OnlyUserCommentsDeleted() {
-        // Given: User2의 Article에 User1이 작성한 댓글 존재
-        List<Article> user2Articles = articleRepository.findByCreateBy_Id(testUser2.getId());
-        Article user2Article = user2Articles.get(0);
+    @DisplayName("사용자_비밀번호_수정_실패_존재하지_않는_사용자")
+    void 사용자_비밀번호_수정_실패_존재하지_않는_사용자() {
+        // Given
+        Long userId = 999L;
+        PasswordUpdateRequest request = new PasswordUpdateRequest("newPassword", "newPassword");
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        List<ArticleComment> commentsBeforeDelete = commentRepository.findAllByArticle(user2Article);
-        long user1CommentCount = commentsBeforeDelete.stream()
-                .filter(c -> c.getCreateBy().getId().equals(testUser1.getId()))
-                .count();
-        assertThat(user1CommentCount).isEqualTo(1);
-
-        // When: User1 삭제
-        userService.delete(testUser1.getId());
-
-        // Then: User2의 Article은 삭제되지 않음
-        Article user2ArticleAfter = articleRepository.findById(user2Article.getId()).orElseThrow();
-        assertThat(user2ArticleAfter.isDelete()).isFalse();
-
-        // User2의 Article에 User1이 작성한 댓글만 삭제됨
-        List<ArticleComment> user1CommentsOnUser2Article = commentRepository
-                .findAllByCreateBy_IdAndArticle_Id(testUser1.getId(), user2Article.getId());
-        assertThat(user1CommentsOnUser2Article).allMatch(ArticleComment::isDelete);
-    }
-
-    @Test
-    @DisplayName("이미 삭제된 User 재삭제 시 예외 발생")
-    void testUserDelete_AlreadyDeletedUser() {
-        // Given: User를 먼저 softDelete
-        UserAccount user = userRepository.findById(testUser1.getId()).orElseThrow();
-        user.softDelete();
-        userRepository.save(user);
-
-        // When & Then: 다시 삭제 시도하면 예외 발생
-        try {
-            userService.delete(testUser1.getId());
-        } catch (Exception e) {
-            // 이미 삭제된 User이므로 예외 발생 가능
-            assertThat(e).isNotNull();
-        }
+        // When & Then
+        assertThatThrownBy(() -> userService.updatePassword(userId, request))
+                .isInstanceOf(NonExistUserException.class);
+        verify(userRepository).findById(userId);
+        verify(encoder, never()).encode(anyString());
     }
 }
