@@ -1,5 +1,8 @@
 package ktb.fixture;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ktb.domain.Article;
 import ktb.domain.UserAccount;
 
@@ -226,5 +229,29 @@ public class ArticleFixture {
                 DEFAULT_USER_ID,
                 null
         );
+    }
+
+    /**
+     * 연속된 ID를 가진 Article 목록 생성
+     *
+     * @param startId 시작 ID
+     * @param count   생성할 게시글 개수
+     * @return Article 리스트
+     */
+    public static List<Article> createSequentialList(long startId, int count) {
+        List<Article> articles = new ArrayList<>(count);
+
+        for (int i = 0; i < count; i++) {
+            long id = startId + i;
+            articles.add(Article.create(
+                    id,
+                    DEFAULT_TITLE + " - " + id,
+                    DEFAULT_CONTENT + " - " + id,
+                    DEFAULT_USER_ID,
+                    null
+            ));
+        }
+
+        return articles;
     }
 }
