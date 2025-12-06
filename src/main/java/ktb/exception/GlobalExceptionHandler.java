@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import ktb.dto.response.CommonResponse;
 import ktb.exception.article.NoExistArticleException;
 import ktb.exception.user.NonExistUserException;
+import ktb.util.RequestParsing;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler {
             AuthenticateException ae
             , HttpServletRequest request
     ) {
-        String clientIp = getClientIp(request);
+        String clientIp = RequestParsing.getClientIp(request);
         String requestUri = request.getRequestURI();
 
         log.warn("Authentication Error | IP: {}, URI: {}",
@@ -49,7 +50,7 @@ public class GlobalExceptionHandler {
             AuthorizationException ae
             , HttpServletRequest request
     ) {
-        String clientIp = getClientIp(request);
+        String clientIp = RequestParsing.getClientIp(request);
         String requestUri = request.getRequestURI();
 
         log.warn("Authorization Error | IP: {}, URI: {}",
@@ -81,24 +82,5 @@ public class GlobalExceptionHandler {
     public ResponseEntity<CommonResponse<Void>> handleNoExistArticle(NoExistArticleException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(CommonResponse.of(ex.getMessage()));
-    }
-
-    private String getClientIp(HttpServletRequest request) {
-        String ip = request.getHeader("X-Forwarded-For");
-        if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip.split(",")[0].trim();
-        }
-
-        ip = request.getHeader("Proxy-Client-IP");
-        if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip;
-        }
-
-        ip = request.getHeader("WL-Proxy-Client-IP");
-        if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
-            return ip;
-        }
-
-        return request.getRemoteAddr();
     }
 }
