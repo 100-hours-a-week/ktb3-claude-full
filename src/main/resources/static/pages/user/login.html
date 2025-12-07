@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - Like IT</title>
+</head>
+<body class="auth-page auth-page--login">
+    <div id="header-container"></div>
+
+    <main class="main-content auth-main">
+        <div class="auth-split-container">
+            <div class="auth-split-left">
+                <div class="auth-brand-image">
+                    <h1 class="brand-logo">Like IT</h1>
+                    <p class="brand-tagline">개발자를 위한 커뮤니티</p>
+                </div>
+            </div>
+            <div class="auth-split-right">
+                <div class="auth-container auth-card">
+                    <h2 class="auth-title">로그인</h2>
+
+            <form class="auth-form" data-element-key="LOGIN_FORM">
+                <div class="form-group">
+                    <label class="form-label required">이메일</label>
+                    <input
+                        type="text"
+                        data-element-key="LOGIN_EMAIL"
+                        name="email"
+                        class="form-input"
+                        placeholder="이메일을 입력하세요"
+                    >
+                    <span class="form-helper" data-element-key="LOGIN_EMAIL_ERROR"></span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label required">비밀번호</label>
+                    <input
+                        type="password"
+                        data-element-key="LOGIN_PASSWORD"
+                        name="password"
+                        class="form-input"
+                        placeholder="비밀번호를 입력하세요"
+                    >
+                    <span class="form-helper" data-element-key="LOGIN_PASSWORD_ERROR"></span>
+                </div>
+
+                <div class="auth-actions">
+                    <button type="button" class="btn btn-primary btn-full" data-element-key="LOGIN_BTN" disabled>로그인</button>
+                </div>
+            </form>
+                    <div class="auth-links">
+                        <button type="button" class="auth-link-btn" data-element-key="SIGNUP_LINK_BTN">회원가입</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        // 스타일 로더를 먼저 import하여 스타일 주입
+        import { loadStylesForPage } from '/js/styles/styleLoader.js';
+        loadStylesForPage('user');
+
+        // uris.js를 먼저 import하여 window.PageRoutes 설정
+        import '/js/common/uris.js';
+
+        // domElements.js import하여 초기화
+        import { DomElements } from '/js/common/ui/domElements.js';
+
+        // DOM이 로드되기 전에 먼저 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            DomElements.initialize();
+        });
+    </script>
+    <script type="module">
+        import { initLoginPage } from '/js/handler/user/loginHandler.js';
+        import { loadHeader } from '/js/common/ui/fragment-loader.js';
+        import { DomElements } from '/js/common/ui/domElements.js';
+        import { resetCsrfToken } from '/js/common/auth/csrf.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 먼저 페이지의 요소들 초기화
+            DomElements.initialize();
+
+            await loadHeader('auth');
+
+            // 헤더 로드 후 다시 초기화하여 헤더의 요소들도 ID 할당
+            DomElements.initialize();
+
+            initLoginPage();
+        });
+    </script>
+</body>
+</html>

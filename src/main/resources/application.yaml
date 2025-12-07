@@ -1,0 +1,49 @@
+spring:
+  web:
+    resources:
+      static-locations: classpath:/static/
+      add-mappings: true
+    mvc:
+      static-path-pattern: /**
+  server:
+    port: 8080
+
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+        default_batch_fetch_size: 10
+        query:
+          in_clause_parameter_padding: true
+    show-sql: true
+    open-in-view: false
+
+cookie:
+  access-token-name: ACCESS_TOKEN
+  refresh-token-name: REFRESH_TOKEN
+  path: /
+  domain: localhost
+  secure: false
+  http-only: true
+  same-site: Strict
+
+jwt:
+  private-key-path: classpath:keys/jwtRS256.key
+  public-key-path: classpath:keys/jwtRS256.key.pub
+  access-expire-minutes: 60m     # 1시간
+  refresh-expire-days: 7d        # 7일
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui
+    operations-sorter: method
+    tags-sorter: alpha
+    display-request-duration: true
