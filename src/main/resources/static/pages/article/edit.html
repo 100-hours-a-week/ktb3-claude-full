@@ -84,9 +84,6 @@
         import { resetCsrfToken } from '/js/common/auth/csrf.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // CSRF 토큰 초기화
-            await resetCsrfToken();
-
             const pathParts = window.location.pathname.split('/');
             const isEditMode = pathParts.length > 3 && pathParts[3] === 'edit';
             const articleIdForEdit = isEditMode ? pathParts[2] : null;

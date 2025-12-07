@@ -1,6 +1,6 @@
 // 게시글 API 모듈
 import { ApiEndpoints, PageRoutes, UriUtils } from '/js/common/uris.js';
-import { csrfFetch } from '/js/common/auth/csrf.js';
+import { csrfFetch, resetCsrfToken } from '/js/common/auth/csrf.js';
 import { handleResponse } from '/js/api/apiUtils.js';
 
 const DEFAULT_ARTICLE_ERROR_MESSAGE = '게시글 요청 처리 중 문제가 발생했습니다.';
@@ -10,6 +10,7 @@ export const ArticleApi = {
     async getArticles(after = 0, limit = 10) {
         const url = UriUtils.addQueryParams(ApiEndpoints.ARTICLE_LIST, { after, limit })
 
+        resetCsrfToken();
         const response = await csrfFetch(url, {
             method: 'GET',
             headers: {
@@ -21,6 +22,7 @@ export const ArticleApi = {
 
     // ID로 게시글 조회
     async getArticle(id) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.article(id), {
             method: 'GET',
         });
@@ -30,6 +32,7 @@ export const ArticleApi = {
 
     // 게시글 생성
     async createArticle(requestBody) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.ARTICLE_BASE, {
             method: 'POST',
             headers: {
@@ -43,6 +46,7 @@ export const ArticleApi = {
 
     // 게시글 수정
     async updateArticle(id, requestBody) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.article(id), {
             method: 'PATCH',
             headers: {
@@ -62,6 +66,7 @@ export const ArticleApi = {
 
     // 게시글 삭제
     async deleteArticle(id) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.article(id), {
             method: 'DELETE',
         });
@@ -71,6 +76,7 @@ export const ArticleApi = {
 
     // 게시글 좋아요
     async likeArticle(id) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.articleLike(id), {
             method: 'POST',
         });
@@ -80,6 +86,7 @@ export const ArticleApi = {
 
     // 게시글의 댓글 조회
     async getComments(articleId) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.articleComments(articleId), {
             method: 'GET',
         });
@@ -89,6 +96,7 @@ export const ArticleApi = {
 
     // 댓글 생성
     async createComment(articleId, content) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.articleComments(articleId), {
             method: 'POST',
             headers: {
@@ -102,6 +110,7 @@ export const ArticleApi = {
 
     // 댓글 수정
     async updateComment(articleId, commentId, content) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.articleComments(articleId), {
             method: 'PUT',
             headers: {
@@ -118,6 +127,7 @@ export const ArticleApi = {
 
     // 댓글 삭제
     async deleteComment(articleId, commentId) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.articleComments(articleId), {
             method: 'DELETE',
             headers: {

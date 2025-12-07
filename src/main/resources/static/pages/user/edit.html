@@ -73,9 +73,6 @@
         import { resetCsrfToken } from '/js/common/auth/csrf.js';
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // CSRF 토큰 초기화
-            await resetCsrfToken();
-
             await loadHeader('with-back');
             // Re-initialize DomElements after loading header to ensure all elements have IDs
             DomElements.initialize();

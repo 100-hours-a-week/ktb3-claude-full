@@ -1,11 +1,12 @@
 // 사용자 API 모듈
 import { ApiEndpoints, PageRoutes } from '/js/common/uris.js';
-import { csrfFetch } from '/js/common/auth/csrf.js';
+import { csrfFetch, resetCsrfToken } from '/js/common/auth/csrf.js';
 import { handleResponse } from '/js/api/apiUtils.js';
 
 export const UserApi = {
     // 로그인
     async login(email, password) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.AUTH_LOGIN, {
             method: 'POST',
             headers: {
@@ -19,6 +20,7 @@ export const UserApi = {
 
     // 회원가입
     async signup(email, password, nickname, profileImageBase64) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.USER_SIGNUP, {
             method: 'POST',
             headers: {
@@ -37,6 +39,7 @@ export const UserApi = {
 
     // 로그아웃
     async logout() {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.AUTH_LOGOUT, {
             method: 'POST',
         });
@@ -46,6 +49,7 @@ export const UserApi = {
 
     // 현재 사용자 조회
     async getCurrentUser() {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.USER_ME, {
             method: 'GET',
         });
@@ -55,8 +59,9 @@ export const UserApi = {
 
     // 사용자 프로필 수정
     async updateProfile(formData) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.USER_ME, {
-            method: 'PUT',
+            method: 'PATCH',
             body: formData,
         });
 
@@ -65,8 +70,9 @@ export const UserApi = {
 
     // 비밀번호 수정
     async updatePassword(currentPassword, newPassword) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.USER_ME_PASSWORD, {
-            method: 'PUT',
+            method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -78,6 +84,7 @@ export const UserApi = {
 
     // 사용자 계정 삭제
     async deleteAccount() {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.USER_ME, {
             method: 'DELETE',
         });
@@ -86,6 +93,7 @@ export const UserApi = {
     },
 
     async checkNicknameExists(nickname) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.USER_EXIST_NICKNAME, {
             method: 'POST',
             headers: {
@@ -99,6 +107,7 @@ export const UserApi = {
     },
 
     async checkEmailExists(email) {
+        resetCsrfToken();
         const response = await csrfFetch(ApiEndpoints.USER_EXIST_EMAIL, {
             method: 'POST',
             headers: {
