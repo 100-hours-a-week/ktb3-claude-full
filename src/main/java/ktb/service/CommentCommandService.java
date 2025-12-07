@@ -48,9 +48,9 @@ public class CommentCommandService {
             throw new AlreadyDeletedArticle();
         }
 
-        commentService.save(request.toEntity(article));
+        ArticleComment comment = commentService.save(request.toEntity(article));
 
-        return request;
+        return CommentDto.from(comment);
     }
 
     /**
