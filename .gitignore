@@ -226,4 +226,8 @@ docker/mysql_data
 *.env
 **/*.env
 
+### RSA Keys
+jwt*.key
+jwt*.pub
+
 # End of https://www.toptal.com/developers/gitignore/api/macos,java,intellij,git
