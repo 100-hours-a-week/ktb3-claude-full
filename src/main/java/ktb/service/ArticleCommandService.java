@@ -10,6 +10,7 @@ import ktb.handler.context.payload.SoftDeletePayload;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,23 +34,21 @@ public class ArticleCommandService {
      *
      * @param saveDto Article 저장 정보
      */
-    @PreAuthorize("hasRole('ADMIN') or @articleService.findById(#saveDto.id()).get().getCreateBy().id().equals(#saveDto.userId())")
-    public void save(SaveArticleDto saveDto) {
+//    @PostAuthorize("hasRole('ADMIN') or returnObject == null or returnObject.createBy == null or returnObject.createBy.id == authentication.principal.account.id")
+    public Article save(SaveArticleDto saveDto) {
         // Article 내용 변경
         if (saveDto.id() != null) {
             Article origin = articleService.findById(saveDto.id())
                     .orElseThrow(NoExistArticleException::new);
 
-            // 인가는 @Authorized AOP 에서 확인
             origin.update(saveDto.title(), saveDto.content());
-            articleService.save(origin);
-            return;
+            return articleService.save(origin);
         }
 
         // Article 신규 생성
         Article article = saveDto.toEntity();
-        articleService.save(article);
         metaService.save(article.getMeta());
+        return articleService.save(article);
     }
 
 
@@ -58,7 +57,7 @@ public class ArticleCommandService {
      *
      * @param id Article ID
      */
-    @PreAuthorize("hasRole('ADMIN') or @articleService.findById(#id).get().getCreateBy().id().equals(#userId)")
+//    @PreAuthorize("hasRole('ADMIN') or @articleService.findById(#id).get().getCreateBy().id().equals(#userId)")
     public void delete(Long userId, Long id) {
         // Article 단일 삭제: traceId는 null (권한은 AOP 로 확인), payload: articleId 설정
         SoftDeleteContext context = new SoftDeleteContext(

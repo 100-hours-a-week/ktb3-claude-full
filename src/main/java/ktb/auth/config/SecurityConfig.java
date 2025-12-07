@@ -18,6 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -34,6 +35,7 @@ import org.springframework.web.cors.CorsConfiguration;
 @Slf4j
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final SecurityProperties securityProperties;
@@ -81,15 +83,15 @@ public class SecurityConfig {
                             .authenticated();
                 });
 
-        // Custom AuthenticationExceptionHandler
-        http
-                .exceptionHandling(exception -> exception
-                        .authenticationEntryPoint(authenticationEntryPoint)
-                );
-
         // Filter 등록
         http
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // Custom Exception Handlers
+//        http
+//                .exceptionHandling(exception -> exception
+//                        .authenticationEntryPoint(authenticationEntryPoint)  // 401 인증 실패
+//                );
 
         // csrf Debug Logging
         http.addFilterBefore(csrfDebugFilter, CsrfFilter.class);

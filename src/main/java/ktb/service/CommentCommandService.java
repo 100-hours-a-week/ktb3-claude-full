@@ -17,6 +17,7 @@ import ktb.handler.context.payload.CommentDeletePayload;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,7 +61,7 @@ public class CommentCommandService {
      * @return 수정된 댓글 DTO
      * @throws NoExistArticleException 게시글이 존재하지 않을 경우
      */
-    @PreAuthorize("hasRole('ADMIN') or @commentService.findById(#dto.id()).get().getCreateBy().id.equals(#dto.createBy())")
+//    @PreAuthorize("hasRole('ADMIN') or @commentService.findById(#dto.id()).get().getCreateBy().id.equals(#dto.createBy())")
     public CommentDto save(CommentDto dto) {
         boolean isDeleted = articleService.existsByIdAndIsDeleted(dto.articleId());
 
@@ -94,7 +95,7 @@ public class CommentCommandService {
      *
      * @param request 삭제할 댓글 정보
      */
-    @PreAuthorize("hasRole('ADMIN') or @commentService.findById(#request.id()).get().getCreateBy().id().equals(#request.createBy())")
+//    @PreAuthorize("hasRole('ADMIN') or @commentService.findById(#request.id()).get().getCreateBy().id().equals(#request.createBy())")
     public void delete(CommentDto request) {
         CommentDeleteContext context = new CommentDeleteContext(
                 request.createBy(),
