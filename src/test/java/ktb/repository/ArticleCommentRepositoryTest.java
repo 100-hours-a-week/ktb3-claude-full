@@ -3,8 +3,10 @@ package ktb.repository;
 import jakarta.persistence.EntityManager;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
-import ktb.domain.ArticleMeta;
 import ktb.domain.UserAccount;
+import ktb.fixture.ArticleCommentFixture;
+import ktb.fixture.ArticleFixture;
+import ktb.fixture.UserAccountFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,9 +33,6 @@ class ArticleCommentRepositoryTest {
     private UserRepository userRepository;
 
     @Autowired
-    private ArticleMetaRepository articleMetaRepository;
-
-    @Autowired
     private EntityManager entityManager;
 
     private UserAccount testUser1;
@@ -43,50 +42,20 @@ class ArticleCommentRepositoryTest {
     @BeforeEach
     void setUp() {
         // Given: 테스트 데이터 생성
-        testUser1 = UserAccount.builder()
-                .email("user1@test.com")
-                .nickname("user1")
-                .password("password")
-                .isDeleted(false)
-                .build();
-        userRepository.save(testUser1);
-
-        testUser2 = UserAccount.builder()
-                .email("user2@test.com")
-                .nickname("user2")
-                .password("password")
-                .isDeleted(false)
-                .build();
-        userRepository.save(testUser2);
+        testUser1 = userRepository.save(UserAccountFixture.create("user1@test.com", "user1"));
+        testUser2 = userRepository.save(UserAccountFixture.create("user2@test.com", "user2"));
 
         // Article 생성
-        testArticle = Article.create(
-                null,
-                "Test Article",
-                "Content",
-                testUser1.getId(),
-                null
-        );
-        articleRepository.save(testArticle);
+        testArticle = articleRepository.save(ArticleFixture.create("Test Article", "Content", testUser1.getId()));
 
         // 여러 사용자가 작성한 댓글 생성
         for (int i = 0; i < 3; i++) {
-            ArticleComment comment = ArticleComment.init(
-                    testArticle,
-                    null,
-                    "Comment by user1 - " + i,
-                    testUser1.getId()
-            );
+            ArticleComment comment = ArticleCommentFixture.create(testArticle, "Comment by user1 - " + i, testUser1.getId());
             commentRepository.save(comment);
         }
 
         for (int i = 0; i < 2; i++) {
-            ArticleComment comment = ArticleComment.init(
-                    testArticle,
-                    null,
-                    "Comment by user2 - " + i,
-                    testUser2.getId()
-            );
+            ArticleComment comment = ArticleCommentFixture.create(testArticle, "Comment by user2 - " + i, testUser2.getId());
             commentRepository.save(comment);
         }
 
@@ -97,7 +66,7 @@ class ArticleCommentRepositoryTest {
 
     @Test
     @DisplayName("findAllByArticle - createBy를 EntityGraph로 조회하여 N+1 방지")
-    void testFindAllByArticle_WithEntityGraph() {
+    void 게시글별_댓글조회_작성자_동시조회() {
         // When: Article의 모든 댓글 조회
         List<ArticleComment> comments = commentRepository.findAllByArticle(testArticle);
 
@@ -113,7 +82,7 @@ class ArticleCommentRepositoryTest {
 
     @Test
     @DisplayName("findAllByCreateBy_Id - createBy와 article을 EntityGraph로 조회")
-    void testFindAllByCreateBy_Id_WithEntityGraph() {
+    void 사용자별_댓글조회시_게시글_연관조회() {
         // When: 특정 사용자의 모든 댓글 조회
         List<ArticleComment> comments = commentRepository.findAllByCreateBy_Id(testUser1.getId());
 
@@ -131,7 +100,7 @@ class ArticleCommentRepositoryTest {
 
     @Test
     @DisplayName("findAllByCreateBy_IdAndArticle_Id - 특정 사용자의 특정 게시글 댓글 조회")
-    void testFindAllByCreateBy_IdAndArticle_Id_WithEntityGraph() {
+    void 사용자와_게시글로_댓글조회() {
         // When: 특정 사용자의 특정 게시글 댓글 조회
         List<ArticleComment> comments = commentRepository.findAllByCreateBy_IdAndArticle_Id(
                 testUser2.getId(), testArticle.getId());
@@ -150,7 +119,7 @@ class ArticleCommentRepositoryTest {
 
     @Test
     @DisplayName("softDelete된 사용자의 댓글도 조회 가능 (FK 유지)")
-    void testFindAllByArticle_WithSoftDeletedUser() {
+    void 삭제된_사용자댓글도_조회() {
         // Given: user1을 softDelete
         testUser1.softDelete();
         userRepository.save(testUser1);
@@ -173,7 +142,7 @@ class ArticleCommentRepositoryTest {
 
     @Test
     @DisplayName("softDelete된 게시글의 댓글도 조회 가능 (FK 유지)")
-    void testFindAllByCreateBy_Id_WithSoftDeletedArticle() {
+    void 삭제된_게시글댓글도_조회() {
         // Given: Article을 softDelete
         testArticle.softDelete();
         articleRepository.save(testArticle);
@@ -194,25 +163,13 @@ class ArticleCommentRepositoryTest {
 
     @Test
     @DisplayName("findAllByArticleIn - 여러 Article의 댓글 일괄 조회")
-    void testFindAllByArticleIn_WithEntityGraph() {
+    void 여러_게시글의_댓글_일괄조회() {
         // Given: 추가 Article 생성
-        Article article2 = Article.create(
-                null,
-                "Second Article",
-                "Content 2",
-                testUser2.getId(),
-                null
-        );
-        articleRepository.save(article2);
+        Article article2 = articleRepository.save(ArticleFixture.create("Second Article", "Content 2", testUser2.getId()));
 
         // article2에 댓글 추가
         for (int i = 0; i < 2; i++) {
-            ArticleComment comment = ArticleComment.init(
-                    article2,
-                    null,
-                    "Comment on article2 - " + i,
-                    testUser1.getId()
-            );
+            ArticleComment comment = ArticleCommentFixture.create(article2, "Comment on article2 - " + i, testUser1.getId());
             commentRepository.save(comment);
         }
 

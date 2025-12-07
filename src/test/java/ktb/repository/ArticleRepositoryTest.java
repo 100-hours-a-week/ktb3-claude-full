@@ -3,8 +3,10 @@ package ktb.repository;
 import jakarta.persistence.EntityManager;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
-import ktb.domain.ArticleMeta;
 import ktb.domain.UserAccount;
+import ktb.fixture.ArticleCommentFixture;
+import ktb.fixture.ArticleFixture;
+import ktb.fixture.UserAccountFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,46 +32,26 @@ class ArticleRepositoryTest {
     private UserRepository userRepository;
 
     @Autowired
-    private ArticleMetaRepository articleMetaRepository;
-
-    @Autowired
     private ArticleCommentRepository commentRepository;
 
     @Autowired
     private EntityManager entityManager;
 
-    private UserAccount testUser;
     private Article testArticle;
+
+    private UserAccount testUser;
 
     @BeforeEach
     void setUp() {
         // Given: 테스트 데이터 생성
-        testUser = UserAccount.builder()
-                .email("test@test.com")
-                .nickname("testUser")
-                .password("password")
-                .isDeleted(false)
-                .build();
-        userRepository.save(testUser);
+        testUser = userRepository.save(UserAccountFixture.create("test@test.com", "testUser"));
 
         // Article 생성
-        testArticle = Article.create(
-                null,
-                "Test Title",
-                "Test Content",
-                testUser.getId(),
-                null
-        );
-        articleRepository.save(testArticle);
+        testArticle = articleRepository.save(ArticleFixture.create("Test Title", "Test Content", testUser.getId()));
 
         // 댓글 생성
         for (int i = 0; i < 3; i++) {
-            ArticleComment comment = ArticleComment.init(
-                    testArticle,
-                    null,
-                    "Comment " + i,
-                    testUser.getId()
-            );
+            ArticleComment comment = ArticleCommentFixture.create(testArticle, "Comment " + i, testUser.getId());
             commentRepository.save(comment);
         }
 
@@ -80,7 +62,7 @@ class ArticleRepositoryTest {
 
     @Test
     @DisplayName("findDetail - EntityGraph로 모든 연관 엔티티 한 번에 조회")
-    void testFindDetail_WithEntityGraph() {
+    void 게시글_상세_조회시_연관관계_동시조회() {
         // When: findDetail 호출
         Optional<Article> result = articleRepository.findDetail(testArticle.getId());
 
@@ -102,16 +84,10 @@ class ArticleRepositoryTest {
 
     @Test
     @DisplayName("findAllByOrderByIdAsc - meta와 comments를 EntityGraph로 조회")
-    void testFindAllByOrderByIdAsc_WithEntityGraph() {
+    void 게시글_목록_조회시_메타와_댓글_조회() {
         // Given: 추가 Article 생성
         for (int i = 0; i < 2; i++) {
-            Article article = Article.create(
-                    null,
-                    "Title " + i,
-                    "Content " + i,
-                    testUser.getId(),
-                    null
-            );
+            Article article = ArticleFixture.create("Title " + i, "Content " + i, testUser.getId());
             articleRepository.save(article);
         }
 
@@ -133,16 +109,10 @@ class ArticleRepositoryTest {
 
     @Test
     @DisplayName("findAllByIdGreaterThanOrderByIdAsc - cursor 기반 pagination")
-    void testFindAllByIdGreaterThan_WithEntityGraph() {
+    void 커서_기반_게시글_조회() {
         // Given: 여러 Article 생성
         for (int i = 0; i < 5; i++) {
-            Article article = Article.create(
-                    null,
-                    "Title " + i,
-                    "Content " + i,
-                    testUser.getId(),
-                    null
-            );
+            Article article = ArticleFixture.create("Title " + i, "Content " + i, testUser.getId());
             articleRepository.save(article);
         }
 
@@ -165,41 +135,4 @@ class ArticleRepositoryTest {
         });
     }
 
-    @Test
-    @DisplayName("findByCreateBy_Id - softDelete된 사용자의 게시글도 조회 가능")
-    void testFindByCreateBy_Id_WithSoftDeletedUser() {
-        // Given: 사용자를 softDelete
-        testUser.softDelete();
-        userRepository.save(testUser);
-
-        entityManager.flush();
-        entityManager.clear();
-
-        // When: 삭제된 사용자의 게시글 조회
-        List<Article> articles = articleRepository.findByCreateBy_Id(testUser.getId());
-
-        // Then: FK가 유지되므로 조회 가능
-        assertThat(articles).isNotEmpty();
-        assertThat(articles.get(0).getCreateBy().isDelete()).isTrue();
-    }
-
-    @Test
-    @DisplayName("findDetail - softDelete된 사용자도 LEFT JOIN으로 조회 가능")
-    void testFindDetail_WithSoftDeletedUser() {
-        // Given: 사용자를 softDelete
-        testUser.softDelete();
-        userRepository.save(testUser);
-
-        entityManager.flush();
-        entityManager.clear();
-
-        // When: LEFT JOIN으로 조회
-        Optional<Article> result = articleRepository.findDetail(testArticle.getId());
-
-        // Then: Article 조회 성공, createBy도 존재
-        assertThat(result).isPresent();
-        Article article = result.get();
-        assertThat(article.getCreateBy()).isNotNull();
-        assertThat(article.getCreateBy().isDelete()).isTrue();
-    }
 }

@@ -3,8 +3,10 @@ package ktb.repository;
 import jakarta.persistence.EntityManager;
 import ktb.domain.Article;
 import ktb.domain.ArticleComment;
-import ktb.domain.ArticleMeta;
 import ktb.domain.UserAccount;
+import ktb.fixture.ArticleCommentFixture;
+import ktb.fixture.ArticleFixture;
+import ktb.fixture.UserAccountFixture;
 import org.hibernate.Session;
 import org.hibernate.stat.Statistics;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,33 +50,21 @@ class EntityGraphNPlusOneTest {
 
         // Given: 대량 테스트 데이터 생성
         for (int userIdx = 0; userIdx < 5; userIdx++) {
-            UserAccount user = UserAccount.builder()
-                    .email("user" + userIdx + "@test.com")
-                    .nickname("user" + userIdx)
-                    .password("password")
-                    .isDeleted(false)
-                    .build();
-            userRepository.save(user);
+            UserAccount user = userRepository.save(
+                    UserAccountFixture.create("user" + userIdx + "@test.com", "user" + userIdx)
+            );
 
             // 각 사용자당 3개 게시글
             for (int articleIdx = 0; articleIdx < 3; articleIdx++) {
-                Article article = Article.create(
-                        null,
-                        "Title " + userIdx + "-" + articleIdx,
-                        "Content " + userIdx + "-" + articleIdx,
-                        user.getId(),
-                        null
+                Article article = articleRepository.save(
+                        ArticleFixture.create("Title " + userIdx + "-" + articleIdx,
+                                "Content " + userIdx + "-" + articleIdx,
+                                user.getId())
                 );
-                articleRepository.save(article);
 
                 // 각 게시글당 2개 댓글
                 for (int commentIdx = 0; commentIdx < 2; commentIdx++) {
-                    ArticleComment comment = ArticleComment.init(
-                            article,
-                            null,
-                            "Comment " + commentIdx,
-                            user.getId()
-                    );
+                    ArticleComment comment = ArticleCommentFixture.create(article, "Comment " + commentIdx, user.getId());
                     commentRepository.save(comment);
                 }
             }
